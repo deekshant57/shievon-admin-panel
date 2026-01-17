@@ -1,0 +1,87 @@
+## High-level goals
+- **Match existing patterns**: Follow existing folder structure, naming, and abstractions in `src/components`, `src/data`, `src/utils`, and `src/pages`.
+- **TypeScript-first**: Keep type safety (`strict` TS) and prefer explicit types on public APIs (hooks, utilities, clients).
+
+## Project structure & placement
+- **Components**
+  - Place reusable UI primitives in `src/components/ui`.
+  - Place feature-specific components in their existing domain folder, e.g. `src/components/auth`, `src/components/product`, etc.
+  - Page-level composition and data-fetching lives in `src/pages`, not in deeply nested components.
+- **Data layer**
+  - Add API clients under `src/data/client` using `HttpClient` from `src/data/client/http-client.ts`.
+  - Add React Query hooks for each client under `src/data/<domain>.ts` (e.g. `user.ts`, `product.ts`), following the existing naming pattern: `useXQuery`, `useXMutation`, `useSendXOtp`, `useVerifyXOtp`, etc.
+  - Use `API_ENDPOINTS` from `src/data/client/api-endpoints.ts` instead of hardcoded URLs.
+- **Routing**
+  - Use `Routes` from `src/config/routes.ts` for navigation instead of hardcoded paths.
+  - For navigation inside React components, prefer `useRouter` from `next/router` or `Router` from `next/router`, matching existing usage in nearby files.
+
+## Styling & UI
+- **Tailwind CSS**
+  - Use Tailwind utility classes consistently, matching surrounding code.
+  - Prefer existing class patterns (spacing, typography) in similar components (e.g. `login-form.tsx`, `registration-form.tsx`) for new auth-related UI.
+- **Reusable components**
+  - Use existing UI components from `src/components/ui` like `Button`, `Input`, `Alert`, `Link`, `Form` instead of creating new primitives.
+  - If a new primitive is necessary, place it in `src/components/ui` and keep API consistent with existing components (props, `variant`, `className`, `error`, etc.).
+
+## Forms & validation
+- **Form library**
+  - Use the existing `Form` wrapper in `src/components/ui/forms/form` with `react-hook-form` + `yup` schemas for new forms.
+  - Define validation schemas with `yup.object().shape({...})` near the top of the file, like in `login-form.tsx` and `registration-form.tsx`.
+  - Pass `validationSchema` and `useFormProps.defaultValues` into `Form`, and keep default values defined as constants.
+- **Error handling**
+  - For form-level errors that come from the API, reuse helpers from `src/data/client/http-client.ts` (`getFormErrors`, `getFieldErrors`) when applicable.
+  - Display user-facing errors with `Alert` or `toast` following patterns in `login-form.tsx`, `registration-form.tsx`, and `src/data/user.ts`.
+
+## Networking & API usage
+- **HTTP client**
+  - Use the shared `HttpClient` (`get`, `post`, `put`, `delete`) from `src/data/client/http-client.ts` for REST calls.
+  - Do not create new raw `axios` instances; extend `HttpClient` or new methods on domain-specific clients in `src/data/client`.
+  - Rely on the global interceptor behavior for auth header and 401/403 handling; avoid duplicating this logic.
+- **React Query**
+  - Use `useQuery` and `useMutation` from `react-query` in `src/data/*` only (not directly in UI components), and expose hook functions like `useXQuery`, `useXMutation`, etc.
+  - Use stable query keys that match the existing pattern: `[API_ENDPOINTS.RESOURCE, params]`.
+  - On mutations, invalidate or clear queries via `queryClient.invalidateQueries` following examples in `src/data/user.ts`.
+
+## Auth & permissions
+- **Auth utilities**
+  - Use `setAuthCredentials`, `allowedRoles`, `hasAccess`, and `setEmailVerified` from `src/utils/auth-utils` for auth logic instead of duplicating it.
+  - Store and read tokens via `AUTH_CRED` and `NEXT_PUBLIC_AUTH_TOKEN_KEY` conventions; do not introduce new cookie keys.
+- **Guarding access**
+  - When adding flows that depend on permissions or auth status, mirror handling from `useMeQuery` and existing auth forms in `login-form.tsx` and `registration-form.tsx`.
+
+## Internationalization
+- **Using `next-i18next`**
+  - Always use `useTranslation()` from `next-i18next` for user-facing strings.
+  - Prefer existing translation keys (e.g. `form:*`, `common:*`) and patterns in nearby files instead of hardcoding strings; if a hardcoded fallback is used, follow the existing `t('key') || 'Fallback'` pattern.
+  - When new translation keys are needed, follow the namespacing used in `public/locales/**`.
+
+## TypeScript & coding style
+- **Imports & aliases**
+  - Use the `@/` alias for imports from `src`, matching existing code (e.g. `@/components/...`, `@/data/...`, `@/utils/...`).
+  - Group imports logically: external modules first, then internal (`@/...`), then relative imports.
+- **Typing**
+  - Use explicit types for function parameters and return values for public utilities and hooks.
+  - Reuse shared types from `src/types` whenever possible before adding new ones; add new shared types to `src/types` instead of scattering inline types across multiple files.
+- **Style**
+  - Match Prettier config (`singleQuote: true`) and existing formatting; do not include semicolons that break existing style.
+  - Prefer `const` over `let` where possible; use arrow functions for React components and callbacks.
+
+## Error handling & UX
+- **Toasts and alerts**
+  - Use `toast` from `react-toastify` in data-layer hooks (`src/data/*`) for success/error notifications, matching examples in `src/data/user.ts`.
+  - In UI components, show API errors using `Alert` and/or inline messages consistently with existing auth and settings forms.
+- **Redirects & navigation on error/success**
+  - For auth-related navigation, follow logic used in `useMeQuery` and login/registration flows: redirect via `router.replace` or `Router.push` to routes from `Routes`.
+
+## Testing & safety
+- **Refactoring**
+  - When changing existing patterns, prefer small, localized refactors that preserve public APIs unless absolutely necessary.
+  - Avoid introducing breaking changes in shared hooks or UI primitives unless the usage sites are updated accordingly in the same change.
+
+## Behavior changes
+- **Do not change existing behavior implicitly**
+  - Do not alter existing app behavior (API contracts, auth flows, navigation, or UI logic) unless the task explicitly requires a behavior change.
+  - Prefer additive or opt-in changes (new components, hooks, flags, props) over modifying the behavior of existing code paths.
+  - If a behavior change is required, keep it tightly scoped, clearly documented in code comments or PR descriptions, and aligned with the patterns in similar features.
+
+
