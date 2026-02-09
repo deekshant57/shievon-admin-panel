@@ -6,18 +6,49 @@ import {
   GetParams,
   ProductQueryOptions,
   GenerateDescriptionInput,
+  AttributeTemplateResponse,
 } from '@/types';
 import { API_ENDPOINTS } from './api-endpoints';
 import { crudFactory } from './curd-factory';
 import { HttpClient } from './http-client';
 
+const PRODUCTS_WITH =
+  'type;shop;categories;tags;variations.attribute.values;variation_options;variation_options.digital_file;author;digital_file';
+
 export const productClient = {
   ...crudFactory<Product, QueryOptions, CreateProduct>(API_ENDPOINTS.PRODUCTS),
-  get({ slug, language }: GetParams) {
-    return HttpClient.get<Product>(`${API_ENDPOINTS.PRODUCTS}/${slug}`, {
+  async get({ slug, language }: GetParams) {
+    const url = `${API_ENDPOINTS.PRODUCTS}/${slug}`;
+    const params = {
       language,
-      with: 'type;shop;categories;tags;variations.attribute.values;variation_options;variation_options.digital_file;author;manufacturer;digital_file',
+      with: PRODUCTS_WITH,
+    };
+    console.log('[Edit Product API] request', {
+      endpoint: 'GET /api/products/{slug}',
+      slug,
+      language,
+      url,
+      params,
     });
+    try {
+      const result = await HttpClient.get<Product>(url, params);
+      console.log('[Edit Product API] response success', {
+        hasProduct: !!result,
+        productId: (result as any)?.id,
+        productName: (result as any)?.name,
+        productSlug: (result as any)?.slug,
+        resultType: result === null ? 'null' : typeof result,
+        resultKeys: result && typeof result === 'object' ? Object.keys(result) : [],
+      });
+      return result;
+    } catch (err: any) {
+      console.log('[Edit Product API] response error', {
+        message: err?.message,
+        status: err?.response?.status,
+        data: err?.response?.data,
+      });
+      throw err;
+    }
   },
   paginated: ({
     type,
@@ -65,28 +96,52 @@ export const productClient = {
   generateDescription: (data: GenerateDescriptionInput) => {
     return HttpClient.post<any>(API_ENDPOINTS.GENERATE_DESCRIPTION, data);
   },
-  newOrInActiveProducts: ({
+  newOrInActiveProducts: async ({
     user_id,
     shop_id,
     status,
     name,
     ...params
   }: Partial<ProductQueryOptions>) => {
-    return HttpClient.get<ProductPaginator>(
-      API_ENDPOINTS.NEW_OR_INACTIVE_PRODUCTS,
-      {
-        searchJoin: 'and',
-        user_id,
-        shop_id,
+    const requestParams = {
+      searchJoin: 'and',
+      user_id,
+      shop_id,
+      status,
+      name,
+      ...params,
+      search: HttpClient.formatSearchParams({
         status,
         name,
-        ...params,
-        search: HttpClient.formatSearchParams({
-          status,
-          name,
-        }),
-      },
-    );
+      }),
+    };
+    console.log('[Draft Products API] request', {
+      endpoint: 'GET /api/draft-products',
+      params: requestParams,
+    });
+    try {
+      const result = await HttpClient.get<ProductPaginator>(
+        API_ENDPOINTS.NEW_OR_INACTIVE_PRODUCTS,
+        requestParams,
+      );
+      console.log('[Draft Products API] response success', {
+        hasData: !!result,
+        dataLength: Array.isArray((result as any)?.data)
+          ? (result as any).data.length
+          : undefined,
+        productsLength: Array.isArray((result as any)?.products)
+          ? (result as any).products.length
+          : undefined,
+        keys: result ? Object.keys(result) : [],
+      });
+      return result;
+    } catch (err: any) {
+      console.log('[Draft Products API] response error', {
+        message: err?.message,
+        status: err?.response?.status,
+      });
+      throw err;
+    }
   },
   lowOrOutOfStockProducts: ({
     user_id,
@@ -175,5 +230,11 @@ export const productClient = {
       ...params,
       search: HttpClient.formatSearchParams({ shop_id }),
     });
+  },
+  // EAV: get product attribute template by category (API returns { code, status, message, data }; we return data)
+  getAttributeTemplateByCategory(categoryId: string | number) {
+    return HttpClient.get<AttributeTemplateResponse>(
+      `${API_ENDPOINTS.PRODUCT_ATTRIBUTE_TEMPLATE_BY_CATEGORY}/${categoryId}`,
+    );
   },
 };

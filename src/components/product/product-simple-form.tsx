@@ -35,12 +35,12 @@ export default function ProductSimpleForm({ initialValues, settings }: IProps) {
   return (
     <div className="my-5 flex flex-wrap sm:my-8">
       <Description
-        title={t('form:form-title-simple-product-info')}
+        title={t('form:form-title-single-product-info')}
         details={`${
           initialValues
             ? t('form:item-description-edit')
             : t('form:item-description-add')
-        } ${t('form:form-description-simple-product-info')}`}
+        } ${t('form:form-description-single-product-info')}`}
         className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
       />
 

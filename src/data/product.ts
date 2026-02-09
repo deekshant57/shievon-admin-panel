@@ -9,6 +9,7 @@ import {
   GetParams,
   ProductPaginator,
   Product,
+  AttributeTemplateResponse,
 } from '@/types';
 import { mapPaginatorData } from '@/utils/data-mappers';
 import { Routes } from '@/config/routes';
@@ -90,15 +91,57 @@ export const useDeleteProductMutation = () => {
 };
 
 export const useProductQuery = ({ slug, language }: GetParams) => {
+  const enabled = Boolean(slug);
+  console.log('[useProductQuery] params', { slug, language, enabled });
+
   const { data, error, isLoading } = useQuery<Product, Error>(
     [API_ENDPOINTS.PRODUCTS, { slug, language }],
     () => productClient.get({ slug, language }),
+    {
+      enabled,
+    },
   );
+
+  console.log('[useProductQuery] result', {
+    loading: isLoading,
+    hasError: !!error,
+    errorMessage: error?.message,
+    hasProduct: !!data,
+    productId: data?.id,
+    productName: (data as any)?.name,
+    productSlug: (data as any)?.slug,
+  });
 
   return {
     product: data,
     error,
     isLoading,
+  };
+};
+
+// EAV: load product attribute template by category
+export const useProductAttributeTemplateByCategoryQuery = (
+  categoryId?: string | number,
+  options: any = {},
+) => {
+  const enabled = Boolean(categoryId) && (options?.enabled ?? true);
+
+  const { data, error, isLoading } = useQuery<AttributeTemplateResponse, Error>(
+    [API_ENDPOINTS.PRODUCT_ATTRIBUTE_TEMPLATE_BY_CATEGORY, categoryId],
+    () =>
+      productClient.getAttributeTemplateByCategory(
+        categoryId as string | number,
+      ),
+    {
+      enabled,
+      ...options,
+    },
+  );
+
+  return {
+    template: data,
+    error,
+    loading: isLoading,
   };
 };
 
@@ -116,9 +159,13 @@ export const useProductsQuery = (
     },
   );
 
+  // Support both { data: Product[] } and { products: Product[] } from API
+  const products =
+    data?.data ?? (data as { products?: Product[] } | undefined)?.products ?? [];
+
   return {
-    products: data?.data ?? [],
-    paginatorInfo: mapPaginatorData(data),
+    products,
+    paginatorInfo: mapPaginatorData(normalizePaginatorData(data)),
     error,
     loading: isLoading,
   };
@@ -143,6 +190,11 @@ export const useInActiveProductsQuery = (
   options: Partial<ProductQueryOptions>,
   queryOptions: any = {},
 ) => {
+  console.log('[useInActiveProductsQuery] params', {
+    ...options,
+    enabled: queryOptions?.enabled,
+  });
+
   const { data, error, isLoading } = useQuery<ProductPaginator, Error>(
     [API_ENDPOINTS.NEW_OR_INACTIVE_PRODUCTS, options],
     ({ queryKey, pageParam }) =>
@@ -155,13 +207,47 @@ export const useInActiveProductsQuery = (
     },
   );
 
+  // Support both { data: Product[] } and { products: Product[] } from API
+  const products =
+    data?.data ?? (data as { products?: Product[] } | undefined)?.products ?? [];
+
+  console.log('[useInActiveProductsQuery] result', {
+    loading: isLoading,
+    hasError: !!error,
+    errorMessage: error?.message,
+    hasData: !!data,
+    productsCount: products.length,
+    dataKeys: data ? Object.keys(data as object) : [],
+  });
+
+  if (data && products.length === 0) {
+    console.warn('[useInActiveProductsQuery] data present but products array empty', {
+      hasDataKey: 'data' in (data as object),
+      hasProductsKey: 'products' in (data as object),
+      keys: Object.keys(data as object),
+    });
+  }
+
   return {
-    products: data?.data ?? [],
-    paginatorInfo: mapPaginatorData(data),
+    products,
+    paginatorInfo: mapPaginatorData(normalizePaginatorData(data)),
     error,
     loading: isLoading,
   };
 };
+
+/** Normalize paginator so it has .data for list (some backends return .products) */
+function normalizePaginatorData(
+  data: ProductPaginator | undefined,
+): ProductPaginator | undefined {
+  if (!data) return undefined;
+  const d = data as ProductPaginator & { products?: Product[] };
+  if (d.data != null) return data;
+  if (Array.isArray(d.products)) {
+    return { ...d, data: d.products } as ProductPaginator;
+  }
+  return data;
+}
 
 export const useProductStockQuery = (options: Partial<ProductQueryOptions>) => {
   const { data, error, isLoading } = useQuery<ProductPaginator, Error>(

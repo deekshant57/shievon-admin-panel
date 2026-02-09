@@ -10,20 +10,27 @@ import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useState } from 'react';
 import PageHeading from '@/components/common/page-heading';
-export default function Admins() {
+type AdminsPageProps = {
+  initialAdminsData?: any
+}
+
+export default function Admins({ initialAdminsData }: AdminsPageProps) {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [orderBy, setOrder] = useState('created_at');
   const [sortedBy, setColumn] = useState<SortOrder>(SortOrder.Desc);
 
-  const { admins, paginatorInfo, loading, error } = useAdminsQuery({
-    limit: 20,
-    page,
-    name: searchTerm,
-    orderBy,
-    sortedBy,
-  });
+  const { admins, paginatorInfo, loading, error } = useAdminsQuery(
+    {
+      limit: 20,
+      page,
+      name: searchTerm,
+      orderBy,
+      sortedBy,
+    },
+    { initialData: initialAdminsData }
+  );
 
   if (loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
@@ -63,8 +70,18 @@ Admins.authenticate = {
 };
 Admins.Layout = Layout;
 
-export const getStaticProps = async ({ locale }: any) => ({
-  props: {
-    ...(await serverSideTranslations(locale, ['table', 'common', 'form'])),
-  },
-});
+export const getServerSideProps = async (context: any) => {
+  const { fetchAdminsFromApi } = await import('@/data/server-api')
+  const initialData = await fetchAdminsFromApi(context, {
+    limit: 20,
+    page: 1,
+    orderBy: 'created_at',
+    sortedBy: 'desc',
+  })
+  return {
+    props: {
+      ...(await serverSideTranslations(context.locale, ['table', 'common', 'form'])),
+      initialAdminsData: initialData ?? null,
+    },
+  }
+}

@@ -4,8 +4,14 @@ import { API_ENDPOINTS } from './client/api-endpoints';
 import { dashboardClient } from '@/data/client/dashboard';
 import { productClient } from '@/data/client/product';
 
-export function useAnalyticsQuery() {
-  return useQuery([API_ENDPOINTS.ANALYTICS], dashboardClient.analytics);
+export function useAnalyticsQuery(enabled = true) {
+  return useQuery(
+    [API_ENDPOINTS.ANALYTICS],
+    dashboardClient.analytics,
+    {
+      enabled,
+    },
+  );
 }
 
 export function usePopularProductsQuery(options: Partial<ProductQueryOptions>) {
@@ -27,6 +33,7 @@ export function useLowProductStockQuery(options: Partial<ProductQueryOptions>) {
 export function useProductByCategoryQuery({
   limit,
   language,
+  enabled = true,
 }: {
   limit?: number;
   language?: string;
@@ -36,6 +43,7 @@ export function useProductByCategoryQuery({
     () => productClient.productByCategory({ limit, language }),
     {
       keepPreviousData: false,
+      enabled,
     },
   );
 }

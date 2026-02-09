@@ -16,7 +16,7 @@ import Title from '@/components/ui/title';
 import Checkbox from '@/components/ui/checkbox/checkbox';
 import SelectInput from '@/components/ui/select-input';
 import { useEffect } from 'react';
-import { Product, Settings } from '@/types';
+import { Product, SettingsOptions } from '@/types';
 import { useTranslation } from 'next-i18next';
 import { useAttributesQuery } from '@/data/attributes';
 import FileInput from '@/components/ui/file-input';
@@ -32,7 +32,8 @@ import TextArea from '@/components/ui/text-area';
 type IProps = {
   initialValues?: Product | null;
   shopId: string | undefined;
-  settings: Settings | undefined;
+  // NOTE: kept for backward compatibility with callers; not used inside.
+  settings: SettingsOptions | undefined;
   name: string;
   fields: FieldArrayWithId<FieldValues, FieldArrayPath<FieldValues>, 'id'>[];
   append: (

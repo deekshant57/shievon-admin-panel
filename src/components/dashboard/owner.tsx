@@ -12,6 +12,7 @@ import {
   getAuthCredentials,
   hasAccess,
 } from '@/utils/auth-utils';
+import { SUPER_ADMIN } from '@/utils/constants';
 import usePrice from '@/utils/use-price';
 import cn from 'classnames';
 import { useTranslation } from 'next-i18next';
@@ -54,7 +55,9 @@ const OwnerShopLayout = () => {
   const { locale } = useRouter();
   const router = useRouter();
   const { permissions } = getAuthCredentials();
-  const { data, isLoading: loading } = useAnalyticsQuery();
+  const isSuperAdmin = permissions?.includes(SUPER_ADMIN);
+  // For vendors/store owners, avoid calling super_admin-only analytics endpoint
+  const { data, isLoading: loading } = useAnalyticsQuery(isSuperAdmin);
   const [activeTimeFrame, setActiveTimeFrame] = useState(1);
   const [orderDataRange, setOrderDataRange] = useState(
     data?.todayTotalOrderByStatus,
@@ -64,7 +67,12 @@ const OwnerShopLayout = () => {
     data: productByCategory,
     isLoading: productByCategoryLoading,
     error: productByCategoryError,
-  } = useProductByCategoryQuery({ limit: 10, language: locale });
+  } = useProductByCategoryQuery({
+    limit: 10,
+    language: locale,
+    // CATEGORY_WISE_PRODUCTS is super_admin-only on the backend
+    enabled: isSuperAdmin,
+  });
 
   const {
     data: topRatedProducts,

@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import Button from '@/components/ui/button';
 import Description from '@/components/ui/description';
 import Card from '@/components/common/card';
-import { useUpdateUserMutation } from '@/data/user';
+import { useUpdateMeMutation } from '@/data/user';
 import TextArea from '@/components/ui/text-area';
 import { useTranslation } from 'next-i18next';
 import FileInput from '@/components/ui/file-input';
@@ -16,15 +16,16 @@ import { profileValidationSchema } from './profile-validation-schema';
 import PhoneNumberInput from '@/components/ui/phone-input';
 
 type FormValues = {
-  name: string;
+  first_name: string;
+  last_name: string;
   profile: {
     id: string;
     bio: string;
     contact: string;
     avatar: {
-      thumbnail: string;
-      original: string;
-      id: string;
+      thumbnail?: string;
+      original?: string;
+      id?: string;
     };
     notifications: {
       email: string;
@@ -35,9 +36,16 @@ type FormValues = {
 
 export default function ProfileUpdate({ me }: any) {
   const { t } = useTranslation();
-  const { mutate: updateUser, isLoading: loading } = useUpdateUserMutation();
+  const { mutate: updateUser, isLoading: loading } = useUpdateMeMutation();
   const { permissions } = getAuthCredentials();
   let permission = hasAccess(adminOnly, permissions);
+
+  const fullName = (me?.name ?? '').trim();
+  const [firstFromName, ...restNameParts] = fullName
+    ? fullName.split(' ').filter(Boolean)
+    : [];
+  const lastFromName = restNameParts.join(' ');
+
   const {
     register,
     handleSubmit,
@@ -47,9 +55,10 @@ export default function ProfileUpdate({ me }: any) {
     //@ts-ignore
     resolver: yupResolver(profileValidationSchema),
     defaultValues: {
+      first_name: me?.first_name ?? firstFromName ?? '',
+      last_name: me?.last_name ?? lastFromName ?? '',
       ...(me &&
         pick(me, [
-          'name',
           'profile.bio',
           'profile.contact',
           'profile.avatar',
@@ -60,28 +69,33 @@ export default function ProfileUpdate({ me }: any) {
   });
 
   async function onSubmit(values: FormValues) {
-    const { name, profile } = values;
-    const { notifications } = profile;
+    const { first_name, last_name, profile } = values;
+
+    const fullName =
+      [first_name, last_name]
+        .filter((part) => !!part && part.trim().length > 0)
+        .join(' ')
+        .trim() || undefined;
+
+    // Map form values to the flat UpdateMeInput payload expected by PUT /api/me.
     const input = {
-      id: me?.id,
-      input: {
-        name: name,
-        profile: {
-          id: me?.profile?.id,
-          bio: profile?.bio,
-          contact: profile?.contact,
-          avatar: {
-            thumbnail: profile?.avatar?.thumbnail,
-            original: profile?.avatar?.original,
-            id: profile?.avatar?.id,
-          },
-          notifications: {
-            ...notifications,
-          },
-        },
-      },
+      name: fullName,
+      first_name: first_name || undefined,
+      last_name: last_name || undefined,
+      // Use mobile_no as the primary contact field; backend also exposes
+      // phone as a separate optional field.
+      mobile_no: profile?.contact,
+      bio: profile?.bio,
+      avatar:
+        profile?.avatar?.original || profile?.avatar?.thumbnail
+          ? {
+              original: profile?.avatar?.original,
+              thumbnail: profile?.avatar?.thumbnail,
+            }
+          : undefined,
     };
-    updateUser({ ...input });
+
+    updateUser(input);
   }
 
   return (
@@ -136,13 +150,28 @@ export default function ProfileUpdate({ me }: any) {
         />
 
         <Card className="w-full mb-5 sm:w-8/12 md:w-2/3">
-          <Input
-            label={t('form:input-label-name')}
-            {...register('name')}
-            error={t(errors.name?.message!)}
-            variant="outline"
-            className="mb-5"
-          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-5">
+            <Input
+              label="First Name"
+              {...register('first_name')}
+              error={
+                errors.first_name?.message
+                  ? t(errors.first_name.message)
+                  : undefined
+              }
+              variant="outline"
+            />
+            <Input
+              label="Last Name"
+              {...register('last_name')}
+              error={
+                errors.last_name?.message
+                  ? t(errors.last_name.message)
+                  : undefined
+              }
+              variant="outline"
+            />
+          </div>
           <TextArea
             label={t('form:input-label-bio')}
             {...register('profile.bio')}

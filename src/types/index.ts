@@ -18,7 +18,9 @@ export enum CouponType {
 }
 
 export enum ProductType {
-  Simple = 'simple',
+  /** Single product: one SKU; variant attributes (e.g. Size, Color) if present are single-select. API value remains 'simple'. */
+  Single = 'simple',
+  /** Variable product: multiple SKUs; variant attributes are multi-select, cartesian product of options. */
   Variable = 'variable',
 }
 export enum StoreNoticePriorityType {
@@ -314,6 +316,10 @@ export interface Category {
   slug: string;
   translated_languages: string[];
   parent?: number;
+  /** Present on list responses for cascader filtering */
+  parent_id?: number | null;
+  /** Present on list responses for filtering by type */
+  type_id?: number | null;
   children: Category[];
   details?: string;
   image?: Attachment;
@@ -370,6 +376,7 @@ export interface Variation {
   id?: string;
   title?: string;
   image?: Attachment;
+  gallery?: Attachment[];
   digital_files?: DigitalFile;
   price?: number;
   sku?: string;
@@ -377,6 +384,8 @@ export interface Variation {
   sale_price?: number;
   quantity?: number;
   options?: VariationOption[];
+  // EAV variant-level attributes (definition_code + value/enum_value_id)
+  attributes?: ProductAttributeValueInput[];
 }
 
 export interface DigitalFile {
@@ -539,6 +548,15 @@ export interface User {
   address: Address[];
   orders?: OrderPaginator;
   email_verified: boolean;
+  // Optional extended profile fields returned by /api/me
+  first_name?: string;
+  last_name?: string;
+  mobile_no?: string;
+  phone?: string;
+  date_of_birth?: string;
+  gender?: string;
+  avatar?: Attachment;
+  bio?: string | null;
 }
 
 export interface Domain {
@@ -557,6 +575,19 @@ export interface UpdateUser {
   name?: string;
   profile?: UserProfileInput;
   address?: UserAddressUpsertInput[];
+}
+
+// Payload shape for PUT /api/me (all fields optional).
+export interface UpdateMeInput {
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  mobile_no?: string;
+  phone?: string;
+  date_of_birth?: string; // ISO date string, e.g. "1995-08-15"
+  gender?: string;
+  avatar?: AttachmentInput | null;
+  bio?: string | null;
 }
 
 export interface Profile {
@@ -854,13 +885,15 @@ export interface Product {
 export interface CreateProduct {
   name: string;
   slug: string;
-  type_id: string;
+  type_id: number;
   price: number;
   sale_price?: number;
   quantity?: number;
   unit: string;
   description?: string;
-  categories?: string[];
+  categories?: number[];
+  // EAV product-level attributes
+  attributes?: ProductAttributeValueInput[];
   variations?: AttributeProductPivot[];
   in_stock?: boolean;
   is_taxable?: boolean;
@@ -905,17 +938,97 @@ export interface UpsertVariationsHasMany {
 }
 
 export interface VariationInput {
+  variant_id?: string;
   digital_file?: DigitalFileInput;
   id?: string;
   image?: AttachmentInput;
+  gallery?: AttachmentInput[];
   is_digital?: boolean;
   is_disable?: boolean;
   options?: VariationOptionInput[];
+  // EAV variant-level attributes (definition_code + value/enum_value_id)
+  attributes?: ProductAttributeValueInput[];
   price: number;
   quantity: number;
   sale_price?: number;
   sku: number;
   title: number;
+}
+
+// EAV attribute template & value types
+
+export interface AttributeTemplateOption {
+  id: number;
+  value: string;
+  label: string;
+  sort_order: number;
+}
+
+export interface ProductAttributeDefinition {
+  id: number;
+  code: string;
+  name: string;
+  data_type: 'string' | 'enum' | 'number' | 'boolean';
+  is_variant: boolean;
+  is_filterable: boolean;
+  is_mandatory: boolean;
+  search_weight: number;
+  sort_order: number;
+  options: AttributeTemplateOption[];
+}
+
+/**
+ * Attribute template returned by GET product-attributes/templates/by-category/:categoryId.
+ * API envelope is { code, status, message, data: AttributeTemplateResponse }; HttpClient returns data.
+ */
+export interface AttributeTemplateResponse {
+  template_id: number;
+  template_slug: string;
+  template_name: string;
+  /** Product-level EAV attributes (e.g. Brand, Fabric, Fit). Shown in Product Parameters section. */
+  product_attributes?: ProductAttributeDefinition[];
+  /** Variant dimension attributes (e.g. Size, Color). Used for variable product variations. */
+  variant_attributes?: ProductAttributeDefinition[];
+  /** Alias for variant dimension attributes when API sends variant_options instead. */
+  variant_options?: ProductAttributeDefinition[];
+}
+
+/** Resolve variant dimension attributes from template (supports variant_options or variant_attributes from API). */
+export function getVariantAttributesFromTemplate(
+  template: AttributeTemplateResponse | null | undefined,
+): ProductAttributeDefinition[] {
+  if (!template) return [];
+  return (
+    template.variant_options ??
+    template.variant_attributes ??
+    []
+  );
+}
+
+/** Response shape for GET /taxonomy (types + category trees + attribute_definitions per type) */
+export interface TaxonomyResponse {
+  types?: Array<{
+    id: number;
+    name?: string;
+    slug?: string;
+    categories?: unknown[];
+    attribute_definitions?: ProductAttributeDefinition[];
+  }>;
+}
+
+/** Response shape for GET /taxonomy/types/:typeId (category tree + attribute definitions for one type) */
+export interface TaxonomyByTypeResponse {
+  type?: { id: number; name?: string; slug?: string };
+  categories?: unknown[];
+  attribute_definitions?: ProductAttributeDefinition[];
+}
+
+export interface ProductAttributeValueInput {
+  definition_code: string;
+  enum_value_id?: number;
+  value_string?: string;
+  value_number?: number;
+  value_boolean?: boolean;
 }
 
 export interface Tag {
@@ -1856,6 +1969,8 @@ export interface CategoryQueryOptions extends QueryOptions {
   name: string;
   parent: number | null;
   self: string;
+  /** Filter by type id (backend GET /categories); when set, backend can filter by type_id directly */
+  type_id?: number;
 }
 
 export interface ConversationQueryOptions extends QueryOptions {
@@ -1934,7 +2049,6 @@ export interface ProductQueryOptions extends QueryOptions {
   tags: string;
   author: string;
   price: string;
-  manufacturer: string;
   status: string;
   is_active: string;
   shop_id: string;
@@ -1946,6 +2060,12 @@ export interface ProductQueryOptions extends QueryOptions {
   flash_sale_builder: boolean;
   product_type: string;
   searchedByUser: string;
+  /** Filter by product type id (backend GET /products, GET /draft-products) */
+  type_id?: number;
+  /** Filter by category id (backend GET /products, GET /draft-products) */
+  category_id?: number;
+  /** When true, include products in subcategories (backend GET /products, GET /draft-products) */
+  include_subcategories?: boolean;
 }
 
 export interface UserQueryOptions extends QueryOptions {

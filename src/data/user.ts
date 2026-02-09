@@ -18,7 +18,6 @@ import {
 import { mapPaginatorData } from '@/utils/data-mappers';
 import axios from 'axios';
 import { setEmailVerified } from '@/utils/auth-utils';
-import { type } from 'os';
 
 export const useMeQuery = () => {
   const queryClient = useQueryClient();
@@ -49,8 +48,11 @@ export const useMeQuery = () => {
           router.replace(Routes.verifyEmail);
           return;
         }
-        queryClient.clear();
-        router.replace(Routes.login);
+        // Only clear session and redirect on auth errors; avoid logout on 5xx or network failures
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          queryClient.clear();
+          router.replace(Routes.login);
+        }
       }
     },
   });
@@ -153,6 +155,20 @@ export const useUpdateUserMutation = () => {
     onSettled: () => {
       queryClient.invalidateQueries(API_ENDPOINTS.ME);
       queryClient.invalidateQueries(API_ENDPOINTS.USERS);
+    },
+  });
+};
+
+export const useUpdateMeMutation = () => {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  return useMutation(userClient.updateMe, {
+    onSuccess: () => {
+      toast.success(t('common:successfully-updated'));
+    },
+    // Only refetch the current user after updating own profile.
+    onSettled: () => {
+      queryClient.invalidateQueries(API_ENDPOINTS.ME);
     },
   });
 };
@@ -302,104 +318,134 @@ export const useUserQuery = ({ id }: { id: string }) => {
   );
 };
 
-export const useUsersQuery = (params: Partial<QueryOptionsType>) => {
+export interface UserListQueryOptions {
+  initialData?: UserPaginator | null
+}
+
+function toInitialData(value: UserPaginator | null | undefined): UserPaginator | undefined {
+  return value ?? undefined
+}
+
+export const useUsersQuery = (
+  params: Partial<QueryOptionsType>,
+  options?: UserListQueryOptions
+) => {
   const { data, isLoading, error } = useQuery<UserPaginator, Error>(
     [API_ENDPOINTS.USERS, params],
     () => userClient.fetchUsers(params),
     {
       keepPreviousData: true,
+      initialData: toInitialData(options?.initialData),
     }
   );
 
   return {
-    users: data?.data ?? [],
+    users: (data as UserPaginator | undefined)?.data ?? [],
     paginatorInfo: mapPaginatorData(data as any),
     loading: isLoading,
     error,
   };
 };
 
-export const useAdminsQuery = (params: Partial<QueryOptionsType>) => {
+export const useAdminsQuery = (
+  params: Partial<QueryOptionsType>,
+  options?: UserListQueryOptions
+) => {
   const { data, isLoading, error } = useQuery<UserPaginator, Error>(
     [API_ENDPOINTS.ADMIN_LIST, params],
     () => userClient.fetchAdmins(params),
     {
       keepPreviousData: true,
+      initialData: toInitialData(options?.initialData),
     }
   );
 
   return {
-    admins: data?.data ?? [],
+    admins: (data as UserPaginator | undefined)?.data ?? [],
     paginatorInfo: mapPaginatorData(data as any),
     loading: isLoading,
     error,
   };
 };
 
-export const useVendorsQuery = (params: Partial<UserQueryOptions>) => {
+export const useVendorsQuery = (
+  params: Partial<UserQueryOptions>,
+  options?: UserListQueryOptions
+) => {
   const { data, isLoading, error } = useQuery<UserPaginator, Error>(
     [API_ENDPOINTS.VENDORS_LIST, params],
     () => userClient.fetchVendors(params),
     {
       keepPreviousData: true,
+      initialData: toInitialData(options?.initialData),
     }
   );
 
   return {
-    vendors: data?.data ?? [],
+    vendors: (data as UserPaginator | undefined)?.data ?? [],
     paginatorInfo: mapPaginatorData(data as any),
     loading: isLoading,
     error,
   };
 };
 
-export const useCustomersQuery = (params: Partial<UserQueryOptions>) => {
+export const useCustomersQuery = (
+  params: Partial<UserQueryOptions>,
+  options?: UserListQueryOptions
+) => {
   const { data, isLoading, error } = useQuery<UserPaginator, Error>(
     [API_ENDPOINTS.CUSTOMERS, params],
     () => userClient.fetchCustomers(params),
     {
       keepPreviousData: true,
+      initialData: toInitialData(options?.initialData),
     }
   );
 
   return {
-    customers: data?.data ?? [],
+    customers: (data as UserPaginator | undefined)?.data ?? [],
     paginatorInfo: mapPaginatorData(data as any),
     loading: isLoading,
     error,
   };
 };
 
-
-export const useMyStaffsQuery = (params: Partial<UserQueryOptions & { shop_id: string }>) => {
+export const useMyStaffsQuery = (
+  params: Partial<UserQueryOptions & { shop_id: string }>,
+  options?: UserListQueryOptions
+) => {
   const { data, isLoading, error } = useQuery<UserPaginator, Error>(
     [API_ENDPOINTS.MY_STAFFS, params],
     () => userClient.getMyStaffs(params),
     {
       keepPreviousData: true,
+      initialData: toInitialData(options?.initialData),
     }
   );
 
   return {
-    myStaffs: data?.data ?? [],
+    myStaffs: (data as UserPaginator | undefined)?.data ?? [],
     paginatorInfo: mapPaginatorData(data as any),
     loading: isLoading,
     error,
   };
 };
 
-
-export const useAllStaffsQuery = (params: Partial<UserQueryOptions>) => {
+export const useAllStaffsQuery = (
+  params: Partial<UserQueryOptions>,
+  options?: UserListQueryOptions
+) => {
   const { data, isLoading, error } = useQuery<UserPaginator, Error>(
     [API_ENDPOINTS.ALL_STAFFS, params],
     () => userClient.getAllStaffs(params),
     {
       keepPreviousData: true,
+      initialData: toInitialData(options?.initialData),
     }
   );
 
   return {
-    allStaffs: data?.data ?? [],
+    allStaffs: (data as UserPaginator | undefined)?.data ?? [],
     paginatorInfo: mapPaginatorData(data as any),
     loading: isLoading,
     error,

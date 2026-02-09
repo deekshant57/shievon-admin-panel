@@ -41,6 +41,23 @@ export default function UpdateProductPage() {
       query.action!.toString() === 'edit' ? locale! : Config.defaultLanguage,
   });
 
+  // Step-by-step debug: Edit Product Page (shop - /[shop]/products/[slug]/edit)
+  useEffect(() => {
+    console.log('[Edit Product Page] state', {
+      page: 'shop /[shop]/products/[productSlug]/[action]',
+      queryShop: query.shop,
+      queryProductSlug: query.productSlug,
+      queryAction: query.action,
+      loading,
+      hasError: !!error,
+      errorMessage: error?.message,
+      hasProduct: !!product,
+      productId: product?.id,
+      productName: (product as any)?.name,
+      productSlug: (product as any)?.slug,
+    });
+  }, [query.shop, query.productSlug, query.action, loading, error, product]);
+
   // Check permissions and redirect if user doesn't have access
   useEffect(() => {
     // Prevent multiple redirects
@@ -67,8 +84,16 @@ export default function UpdateProductPage() {
     }
   }, [fetchingShop, shopId, me, permissions, router, loading]);
 
+  // Wait for route params before fetching (avoids query with undefined slug)
+  if (query.action === 'edit' && !query.productSlug) {
+    return <Loader text={t('common:text-loading')} />;
+  }
   if (loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
+  // When editing, only render form once product is available so defaultValues are pre-filled
+  if (query.action === 'edit' && !product) {
+    return <Loader text={t('common:text-loading')} />;
+  }
   return (
     <>
       <div className="flex border-b border-dashed border-border-base pb-5 md:pb-7">
@@ -76,7 +101,7 @@ export default function UpdateProductPage() {
           {t('form:form-title-edit-product')}
         </h1>
       </div>
-      <CreateOrUpdateProductForm initialValues={product} />
+      <CreateOrUpdateProductForm key={product?.id ?? 'new'} initialValues={product} />
     </>
   );
 }

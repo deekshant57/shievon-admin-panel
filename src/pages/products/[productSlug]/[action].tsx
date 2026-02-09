@@ -23,8 +23,15 @@ export default function UpdateProductPage() {
       query.action!.toString() === 'edit' ? locale! : Config.defaultLanguage,
   });
 
+  // Wait for route params before fetching (avoids query with undefined slug)
+  if (query.action === 'edit' && !query.productSlug) {
+    return <Loader text={t('common:text-loading')} />;
+  }
   if (loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error?.message as string} />;
+  if (query.action === 'edit' && !product) {
+    return <Loader text={t('common:text-loading')} />;
+  }
   return (
     <>
       <div className="flex items-center gap-5 border-b border-dashed border-border-base py-5 sm:py-8">
@@ -33,7 +40,7 @@ export default function UpdateProductPage() {
         </h4>
       </div>
 
-      <CreateOrUpdateProductForm initialValues={product} />
+      <CreateOrUpdateProductForm key={product?.id ?? 'new'} initialValues={product} />
     </>
   );
 }

@@ -230,7 +230,7 @@ const FlashSaleProductList = ({
     //           }
     //         }
 
-    //         if (record?.product_type === ProductType?.Simple) {
+    //         if (record?.product_type === ProductType?.Single) {
     //           if (discountedPrice! <= 0) {
     //             warningText = 'Invalid price';
     //           }
@@ -312,7 +312,7 @@ const FlashSaleProductList = ({
               }
             }
 
-            if (record?.product_type === ProductType?.Simple) {
+            if (record?.product_type === ProductType?.Single) {
               if (isInvalidPrice?.isInvalidPrice) {
                 warningText = 'Invalid price';
               }

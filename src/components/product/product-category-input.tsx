@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'next-i18next';
 import { useCategoriesQuery } from '@/data/category';
 import { useRouter } from 'next/router';
+import { Category } from '@/types';
 
 interface Props {
   control: Control<any>;
@@ -40,8 +41,10 @@ const ProductCategoryInput = ({ control, setValue }: Props) => {
         name="categories"
         isMulti
         control={control}
-        getOptionLabel={(option: any) => option.name}
-        getOptionValue={(option: any) => option.id}
+        getOptionLabel={(option: Category) =>
+          option?.slug ? `${option.name} (${option.slug})` : option.name
+        }
+        getOptionValue={(option: Category) => option.id}
         // @ts-ignore
         options={categories}
         isLoading={loading}

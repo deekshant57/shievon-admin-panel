@@ -11,21 +11,28 @@ import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useState } from 'react';
 
-export default function Vendors() {
+type VendorsPageProps = {
+  initialVendorsData?: any
+}
+
+export default function Vendors({ initialVendorsData }: VendorsPageProps) {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [orderBy, setOrder] = useState('created_at');
   const [sortedBy, setColumn] = useState<SortOrder>(SortOrder.Desc);
 
-  const { vendors, paginatorInfo, loading, error } = useVendorsQuery({
-    limit: 20,
-    page,
-    name: searchTerm,
-    orderBy,
-    sortedBy,
-    is_active: true,
-  });
+  const { vendors, paginatorInfo, loading, error } = useVendorsQuery(
+    {
+      limit: 20,
+      page,
+      name: searchTerm,
+      orderBy,
+      sortedBy,
+      is_active: true,
+    },
+    { initialData: initialVendorsData }
+  );
 
   if (loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
@@ -65,8 +72,19 @@ Vendors.authenticate = {
 };
 Vendors.Layout = Layout;
 
-export const getStaticProps = async ({ locale }: any) => ({
-  props: {
-    ...(await serverSideTranslations(locale, ['table', 'common', 'form'])),
-  },
-});
+export const getServerSideProps = async (context: any) => {
+  const { fetchVendorsFromApi } = await import('@/data/server-api')
+  const initialData = await fetchVendorsFromApi(context, {
+    limit: 20,
+    page: 1,
+    orderBy: 'created_at',
+    sortedBy: 'desc',
+    is_active: true,
+  })
+  return {
+    props: {
+      ...(await serverSideTranslations(context.locale, ['table', 'common', 'form'])),
+      initialVendorsData: initialData ?? null,
+    },
+  }
+}

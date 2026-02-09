@@ -28,6 +28,7 @@ export const API_ENDPOINTS = {
   VERIFY_LOGIN_OTP: 'verify-login-otp',
   BLOCK_USER: 'users/block-user',
   UNBLOCK_USER: 'users/unblock-user',
+  // User list endpoints (Swagger: /api/users, /api/admin/list, /api/vendors/list, /api/my-staffs, /api/all-staffs, /api/customers/list)
   CHANGE_PASSWORD: 'change-password',
   FORGET_PASSWORD: 'forget-password',
   VERIFY_FORGET_PASSWORD_TOKEN: 'verify-forget-password-token',
@@ -78,8 +79,12 @@ export const API_ENDPOINTS = {
   APPROVE_TERMS_AND_CONDITIONS: 'approve-terms-and-conditions',
   DISAPPROVE_TERMS_AND_CONDITIONS: 'disapprove-terms-and-conditions',
   LOW_STOCK_PRODUCTS_ANALYTICS: 'low-stock-products',
+  /** Backend: DraftProductsController (GET /api/draft-products) */
   NEW_OR_INACTIVE_PRODUCTS: 'draft-products',
   LOW_OR_OUT_OF_STOCK_PRODUCTS: 'products-stock',
+  // EAV product attributes template (GET /api/product-attributes/templates/by-category/:categoryId)
+  PRODUCT_ATTRIBUTE_TEMPLATE_BY_CATEGORY:
+    'product-attributes/templates/by-category',
   CATEGORY_WISE_PRODUCTS: 'category-wise-product',
   CATEGORY_WISE_PRODUCTS_SALE: 'category-wise-product-sale',
   VENDORS_LIST: '/vendors/list',

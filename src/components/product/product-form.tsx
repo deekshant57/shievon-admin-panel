@@ -16,11 +16,19 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import FileInput from '@/components/ui/file-input';
 import { productValidationSchema } from '@/components/product/product-validation-schema';
 import ProductVariableForm from '@/components/product/product-variable-form';
+import ProductVariableEavForm from '@/components/product/product-variable-eav-form';
 import ProductSimpleForm from '@/components/product/product-simple-form';
 import ProductGroupInput from '@/components/product/product-group-input';
-import ProductCategoryInput from '@/components/product/product-category-input';
+// import ProductCategoryInput from '@/components/product/product-category-input';
+import ProductCategoryCascader from '@/components/product/product-category-cascader';
+import ProductEavAttributes from '@/components/product/product-eav-attributes';
 import ProductTypeInput from '@/components/product/product-type-input';
-import { ProductType, Product, ProductStatus } from '@/types';
+import {
+  ProductType,
+  Product,
+  ProductStatus,
+  getVariantAttributesFromTemplate,
+} from '@/types';
 import { useTranslation } from 'next-i18next';
 import { useShopQuery } from '@/data/shop';
 import cn from 'classnames';
@@ -29,7 +37,6 @@ import { Config } from '@/config';
 import Alert from '@/components/ui/alert';
 import { useEffect, useMemo, useRef, useState, lazy } from 'react';
 import ProductAuthorInput from '@/components/product/product-author-input';
-import ProductManufacturerInput from '@/components/product/product-manufacturer-input';
 import { EditIcon } from '@/components/icons/edit';
 import {
   getProductDefaultValues,
@@ -40,6 +47,7 @@ import { getErrorMessage } from '@/utils/form-error';
 import {
   useCreateProductMutation,
   useUpdateProductMutation,
+  useProductAttributeTemplateByCategoryQuery,
 } from '@/data/product';
 import { isEmpty } from 'lodash';
 import { adminOnly, getAuthCredentials, hasAccess } from '@/utils/auth-utils';
@@ -119,10 +127,24 @@ export default function CreateOrUpdateProductForm({
     setValue,
     setError,
     watch,
+    reset,
     formState: { errors },
   } = methods;
 
-  const upload_max_filesize = options?.server_info?.upload_max_filesize / 1024;
+  // When editing, reset form when initialValues (API product data) becomes available or when
+  // navigating to a different product. React Hook Form only uses defaultValues on mount, so
+  // prefilled data from the API must be applied via reset when the product loads (e.g. draft).
+  useEffect(() => {
+    if (initialValues?.id != null) {
+      reset(
+        getProductDefaultValues(initialValues, isNewTranslation) as Partial<ProductFormValues>,
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only reset when product id or translation mode changes
+  }, [initialValues?.id, isNewTranslation]);
+
+  const upload_max_filesize =
+    (options?.server_info?.upload_max_filesize ?? 0) / 1024;
 
   const { mutate: createProduct, isLoading: creating } =
     useCreateProductMutation();
@@ -143,7 +165,12 @@ export default function CreateOrUpdateProductForm({
         const requestObject = {
           ...inputValues,
           ...(initialValues?.slug && { slug: initialValues.slug }),
-          shop_id: shopId || initialValues?.shop_id,
+          shop_id:
+            shopId != null
+              ? Number(shopId)
+              : initialValues?.shop_id != null
+              ? Number(initialValues.shop_id)
+              : undefined,
         };
         console.log('Product Creation Request Object:', requestObject);
         //@ts-ignore
@@ -172,6 +199,17 @@ export default function CreateOrUpdateProductForm({
   const product_type = watch('product_type');
   const is_digital = watch('is_digital');
   const is_external = watch('is_external');
+  const selectedCategories = watch('categories');
+  const primaryCategoryId =
+    Array.isArray(selectedCategories) && selectedCategories.length > 0
+      ? selectedCategories[0]?.id
+      : undefined;
+
+  const {
+    template: attributeTemplate,
+    loading: attributeTemplateLoading,
+    error: attributeTemplateError,
+  } = useProductAttributeTemplateByCategoryQuery(primaryCategoryId);
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'video',
@@ -395,13 +433,19 @@ export default function CreateOrUpdateProductForm({
             />
 
             <Card className="w-full sm:w-8/12 md:w-2/3">
+              {/* Groups (type) – commented out per requirement
               <ProductGroupInput
                 control={control}
                 error={t((errors?.type as any)?.message)}
               />
+              */}
+              {/* Legacy flat category selector kept for reference:
               <ProductCategoryInput control={control} setValue={setValue} />
+              */}
+              <ProductCategoryCascader control={control} setValue={setValue} />
+              {/* Authors – commented out per requirement
               <ProductAuthorInput control={control} />
-              <ProductManufacturerInput control={control} setValue={setValue} />
+              */}
               <ProductTagInput control={control} setValue={setValue} />
             </Card>
           </div>
@@ -454,13 +498,15 @@ export default function CreateOrUpdateProductForm({
                   disabled
                 />
               )}
+              {/* Unit – not required; commented out per requirement
               <Input
-                label={`${t('form:input-label-unit')}*`}
+                label={t('form:input-label-unit')}
                 {...register('unit')}
                 error={t(errors.unit?.message!)}
                 variant="outline"
                 className="mb-5"
               />
+              */}
               <div className="relative mb-5">
                 {options?.useAi && (
                   <OpenAIButton
@@ -477,7 +523,7 @@ export default function CreateOrUpdateProductForm({
               </div>
 
               <div>
-                <Label>{t('form:input-label-status')}</Label>
+                <Label>{t('form:input-label-status')}*</Label>
                 {!isEmpty(statusList)
                   ? statusList?.map((status: any, index: number) => (
                       <Radio
@@ -546,27 +592,49 @@ export default function CreateOrUpdateProductForm({
             <ProductTypeInput />
           </div>
 
-          {/* Simple Type */}
-          {product_type?.value === ProductType.Simple && (
+          {/* Product-level EAV attributes; for simple product, variant attributes (size, color) as single-select */}
+          {primaryCategoryId && attributeTemplate && (
+            <ProductEavAttributes
+              template={attributeTemplate}
+              productType={product_type?.value}
+            />
+          )}
+
+          {/* Single Type: always simple payload. Show price/sku/quantity; variant attributes (size, color) shown above in ProductEavAttributes as single-select. */}
+          {product_type?.value === ProductType.Single && (
             <ProductSimpleForm
               initialValues={initialValues}
               settings={options}
             />
           )}
 
-          {/* Variation Type */}
-          {product_type?.value === ProductType.Variable && (
-            <ProductVariableForm
-              shopId={shopId}
-              initialValues={initialValues}
-              settings={options}
-              name="variations"
-              fields={variationsFiled}
-              // @ts-ignore
-              append={variationsAppend}
-              remove={variationsRemove}
-            />
-          )}
+          {/* Variable Type: multi-select variant attributes, cartesian product of options */}
+          {product_type?.value === ProductType.Variable &&
+            (() => {
+              const variantAttributes = getVariantAttributesFromTemplate(
+                attributeTemplate,
+              );
+              return variantAttributes.length > 0 ? (
+                <ProductVariableEavForm
+                  shopId={shopId}
+                  initialValues={initialValues}
+                  variantAttributes={variantAttributes}
+                />
+              ) : (
+                <ProductVariableForm
+                  shopId={shopId}
+                  initialValues={initialValues}
+                  settings={options}
+                  name="variations"
+                  fields={variationsFiled}
+                  // @ts-ignore
+                  append={variationsAppend}
+                  remove={variationsRemove}
+                />
+              );
+            })()}
+
+            
           <StickyFooterPanel className="z-0">
             <div
               className={cn(
@@ -598,6 +666,7 @@ export default function CreateOrUpdateProductForm({
                   </Link>
                 )}
                 <Button
+                  type="submit"
                   loading={updating || creating}
                   disabled={updating || creating}
                   size="medium"

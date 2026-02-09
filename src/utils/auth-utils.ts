@@ -18,7 +18,11 @@ export const ownerOnly = [STORE_OWNER];
 export const ownerAndStaffOnly = [STORE_OWNER, STAFF];
 
 export function setAuthCredentials(token: string, permissions: any, role: any) {
-  Cookie.set(AUTH_CRED, JSON.stringify({ token, permissions, role }));
+  const isHttps = typeof window !== 'undefined' && window.location?.protocol === 'https:';
+  Cookie.set(AUTH_CRED, JSON.stringify({ token, permissions, role }), {
+    secure: isHttps,
+    sameSite: 'lax',
+  });
 }
 export function setEmailVerified(emailVerified: boolean) {
   Cookie.set(EMAIL_VERIFIED, JSON.stringify({ emailVerified }));

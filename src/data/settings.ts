@@ -40,7 +40,13 @@ export const useSettingsQuery = ({ language }: { language: string }) => {
     () => settingsClient.all({ language }),
     {
       enabled: !!language, // Only run if language is provided
-    }
+      // Settings change infrequently; treat as low-frequency data.
+      // This reduces how often `/api/settings` is called in production.
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 30 * 60 * 1000, // 30 minutes
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    },
   );
 
   // Provide default structure to prevent "Cannot read properties of undefined" errors

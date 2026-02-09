@@ -1,13 +1,17 @@
 // Enable pusher logging - don't include this in production
 import Pusher from 'pusher-js';
 import Cookies from 'js-cookie';
+import { AUTH_CRED } from '@/utils/constants';
 
-// Change request data/error
-const AUTH_TOKEN_KEY = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY ?? 'authToken';
-const cookies = Cookies.get(AUTH_TOKEN_KEY);
+const authCred = Cookies.get(AUTH_CRED);
 let token = '';
-if (cookies) {
-  token = JSON.parse(cookies)['token'];
+if (authCred) {
+  try {
+    const parsed = JSON.parse(authCred) as { token?: string };
+    token = parsed?.token ?? '';
+  } catch {
+    token = '';
+  }
 }
 
 if (process.env.NEXT_PUBLIC_PUSHER_DEV_MOOD === 'true') {

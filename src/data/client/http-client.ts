@@ -2,6 +2,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import Router from 'next/router';
 import invariant from 'tiny-invariant';
+import { AUTH_CRED } from '@/utils/constants';
 
 // Use the specified base URL, fallback to env variable if needed
 const baseURL = process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:9000/api';
@@ -13,13 +14,17 @@ const Axios = axios.create({
     'Content-Type': 'application/json',
   },
 });
-// Change request data/error
-const AUTH_TOKEN_KEY = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY ?? 'authToken';
+// Use same cookie as setAuthCredentials/getAuthCredentials (AUTH_CRED) so token is sent after login
 Axios.interceptors.request.use((config) => {
-  const cookies = Cookies.get(AUTH_TOKEN_KEY);
+  const authCred = Cookies.get(AUTH_CRED);
   let token = '';
-  if (cookies) {
-    token = JSON.parse(cookies)['token'];
+  if (authCred) {
+    try {
+      const parsed = JSON.parse(authCred);
+      token = parsed?.token ?? '';
+    } catch {
+      token = '';
+    }
   }
   // @ts-ignore
   config.headers = {
@@ -29,17 +34,18 @@ Axios.interceptors.request.use((config) => {
   return config;
 });
 
-// Change response data/error here
+// Clear auth and reload only on explicit auth failures (401 or NOT_AUTHORIZED).
+// Do not clear on 403 from validation/bad-request (e.g. missing type_id), so the user stays logged in.
 Axios.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (
-      (error.response && error.response.status === 401) ||
-      (error.response && error.response.status === 403) ||
-      (error.response &&
-        error.response.data.message === 'PICKBAZAR_ERROR.NOT_AUTHORIZED')
-    ) {
-      Cookies.remove(AUTH_TOKEN_KEY);
+    const status = error.response?.status;
+    const message = error.response?.data?.message;
+    const isAuthFailure =
+      status === 401 ||
+      (status === 403 && message === 'PICKBAZAR_ERROR.NOT_AUTHORIZED');
+    if (isAuthFailure) {
+      Cookies.remove(AUTH_CRED);
       Router.reload();
     }
     return Promise.reject(error);
@@ -124,7 +130,6 @@ export class HttpClient {
           'categories',
           'tags',
           'author',
-          'manufacturer',
           'shops',
           'refund_reason',
         ].includes(k)

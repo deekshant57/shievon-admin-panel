@@ -3,6 +3,7 @@ import { API_ENDPOINTS } from './api-endpoints';
 import { Attachment } from '@/types';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { AUTH_CRED } from '@/utils/constants';
 
 export const uploadClient = {
   upload: async (variables: any) => {
@@ -19,12 +20,16 @@ export const uploadClient = {
       // Make direct axios call to inspect full response structure
       // This bypasses HttpClient to see the raw response
       const baseURL = process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:9000/api';
-      const AUTH_TOKEN_KEY = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY ?? 'authToken';
-      
-      const cookies = Cookies.get(AUTH_TOKEN_KEY);
+
+      const authCred = Cookies.get(AUTH_CRED);
       let token = '';
-      if (cookies) {
-        token = JSON.parse(cookies)['token'];
+      if (authCred) {
+        try {
+          const parsed = JSON.parse(authCred) as { token?: string };
+          token = parsed?.token ?? '';
+        } catch {
+          token = '';
+        }
       }
       
       const axiosResponse = await axios.post(

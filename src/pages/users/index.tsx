@@ -14,7 +14,11 @@ import { SortOrder } from '@/types';
 import { adminOnly } from '@/utils/auth-utils';
 import PageHeading from '@/components/common/page-heading';
 
-export default function AllUsersPage() {
+type AllUsersPageProps = {
+  initialUsersData?: any
+}
+
+export default function AllUsersPage({ initialUsersData }: AllUsersPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const { t } = useTranslation();
@@ -22,13 +26,16 @@ export default function AllUsersPage() {
   const [orderBy, setOrder] = useState('created_at');
   const [sortedBy, setColumn] = useState<SortOrder>(SortOrder.Desc);
 
-  const { users, paginatorInfo, loading, error } = useUsersQuery({
-    limit: 20,
-    page,
-    name: searchTerm,
-    orderBy,
-    sortedBy,
-  });
+  const { users, paginatorInfo, loading, error } = useUsersQuery(
+    {
+      limit: 20,
+      page,
+      name: searchTerm,
+      orderBy,
+      sortedBy,
+    },
+    { initialData: initialUsersData }
+  );
 
   if (loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
@@ -82,8 +89,18 @@ AllUsersPage.authenticate = {
 };
 AllUsersPage.Layout = Layout;
 
-export const getStaticProps = async ({ locale }: any) => ({
-  props: {
-    ...(await serverSideTranslations(locale, ['table', 'common', 'form'])),
-  },
-});
+export const getServerSideProps = async (context: any) => {
+  const { fetchUsersFromApi } = await import('@/data/server-api')
+  const initialData = await fetchUsersFromApi(context, {
+    limit: 20,
+    page: 1,
+    orderBy: 'created_at',
+    sortedBy: 'desc',
+  })
+  return {
+    props: {
+      ...(await serverSideTranslations(context.locale, ['table', 'common', 'form'])),
+      initialUsersData: initialData ?? null,
+    },
+  }
+}

@@ -11,21 +11,28 @@ import { adminOnly } from '@/utils/auth-utils';
 import AdminsList from '@/components/user/user-admin-list';
 import PageHeading from '@/components/common/page-heading';
 
-export default function PendingVendors() {
+type PendingVendorsPageProps = {
+  initialVendorsData?: any
+}
+
+export default function PendingVendors({ initialVendorsData }: PendingVendorsPageProps) {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [orderBy, setOrder] = useState('created_at');
   const [sortedBy, setColumn] = useState<SortOrder>(SortOrder.Desc);
 
-  const { vendors, paginatorInfo, loading, error } = useVendorsQuery({
-    limit: 20,
-    page,
-    name: searchTerm,
-    orderBy,
-    sortedBy,
-    is_active: false,
-  });
+  const { vendors, paginatorInfo, loading, error } = useVendorsQuery(
+    {
+      limit: 20,
+      page,
+      name: searchTerm,
+      orderBy,
+      sortedBy,
+      is_active: false,
+    },
+    { initialData: initialVendorsData }
+  );
 
   if (loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
@@ -65,8 +72,19 @@ PendingVendors.authenticate = {
 };
 PendingVendors.Layout = Layout;
 
-export const getStaticProps = async ({ locale }: any) => ({
-  props: {
-    ...(await serverSideTranslations(locale, ['table', 'common', 'form'])),
-  },
-});
+export const getServerSideProps = async (context: any) => {
+  const { fetchVendorsFromApi } = await import('@/data/server-api')
+  const initialData = await fetchVendorsFromApi(context, {
+    limit: 20,
+    page: 1,
+    orderBy: 'created_at',
+    sortedBy: 'desc',
+    is_active: false,
+  })
+  return {
+    props: {
+      ...(await serverSideTranslations(context.locale, ['table', 'common', 'form'])),
+      initialVendorsData: initialData ?? null,
+    },
+  }
+}

@@ -2,7 +2,6 @@ import Label from '@/components/ui/label';
 import Select from '@/components/ui/select/select';
 import { useAuthorsQuery } from '@/data/author';
 import { useCategoriesQuery } from '@/data/category';
-import { useManufacturersQuery } from '@/data/manufacturer';
 import { useTypesQuery } from '@/data/type';
 import { ProductType } from '@/types';
 import cn from 'classnames';
@@ -18,17 +17,12 @@ type Props = {
     newValue: any,
     actionMeta: ActionMeta<unknown>,
   ) => void;
-  onManufactureFilter?: (
-    newValue: any,
-    actionMeta: ActionMeta<unknown>,
-  ) => void;
   className?: string;
   type?: string;
   enableType?: boolean;
   enableCategory?: boolean;
   enableAuthor?: boolean;
   enableProductType?: boolean;
-  enableManufacturer?: boolean;
 };
 
 export default function CategoryTypeFilter({
@@ -42,8 +36,6 @@ export default function CategoryTypeFilter({
   enableCategory,
   enableAuthor,
   enableProductType,
-  enableManufacturer,
-  onManufactureFilter,
 }: Props) {
   const { locale } = useRouter();
   const { t } = useTranslation();
@@ -60,13 +52,8 @@ export default function CategoryTypeFilter({
     language: locale,
   });
 
-  const { manufacturers, loading: manufactureLoading } = useManufacturersQuery({
-    limit: 999,
-    language: locale,
-  });
-
   const productType = [
-    { name: 'Simple product', slug: ProductType.Simple },
+    { name: 'Single product', slug: ProductType.Single },
     { name: 'Variable product', slug: ProductType.Variable },
   ];
 
@@ -138,23 +125,6 @@ export default function CategoryTypeFilter({
             placeholder="Filter by product type"
             // isLoading={authorLoading}
             onChange={onProductTypeFilter}
-            isClearable={true}
-          />
-        </div>
-      ) : (
-        ''
-      )}
-
-      {enableManufacturer ? (
-        <div className="w-full">
-          <Label>Filter by manufacturer/publications </Label>
-          <Select
-            options={manufacturers}
-            getOptionLabel={(option: any) => option.name}
-            getOptionValue={(option: any) => option.slug}
-            placeholder="Filter by product manufacturer/publications"
-            isLoading={manufactureLoading}
-            onChange={onManufactureFilter}
             isClearable={true}
           />
         </div>

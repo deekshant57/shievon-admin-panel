@@ -34,6 +34,12 @@ export default function Uploader({
   const [files, setFiles] = useState<Attachment[]>(getPreviewImage(value));
   const { mutate: upload, isLoading: loading } = useUploadMutation();
   const [error, setError] = useState<string | null>(null);
+
+  // Sync internal state when value changes (e.g. form reset on edit product so image/gallery pre-populate)
+  useEffect(() => {
+    setFiles(getPreviewImage(value));
+  }, [value]);
+
   const { getRootProps, getInputProps } = useDropzone({
     ...(!acceptFile
       ? {

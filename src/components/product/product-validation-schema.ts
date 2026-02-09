@@ -6,23 +6,35 @@ import { MAXIMUM_WORD_COUNT_FOR_RICH_TEXT_EDITOR } from '@/utils/constants';
 // yup conditionnally
 const SUPPORTED_IMAGE_FORMATS = ['image/jpg', 'image/jpeg', 'image/png'];
 
+// Single with no variant options: require top-level sku/price/quantity. Single with one variant: use variation_options[0].
+// is() receives (value, context); get sibling fields from context.parent (form values) since refs are not passed as array.
+function requireTopLevelWhenSingleWithoutVariants(value: unknown, context: any) {
+  let productType: any;
+  let variationOptions: any;
+  if (Array.isArray(value) && value.length >= 2) {
+    [productType, variationOptions] = value;
+  } else {
+    const parent = context?.parent ?? context?.options?.parent ?? {};
+    productType = parent.product_type;
+    variationOptions = parent.variation_options;
+  }
+  const isSingle = productType?.value === ProductType.Single;
+  const noVariants =
+    !variationOptions ||
+    !Array.isArray(variationOptions) ||
+    variationOptions.length === 0;
+  return isSingle && noVariants;
+}
+
 export const productValidationSchema = yup.object().shape({
   name: yup.string().required('form:error-name-required'),
   product_type: yup.object().required('form:error-product-type-required'),
-  sku: yup.mixed().when('product_type', {
-    is: (productType: {
-      name: string;
-      value: string;
-      [key: string]: unknown;
-    }) => productType?.value === ProductType.Simple,
+  sku: yup.mixed().when(['product_type', 'variation_options'], {
+    is: requireTopLevelWhenSingleWithoutVariants,
     then: () => yup.string().nullable().required('form:error-sku-required'),
   }),
-  price: yup.mixed().when('product_type', {
-    is: (productType: {
-      name: string;
-      value: string;
-      [key: string]: unknown;
-    }) => productType?.value === ProductType.Simple,
+  price: yup.mixed().when(['product_type', 'variation_options'], {
+    is: requireTopLevelWhenSingleWithoutVariants,
     then: () =>
       yup
         .number()
@@ -36,12 +48,8 @@ export const productValidationSchema = yup.object().shape({
     .lessThan(yup.ref('price'), 'Sale Price should be less than ${less}')
     .positive('form:error-sale-price-must-positive')
     .nullable(),
-  quantity: yup.mixed().when('product_type', {
-    is: (productType: {
-      name: string;
-      value: string;
-      [key: string]: unknown;
-    }) => productType?.value === ProductType.Simple,
+  quantity: yup.mixed().when(['product_type', 'variation_options'], {
+    is: requireTopLevelWhenSingleWithoutVariants,
     then: () =>
       yup
         .number()
@@ -50,8 +58,9 @@ export const productValidationSchema = yup.object().shape({
         .integer('form:error-quantity-must-integer')
         .required('form:error-quantity-required'),
   }),
-  unit: yup.string().required('form:error-unit-required'),
-  type: yup.object().nullable().required('form:error-type-required'),
+  unit: yup.string().nullable(),
+  // type_id is optional on the API; type (Group) is optional in the form
+  type: yup.object().nullable(),
   status: yup.string().nullable().required('form:error-status-required'),
   variation_options: yup.array().of(
     yup.object().shape({

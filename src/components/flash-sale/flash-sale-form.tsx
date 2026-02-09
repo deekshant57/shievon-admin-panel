@@ -16,7 +16,6 @@ import {
   Category,
   FlashSale,
   FlashSaleType,
-  Manufacturer,
   Shop,
   Type,
 } from '@/types';
@@ -79,7 +78,6 @@ export default function CreateOrUpdateFlashSaleForm({ initialValues }: IProps) {
   const [type, setType] = useState('');
   const [shop, setShop] = useState('');
   const [category, setCategory] = useState('');
-  const [manufacturer, setManufacturer] = useState('');
   const { permissions } = getAuthCredentials();
   const { data: user, isLoading: loading, error } = useMeQuery();
   const { currency } = useSettings();
@@ -108,7 +106,6 @@ export default function CreateOrUpdateFlashSaleForm({ initialValues }: IProps) {
     shop_id: shop,
     searchedByUser: 'super_admin_builder',
     author: author,
-    manufacturer: manufacturer,
   });
 
   const {
@@ -190,14 +187,6 @@ export default function CreateOrUpdateFlashSaleForm({ initialValues }: IProps) {
         setShop('');
         setType('');
         setCategory('');
-        setManufacturer('');
-        break;
-
-      case 'handpick_manufacturer':
-        setShop('');
-        setType('');
-        setCategory('');
-        setAuthor('');
         break;
     }
   }, [saleBuilderDataType]);
@@ -503,13 +492,6 @@ export default function CreateOrUpdateFlashSaleForm({ initialValues }: IProps) {
                 value="handpick_author"
                 disabled={isTranslateFlashSale}
               />
-              <Radio
-                label="Filter products by manufacturer/publications"
-                {...register(`sale_builder.data_type` as const)}
-                id="handpick_manufacturer"
-                value="handpick_manufacturer"
-                disabled={isTranslateFlashSale}
-              />
               {errors?.sale_builder?.data_type?.message && (
                 <p className="my-2 text-xs text-red-500 ltr:text-left rtl:text-right">
                   {t(errors?.sale_builder?.data_type?.message)}
@@ -564,22 +546,6 @@ export default function CreateOrUpdateFlashSaleForm({ initialValues }: IProps) {
                   enableAuthor
                   onAuthorFilter={(author: Author) => {
                     setAuthor(author?.id!);
-                  }}
-                />
-              </div>
-            </>
-          ) : (
-            ''
-          )}
-
-          {saleBuilderType?.data_type === 'handpick_manufacturer' ? (
-            <>
-              <div className="mt-10">
-                <CategoryTypeFilter
-                  className="w-full"
-                  enableManufacturer
-                  onManufactureFilter={(manufacture: Manufacturer) => {
-                    setManufacturer(manufacture?.id!);
                   }}
                 />
               </div>

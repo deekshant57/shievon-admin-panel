@@ -1,12 +1,12 @@
 import Layout from '@/components/layouts/app';
 import ProfileUpdateFrom from '@/components/auth/profile-update-form';
-import ChangePasswordForm from '@/components/auth/change-password-from';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
 import { useMeQuery } from '@/data/user';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import EmailUpdateForm from '@/components/auth/email-update-form';
+// import EmailUpdateForm from '@/components/auth/email-update-form';
+// import ChangePasswordForm from '@/components/auth/change-password-from';
 
 export default function ProfilePage() {
   const { t } = useTranslation();
@@ -20,10 +20,9 @@ export default function ProfilePage() {
           {t('form:form-title-profile-settings')}
         </h1>
       </div>
-      <EmailUpdateForm me={data} />
-
+      {/* <EmailUpdateForm me={data} /> */}
       <ProfileUpdateFrom me={data} />
-      <ChangePasswordForm />
+      {/* <ChangePasswordForm /> */}
     </>
   );
 }

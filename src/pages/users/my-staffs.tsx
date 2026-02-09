@@ -12,7 +12,11 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useState } from 'react';
 import PageHeading from '@/components/common/page-heading';
 
-export default function MyStaffsPage() {
+type MyStaffsPageProps = {
+  initialMyStaffsData?: any
+}
+
+export default function MyStaffsPage({ initialMyStaffsData }: MyStaffsPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const { t } = useTranslation();
@@ -20,14 +24,17 @@ export default function MyStaffsPage() {
   const [orderBy, setOrder] = useState('created_at');
   const [sortedBy, setColumn] = useState<SortOrder>(SortOrder.Desc);
 
-  const { myStaffs, paginatorInfo, loading, error } = useMyStaffsQuery({
-    limit: 20,
-    page,
-    name: searchTerm,
-    is_active: true,
-    orderBy,
-    sortedBy,
-  });
+  const { myStaffs, paginatorInfo, loading, error } = useMyStaffsQuery(
+    {
+      limit: 20,
+      page,
+      name: searchTerm,
+      is_active: true,
+      orderBy,
+      sortedBy,
+    },
+    { initialData: initialMyStaffsData }
+  );
 
   if (loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
@@ -72,8 +79,19 @@ MyStaffsPage.authenticate = {
 };
 MyStaffsPage.Layout = Layout;
 
-export const getStaticProps = async ({ locale }: any) => ({
-  props: {
-    ...(await serverSideTranslations(locale, ['table', 'common', 'form'])),
-  },
-});
+export const getServerSideProps = async (context: any) => {
+  const { fetchMyStaffsFromApi } = await import('@/data/server-api')
+  const initialData = await fetchMyStaffsFromApi(context, {
+    limit: 20,
+    page: 1,
+    orderBy: 'created_at',
+    sortedBy: 'desc',
+    is_active: true,
+  })
+  return {
+    props: {
+      ...(await serverSideTranslations(context.locale, ['table', 'common', 'form'])),
+      initialMyStaffsData: initialData ?? null,
+    },
+  }
+}

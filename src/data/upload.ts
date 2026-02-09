@@ -10,9 +10,14 @@ export const useUploadMutation = () => {
       return uploadClient.upload(input);
     },
     {
-      // Always refetch after error or success:
       onSettled: () => {
-        queryClient.invalidateQueries(API_ENDPOINTS.SETTINGS);
+        // Previously we invalidated SETTINGS on every upload:
+        // queryClient.invalidateQueries(API_ENDPOINTS.SETTINGS);
+        //
+        // Uploads (e.g. product images) do not usually change global app settings,
+        // and invalidating here caused a high volume of `/api/settings` refetches.
+        // If a specific upload flow truly affects settings, explicitly invalidate
+        // SETTINGS from that flow instead of doing it globally here.
       },
     }
   );
