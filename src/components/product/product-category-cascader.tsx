@@ -1,7 +1,7 @@
 import SelectInput from '@/components/ui/select-input';
 import Label from '@/components/ui/label';
-import { Control, useFormContext, useFormState, useWatch } from 'react-hook-form';
-import { useEffect } from 'react';
+import { Control, useFormContext, useWatch } from 'react-hook-form';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'next-i18next';
 import { useCategoriesQuery } from '@/data/category';
 import { useRouter } from 'next/router';
@@ -18,6 +18,10 @@ interface Props {
 // Level 3: children of level 2
 // Level 4: children of level 3
 // The deepest selected level is written into `categories` as a single-element array.
+
+// Stable empty array so useMemo/useEffect deps don't change when the query has no data yet (data?.data ?? [] is new every render).
+const EMPTY_CATEGORIES: any[] = [];
+
 const ProductCategoryCascader = ({ control, setValue }: Props) => {
   const { locale } = useRouter();
   const { t } = useTranslation('common');
@@ -29,10 +33,6 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
     name: 'type',
   });
 
-  const { dirtyFields } = useFormState({
-    control,
-  });
-
   // Resolve type id for API and filtering (form can store type as object or id)
   const typeId =
     type != null
@@ -42,15 +42,9 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
       : undefined;
   const hasGroup = typeId != null && !Number.isNaN(typeId);
 
-  // When type (group) changes or is cleared, reset all category-related fields
+  // When type (group) changes or is cleared, reset all category-related fields. Only depend on typeId (not dirtyFields) to avoid loop.
   useEffect(() => {
     if (!hasGroup) {
-      setValue('categories', []);
-      setValue('primary_category', null);
-      setValue('secondary_category', null);
-      setValue('tertiary_category', null);
-      setValue('quaternary_category', null);
-    } else if (dirtyFields?.type) {
       setValue('categories', []);
       setValue('primary_category', null);
       setValue('secondary_category', null);
@@ -71,13 +65,19 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
     { enabled: hasGroup },
   );
 
-  // Filter by type_id client-side so only categories for the selected group are shown (in case backend returns all)
-  const rootCategories =
-    hasGroup && Array.isArray(rawCategories)
-      ? (rawCategories as any[]).filter(
-          (c: any) => c.type_id != null && Number(c.type_id) === typeId,
-        )
-      : rawCategories ?? [];
+  // Use stable empty array when query has no data so we don't get a new reference every render (useCategoriesQuery returns data?.data ?? []).
+  const stableRawCategories = rawCategories ?? EMPTY_CATEGORIES;
+  // Filter by type_id client-side so only categories for the selected group are shown (in case backend returns all).
+  // Memoize so the reference is stable and does not trigger useEffect on every render.
+  const rootCategories = useMemo(
+    () =>
+      hasGroup && Array.isArray(stableRawCategories)
+        ? (stableRawCategories as any[]).filter(
+            (c: any) => c.type_id != null && Number(c.type_id) === typeId,
+          )
+        : stableRawCategories,
+    [hasGroup, stableRawCategories, typeId],
+  );
 
   // Watch cascading selections
   const primaryCategory = useWatch({
@@ -100,102 +100,101 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
     name: 'quaternary_category',
   }) as Category | null;
 
-  // Clear deeper levels when an upper level changes
+  // Clear deeper levels when an upper level changes. Only set when needed to avoid extra re-renders.
   useEffect(() => {
-    setValue('secondary_category', null);
-    setValue('tertiary_category', null);
-    setValue('quaternary_category', null);
+    if (getValues('secondary_category') != null || getValues('tertiary_category') != null || getValues('quaternary_category') != null) {
+      setValue('secondary_category', null);
+      setValue('tertiary_category', null);
+      setValue('quaternary_category', null);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [primaryCategory?.id]);
 
   useEffect(() => {
-    setValue('tertiary_category', null);
-    setValue('quaternary_category', null);
+    if (getValues('tertiary_category') != null || getValues('quaternary_category') != null) {
+      setValue('tertiary_category', null);
+      setValue('quaternary_category', null);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [secondaryCategory?.id]);
 
   useEffect(() => {
-    setValue('quaternary_category', null);
+    if (getValues('quaternary_category') != null) {
+      setValue('quaternary_category', null);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tertiaryCategory?.id]);
 
-  // Whenever any level changes, update the `categories` field only when the selection is "complete"
+  // Keep latest rootCategories in a ref so we can read it in the effect without listing it in deps (avoids loop from unstable array refs).
+  const rootCategoriesRef = useRef(rootCategories);
+  rootCategoriesRef.current = rootCategories;
+
+  // Whenever any level changes, update the `categories` field only when the selection is "complete".
+  // Depend only on primitive ids so the effect never re-runs from array/object reference changes.
+  const primaryId = primaryCategory?.id != null ? Number(primaryCategory.id) : null;
+  const secondaryId = secondaryCategory?.id != null ? Number(secondaryCategory.id) : null;
+  const tertiaryId = tertiaryCategory?.id != null ? Number(tertiaryCategory.id) : null;
+  const quaternaryId = quaternaryCategory?.id != null ? Number(quaternaryCategory.id) : null;
+
   useEffect(() => {
-    const allCategories = Array.isArray(rootCategories) ? rootCategories : [];
+    const allCategories = Array.isArray(rootCategoriesRef.current) ? rootCategoriesRef.current : [];
     // Determine if there are further children for the current selections
     const hasLevel2Children =
-      !!primaryCategory &&
-      (allCategories as any[]).some(
-        (c: any) => c.parent_id === Number(primaryCategory.id),
-      );
+      primaryId != null &&
+      (allCategories as any[]).some((c: any) => c.parent_id === primaryId);
     const hasLevel3Children =
-      !!secondaryCategory &&
-      (allCategories as any[]).some(
-        (c: any) => c.parent_id === Number(secondaryCategory.id),
-      );
+      secondaryId != null &&
+      (allCategories as any[]).some((c: any) => c.parent_id === secondaryId);
     const hasLevel4Children =
-      !!tertiaryCategory &&
-      (allCategories as any[]).some(
-        (c: any) => c.parent_id === Number(tertiaryCategory.id),
-      );
+      tertiaryId != null &&
+      (allCategories as any[]).some((c: any) => c.parent_id === tertiaryId);
 
     // Selection is considered complete only when there is no unselected deeper level
     let isComplete = false;
 
-    if (primaryCategory && !hasLevel2Children) {
-      // Only one level of categories
+    if (primaryId != null && !hasLevel2Children) {
       isComplete = true;
     }
 
-    if (secondaryCategory && !hasLevel3Children) {
-      // Two levels (L1 & L2), and L2 has no further children
+    if (secondaryId != null && !hasLevel3Children) {
       isComplete = true;
     }
 
-    if (tertiaryCategory && !hasLevel4Children) {
-      // Three levels (L1, L2, L3), and L3 has no further children
+    if (tertiaryId != null && !hasLevel4Children) {
       isComplete = true;
     }
 
-    if (quaternaryCategory) {
-      // Four levels and the last one is selected
+    if (quaternaryId != null) {
       isComplete = true;
     }
 
+    const leafId = quaternaryId ?? tertiaryId ?? secondaryId ?? primaryId;
     const leaf =
       quaternaryCategory ||
       tertiaryCategory ||
       secondaryCategory ||
       primaryCategory;
 
-    if (leaf && isComplete) {
-      // Store as an array to keep compatibility with existing `categories` handling
-      setValue('categories', [
-        {
-          id: leaf.id,
-          name: leaf.name,
-        },
-      ]);
+    if (leaf && leafId != null && isComplete) {
+      const nextCategories = [{ id: leaf.id, name: leaf.name }];
+      const current = (getValues('categories') ?? []) as any[];
+      const same = current.length === 1 && Number(current[0]?.id) === leafId;
+      if (!same) {
+        setValue('categories', nextCategories);
+      }
     } else {
       // Don't clear pre-filled categories when editing: if form already has categories matching primary, keep them
       const currentCategories = (getValues('categories') ?? []) as any[];
-      const primaryId = primaryCategory?.id != null ? Number(primaryCategory.id) : null;
       const preFilled =
         currentCategories.length === 1 &&
         primaryId != null &&
         Number(currentCategories[0]?.id) === primaryId;
-      if (!preFilled) {
+      if (!preFilled && currentCategories.length > 0) {
         setValue('categories', []);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    primaryCategory,
-    secondaryCategory,
-    tertiaryCategory,
-    quaternaryCategory,
-    rootCategories,
-  ]);
+  }, [primaryId, secondaryId, tertiaryId, quaternaryId]);
 
   // Helper to get option label/value
   const getOptionLabel = (option: any) =>
