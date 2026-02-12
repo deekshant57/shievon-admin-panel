@@ -5,21 +5,26 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { AUTH_CRED } from '@/utils/constants';
 
+export type UploadOptions = {
+  /** e.g. 'banners' for POST /attachments?folder=banners (banner/slider images) */
+  folder?: string
+}
+
 export const uploadClient = {
-  upload: async (variables: any) => {
+  upload: async (variables: any, options?: UploadOptions) => {
+    const files = Array.isArray(variables) ? variables : (variables?.files ?? variables);
     let formData = new FormData();
-    variables.forEach((attachment: any) => {
+    files.forEach((attachment: any) => {
       formData.append('attachment[]', attachment);
     });
-    const options = {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    const headers = {
+      'Content-Type': 'multipart/form-data',
     };
     try {
-      // Make direct axios call to inspect full response structure
-      // This bypasses HttpClient to see the raw response
       const baseURL = process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:9000/api';
+      const url = options?.folder
+        ? `${baseURL}/${API_ENDPOINTS.ATTACHMENTS}?folder=${encodeURIComponent(options.folder)}`
+        : `${baseURL}/${API_ENDPOINTS.ATTACHMENTS}`;
 
       const authCred = Cookies.get(AUTH_CRED);
       let token = '';
@@ -31,14 +36,13 @@ export const uploadClient = {
           token = '';
         }
       }
-      
+
       const axiosResponse = await axios.post(
-        `${baseURL}/${API_ENDPOINTS.ATTACHMENTS}`,
+        url,
         formData,
         {
-          ...options,
           headers: {
-            ...options.headers,
+            ...headers,
             Authorization: `Bearer ${token}`,
           },
         }

@@ -23,7 +23,7 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
   const { t } = useTranslation('common');
   const { getValues } = useFormContext();
 
-  // Watch selected product type (same as previous ProductCategoryInput)
+  // Watch selected product type (group) – may be full object { id, name, slug } or just id
   const type = useWatch({
     control,
     name: 'type',
@@ -33,9 +33,24 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
     control,
   });
 
-  // When type changes, reset all category-related fields
+  // Resolve type id for API and filtering (form can store type as object or id)
+  const typeId =
+    type != null
+      ? typeof type === 'object' && type.id != null
+        ? Number(type.id)
+        : Number(type)
+      : undefined;
+  const hasGroup = typeId != null && !Number.isNaN(typeId);
+
+  // When type (group) changes or is cleared, reset all category-related fields
   useEffect(() => {
-    if (type?.slug && dirtyFields?.type) {
+    if (!hasGroup) {
+      setValue('categories', []);
+      setValue('primary_category', null);
+      setValue('secondary_category', null);
+      setValue('tertiary_category', null);
+      setValue('quaternary_category', null);
+    } else if (dirtyFields?.type) {
       setValue('categories', []);
       setValue('primary_category', null);
       setValue('secondary_category', null);
@@ -43,15 +58,26 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
       setValue('quaternary_category', null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type?.slug]);
+  }, [typeId]);
 
-  // Load root categories for the selected type
-  const { categories: rootCategories, loading: loadingRoot } = useCategoriesQuery({
-    limit: 999,
-    type: type?.slug,
-    parent: null,
-    language: locale,
-  });
+  // Load categories only when a group is selected; filter by type_id so only categories under that group are returned
+  const { categories: rawCategories, loading: loadingRoot } = useCategoriesQuery(
+    {
+      limit: 999,
+      type_id: typeId,
+      parent: null,
+      language: locale,
+    },
+    { enabled: hasGroup },
+  );
+
+  // Filter by type_id client-side so only categories for the selected group are shown (in case backend returns all)
+  const rootCategories =
+    hasGroup && Array.isArray(rawCategories)
+      ? (rawCategories as any[]).filter(
+          (c: any) => c.type_id != null && Number(c.type_id) === typeId,
+        )
+      : rawCategories ?? [];
 
   // Watch cascading selections
   const primaryCategory = useWatch({
@@ -74,50 +100,28 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
     name: 'quaternary_category',
   }) as Category | null;
 
-  // Debug: log current selections on each render
-  // Helps understand why selections might disappear in the cascading dropdowns
-  console.log('[CategoryCascader] selections', {
-    typeSlug: type?.slug,
-    primaryCategoryId: primaryCategory?.id,
-    secondaryCategoryId: secondaryCategory?.id,
-    tertiaryCategoryId: tertiaryCategory?.id,
-    quaternaryCategoryId: quaternaryCategory?.id,
-  });
-
   // Clear deeper levels when an upper level changes
   useEffect(() => {
-    // When primary changes, clear all deeper levels
     setValue('secondary_category', null);
     setValue('tertiary_category', null);
     setValue('quaternary_category', null);
-    console.log('[CategoryCascader] reset below primary', {
-      primaryCategoryId: primaryCategory?.id,
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [primaryCategory?.id]);
 
   useEffect(() => {
-    // When secondary changes, clear tertiary & quaternary
     setValue('tertiary_category', null);
     setValue('quaternary_category', null);
-    console.log('[CategoryCascader] reset below secondary', {
-      secondaryCategoryId: secondaryCategory?.id,
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [secondaryCategory?.id]);
 
   useEffect(() => {
-    // When tertiary changes, clear quaternary
     setValue('quaternary_category', null);
-    console.log('[CategoryCascader] reset below tertiary', {
-      tertiaryCategoryId: tertiaryCategory?.id,
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tertiaryCategory?.id]);
 
   // Whenever any level changes, update the `categories` field only when the selection is "complete"
   useEffect(() => {
-    const allCategories = rootCategories ?? [];
+    const allCategories = Array.isArray(rootCategories) ? rootCategories : [];
     // Determine if there are further children for the current selections
     const hasLevel2Children =
       !!primaryCategory &&
@@ -164,14 +168,6 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
       secondaryCategory ||
       primaryCategory;
 
-    console.log('[CategoryCascader] completion check', {
-      hasLevel2Children,
-      hasLevel3Children,
-      hasLevel4Children,
-      isComplete,
-      leafId: leaf?.id,
-    });
-
     if (leaf && isComplete) {
       // Store as an array to keep compatibility with existing `categories` handling
       setValue('categories', [
@@ -207,9 +203,8 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
 
   const getOptionValue = (option: any) => option.id;
 
-  // Ensure each level only shows categories for its actual level/parent,
-  // even if the backend returns a flat list or ignores the parent filter.
-  const all = (rootCategories ?? []) as any[];
+  // Ensure each level only shows categories for its actual level/parent
+  const all = (Array.isArray(rootCategories) ? rootCategories : []) as any[];
   const level1Options: Category[] = all.filter(
     (cat: any) => cat.level === 1,
   );
@@ -232,74 +227,73 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
         )
       : [];
 
-  // Debug: log options available at each level when selections change
-  console.log('[CategoryCascader] options', {
-    total: all.length,
-    level1Count: level1Options.length,
-    level2Count: level2Options.length,
-    level3Count: level3Options.length,
-    level4Count: level4Options.length,
-  });
-
   return (
     <div className="mb-5">
       <Label>{t('form:input-label-categories')}</Label>
 
-      {/* Level 1 */}
-      <SelectInput
-        name="primary_category"
-        control={control}
-        getOptionLabel={getOptionLabel}
-        getOptionValue={getOptionValue}
-        // @ts-ignore
-        options={level1Options}
-        isLoading={loadingRoot}
-        placeholder={t('form:text-select-category')}
-      />
-
-      {/* Level 2 */}
-      {primaryCategory && level2Options.length > 0 && (
-        <div className="mt-3">
+      {!hasGroup ? (
+        <p className="mt-1 text-sm text-body">
+          {t('form:text-select-group-first')}
+        </p>
+      ) : (
+        <>
+          {/* Level 1 – categories under selected group */}
           <SelectInput
-            name="secondary_category"
+            name="primary_category"
             control={control}
             getOptionLabel={getOptionLabel}
             getOptionValue={getOptionValue}
             // @ts-ignore
-            options={level2Options}
-            placeholder={t('form:text-select-sub-category')}
+            options={level1Options}
+            isLoading={loadingRoot}
+            placeholder={t('form:text-select-category')}
           />
-        </div>
-      )}
 
-      {/* Level 3 */}
-      {secondaryCategory && level3Options.length > 0 && (
-        <div className="mt-3">
-          <SelectInput
-            name="tertiary_category"
-            control={control}
-            getOptionLabel={getOptionLabel}
-            getOptionValue={getOptionValue}
-            // @ts-ignore
-            options={level3Options}
-            placeholder={t('form:text-select-sub-category')}
-          />
-        </div>
-      )}
+          {/* Level 2 */}
+          {primaryCategory && level2Options.length > 0 && (
+            <div className="mt-3">
+              <SelectInput
+                name="secondary_category"
+                control={control}
+                getOptionLabel={getOptionLabel}
+                getOptionValue={getOptionValue}
+                // @ts-ignore
+                options={level2Options}
+                placeholder={t('form:text-select-sub-category')}
+              />
+            </div>
+          )}
 
-      {/* Level 4 */}
-      {tertiaryCategory && level4Options.length > 0 && (
-        <div className="mt-3">
-          <SelectInput
-            name="quaternary_category"
-            control={control}
-            getOptionLabel={getOptionLabel}
-            getOptionValue={getOptionValue}
-            // @ts-ignore
-            options={level4Options}
-            placeholder={t('form:text-select-sub-category')}
-          />
-        </div>
+          {/* Level 3 */}
+          {secondaryCategory && level3Options.length > 0 && (
+            <div className="mt-3">
+              <SelectInput
+                name="tertiary_category"
+                control={control}
+                getOptionLabel={getOptionLabel}
+                getOptionValue={getOptionValue}
+                // @ts-ignore
+                options={level3Options}
+                placeholder={t('form:text-select-sub-category')}
+              />
+            </div>
+          )}
+
+          {/* Level 4 */}
+          {tertiaryCategory && level4Options.length > 0 && (
+            <div className="mt-3">
+              <SelectInput
+                name="quaternary_category"
+                control={control}
+                getOptionLabel={getOptionLabel}
+                getOptionValue={getOptionValue}
+                // @ts-ignore
+                options={level4Options}
+                placeholder={t('form:text-select-sub-category')}
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );

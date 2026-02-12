@@ -88,13 +88,17 @@ export const useCategoryQuery = ({ slug, language }: GetParams) => {
   };
 };
 
-export const useCategoriesQuery = (options: Partial<CategoryQueryOptions>) => {
+export const useCategoriesQuery = (
+  options: Partial<CategoryQueryOptions>,
+  queryOptions?: { enabled?: boolean },
+) => {
   const { data, error, isLoading } = useQuery<CategoryPaginator, Error>(
     [API_ENDPOINTS.CATEGORIES, options],
     ({ queryKey, pageParam }) =>
       categoryClient.paginated(Object.assign({}, queryKey[1], pageParam)),
     {
       keepPreviousData: true,
+      ...queryOptions,
     }
   );
 

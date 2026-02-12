@@ -16,6 +16,8 @@ interface FileInputProps {
   label?: string;
   required?: boolean;
   error?: string;
+  /** e.g. 'banners' for type banner/slider images (POST /attachments?folder=banners) */
+  folder?: string;
 }
 
 const FileInput = ({
@@ -31,6 +33,7 @@ const FileInput = ({
   toolTipText,
   required,
   error,
+  folder,
 }: FileInputProps) => {
   return (
     <>
@@ -53,6 +56,7 @@ const FileInput = ({
             helperText={helperText}
             maxSize={maxSize}
             disabled={disabled}
+            folder={folder}
           />
         )}
       />

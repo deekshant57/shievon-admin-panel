@@ -288,11 +288,22 @@ export interface VerifyRegistrationOtpResponse {
   };
 }
 
+/** Banner item in type settings (title, description, image URLs) */
+export interface TypeSettingsBanner {
+  title?: string;
+  description?: string;
+  image: { original: string; thumbnail: string };
+}
+
 export interface Type {
   id: string;
   name: string;
   icon: string;
   slug: string;
+  /** Type icon image (from attachment). Use image_id on create/update. */
+  image?: Attachment;
+  /** Attachment id for type icon. Sent as image_id on PUT. */
+  image_id?: number | null;
   promotional_sliders?: AttachmentInput[];
   settings?: TypeSettings;
   products?: ProductPaginator;
@@ -307,6 +318,8 @@ export interface CreateTypeInput {
   language?: string;
   gallery?: AttachmentInput[];
   icon?: string;
+  /** Attachment id for type icon image. Use null to clear. */
+  image_id?: number | null;
   banner_text?: string;
 }
 
@@ -1829,10 +1842,18 @@ export declare type Question = {
   user: User;
 };
 
+export interface TypeSettingsBannerInput {
+  title?: string;
+  description?: string;
+  image: AttachmentInput;
+}
+
 export interface TypeSettingsInput {
   isHome?: boolean;
   layoutType?: string;
   productCard?: string;
+  promotional_sliders?: Array<{ original: string; thumbnail: string; id?: string }>;
+  banners?: TypeSettingsBannerInput[];
   bestSelling: {
     enable?: boolean;
     title?: string;
@@ -1874,6 +1895,8 @@ export interface TypeSettings {
   isHome?: boolean;
   layoutType?: string;
   productCard?: string;
+  promotional_sliders?: Array<{ original: string; thumbnail: string }>;
+  banners?: TypeSettingsBanner[];
   bestSelling: {
     enable?: boolean;
     title?: string;

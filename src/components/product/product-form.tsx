@@ -433,15 +433,10 @@ export default function CreateOrUpdateProductForm({
             />
 
             <Card className="w-full sm:w-8/12 md:w-2/3">
-              {/* Groups (type) – commented out per requirement
               <ProductGroupInput
                 control={control}
                 error={t((errors?.type as any)?.message)}
               />
-              */}
-              {/* Legacy flat category selector kept for reference:
-              <ProductCategoryInput control={control} setValue={setValue} />
-              */}
               <ProductCategoryCascader control={control} setValue={setValue} />
               {/* Authors – commented out per requirement
               <ProductAuthorInput control={control} />

@@ -1,13 +1,18 @@
 import { useMutation, useQueryClient } from 'react-query';
 import { API_ENDPOINTS } from '@/data/client/api-endpoints';
-import { uploadClient } from '@/data/client/upload';
+import { uploadClient, UploadOptions } from '@/data/client/upload';
+
+export type UploadMutationInput = File[] | { files: File[]; folder?: string };
 
 export const useUploadMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    (input: any) => {
-      return uploadClient.upload(input);
+    (input: UploadMutationInput) => {
+      if (Array.isArray(input)) {
+        return uploadClient.upload(input);
+      }
+      return uploadClient.upload(input.files, { folder: input.folder });
     },
     {
       onSettled: () => {

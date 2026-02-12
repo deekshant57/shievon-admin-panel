@@ -14,6 +14,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { typeValidationSchema } from './group-validation-schema';
 import SelectInput from '@/components/ui/select-input';
 import FileInput from '@/components/ui/file-input';
+import Uploader from '@/components/common/uploader';
 import Title from '@/components/ui/title';
 import Alert from '@/components/ui/alert';
 import TextArea from '@/components/ui/text-area';
@@ -118,6 +119,8 @@ type FormValues = {
   name: string;
   slug?: string | null;
   icon?: any;
+  /** Type icon image (uploaded attachment). Sent as image_id on create/update. */
+  type_image?: AttachmentInput | null;
   promotional_sliders: AttachmentInput[];
   banners: BannerInput[];
   settings: TypeSettingsInput;
@@ -147,6 +150,9 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
     resolver: yupResolver(typeValidationSchema),
     defaultValues: {
       ...initialValues,
+      type_image: initialValues?.image ?? null,
+      promotional_sliders: initialValues?.promotional_sliders ?? initialValues?.settings?.promotional_sliders ?? [],
+      banners: initialValues?.settings?.banners ?? [],
       // @ts-ignore
       settings: {
         ...initialValues?.settings,
@@ -240,90 +246,104 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
   const { mutate: updateType, isLoading: updating } = useUpdateTypeMutation();
   const slugAutoSuggest = formatSlug(watch('name'));
   const onSubmit = (values: FormValues) => {
+    const imageId =
+      values.type_image?.id != null ? Number(values.type_image.id) : null;
+    const isCompact = values?.settings?.layoutType === 'compact';
     const input = {
       language: router.locale,
       name: values.name!,
       slug: values.slug!,
       icon: values.icon?.value,
+      ...(imageId != null
+        ? { image_id: imageId }
+        : initialValues
+          ? { image_id: null as number | null }
+          : {}),
       settings: {
         isHome: values?.settings?.isHome,
         productCard: values?.settings?.productCard,
         layoutType: values?.settings?.layoutType,
-        bestSelling: {
-          enable: values?.settings?.bestSelling?.enable,
-          title: values?.settings?.bestSelling?.title,
-        },
-        popularProducts: {
-          enable: values?.settings?.popularProducts?.enable,
-          title: values?.settings?.popularProducts?.title,
-        },
-        category: {
-          enable: values?.settings?.category?.enable,
-          title: values?.settings?.category?.title,
-        },
-        handpickedProducts: {
-          enable: values?.settings?.handpickedProducts?.enable,
-          enableSlider: values?.settings?.handpickedProducts?.enableSlider,
-          title: values?.settings?.handpickedProducts?.title,
-          products: values?.settings?.handpickedProducts?.products?.map(
-            (product: any) => {
-              return {
-                id: product?.id!,
-                name: product?.name,
-                slug: product?.slug,
-                regular_price: product?.regular_price,
-                sale_price: product?.sale_price,
-                min_price: product?.min_price,
-                max_price: product?.max_price,
-                product_type: product?.product_type,
-                quantity: product?.quantity,
-                is_external: product?.is_external,
-                unit: product?.unit,
-                price: product?.price,
-                external_product_url: product?.external_product_url,
-                status: product?.status,
-                image: {
-                  id: product?.image?.id,
-                  thumbnail: product?.image?.thumbnail,
-                  original: product?.image?.original,
-                },
-                type: {
-                  settings: {
-                    productCard: values?.settings?.productCard,
-                  },
-                },
-              };
-            },
-          ),
-        },
-        newArrival: {
-          enable: values?.settings?.newArrival?.enable,
-          title: values?.settings?.newArrival?.title,
-        },
-        authors: {
-          enable: values?.settings?.authors?.enable,
-          title: values?.settings?.authors?.title,
-        },
-        manufactures: {
-          enable: values?.settings?.manufactures?.enable,
-          title: values?.settings?.manufactures?.title,
-        },
+        ...(isCompact
+          ? {
+              bestSelling: {
+                enable: values?.settings?.bestSelling?.enable,
+                title: values?.settings?.bestSelling?.title,
+              },
+              popularProducts: {
+                enable: values?.settings?.popularProducts?.enable,
+                title: values?.settings?.popularProducts?.title,
+              },
+              category: {
+                enable: values?.settings?.category?.enable,
+                title: values?.settings?.category?.title,
+              },
+              handpickedProducts: {
+                enable: values?.settings?.handpickedProducts?.enable,
+                enableSlider: values?.settings?.handpickedProducts?.enableSlider,
+                title: values?.settings?.handpickedProducts?.title,
+                products: values?.settings?.handpickedProducts?.products?.map(
+                  (product: any) => ({
+                    id: product?.id!,
+                    name: product?.name,
+                    slug: product?.slug,
+                    regular_price: product?.regular_price,
+                    sale_price: product?.sale_price,
+                    min_price: product?.min_price,
+                    max_price: product?.max_price,
+                    product_type: product?.product_type,
+                    quantity: product?.quantity,
+                    is_external: product?.is_external,
+                    unit: product?.unit,
+                    price: product?.price,
+                    external_product_url: product?.external_product_url,
+                    status: product?.status,
+                    image: {
+                      id: product?.image?.id,
+                      thumbnail: product?.image?.thumbnail,
+                      original: product?.image?.original,
+                    },
+                    type: {
+                      settings: {
+                        productCard: values?.settings?.productCard,
+                      },
+                    },
+                  }),
+                ),
+              },
+              newArrival: {
+                enable: values?.settings?.newArrival?.enable,
+                title: values?.settings?.newArrival?.title,
+              },
+              authors: {
+                enable: values?.settings?.authors?.enable,
+                title: values?.settings?.authors?.title,
+              },
+              manufactures: {
+                enable: values?.settings?.manufactures?.enable,
+                title: values?.settings?.manufactures?.title,
+              },
+            }
+          : {
+              bestSelling: {},
+              popularProducts: {},
+              category: {},
+              handpickedProducts: {},
+              newArrival: {},
+              authors: {},
+              manufactures: {},
+            }),
+        promotional_sliders: values.promotional_sliders?.map(
+          ({ thumbnail, original }: any) => ({ thumbnail, original }),
+        ) ?? [],
+        banners: values?.banners?.map((banner) => ({
+          title: banner?.title,
+          description: banner?.description,
+          image: {
+            original: banner?.image?.original,
+            thumbnail: banner?.image?.thumbnail,
+          },
+        })) ?? [],
       },
-      promotional_sliders: values.promotional_sliders?.map(
-        ({ thumbnail, original, id }: any) => ({
-          thumbnail,
-          original,
-          id,
-        }),
-      ),
-      banners: values?.banners?.map((banner) => ({
-        ...banner,
-        image: {
-          id: banner?.image?.id,
-          thumbnail: banner?.image?.thumbnail,
-          original: banner?.image?.original,
-        },
-      })),
     };
 
     if (
@@ -400,6 +420,34 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
           )}
 
           <div className="mb-5">
+            <Label>{t('form:input-label-type-image')}</Label>
+            <Controller
+              control={control}
+              name="type_image"
+              render={({ field: { value, onChange } }) => {
+                const normalizedValue =
+                  Array.isArray(value) && value.length === 0
+                    ? null
+                    : Array.isArray(value) && value.length === 1
+                      ? value[0]
+                      : value ?? null;
+                return (
+                  <Uploader
+                    value={normalizedValue}
+                    onChange={(v: any) => {
+                      if (Array.isArray(v) && v.length === 0) onChange(null);
+                      else if (Array.isArray(v) && v.length === 1)
+                        onChange(v[0]);
+                      else onChange(v ?? null);
+                    }}
+                    multiple={false}
+                    helperText={t('form:input-label-type-image-help')}
+                  />
+                );
+              }}
+            />
+          </div>
+          <div className="mb-5">
             <Label>{t('form:input-label-select-icon')}</Label>
             <SelectInput
               name="icon"
@@ -474,7 +522,11 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
             className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
           />
           <Card className="w-full sm:w-8/12 md:w-2/3">
-            <FileInput name="promotional_sliders" control={control} />
+            <FileInput
+              name="promotional_sliders"
+              control={control}
+              folder="banners"
+            />
           </Card>
         </div>
       ) : null}
@@ -576,6 +628,7 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
                     name={`banners.${index}.image`}
                     control={control}
                     multiple={false}
+                    folder="banners"
                     disabled={
                       layoutType === 'minimal' && index !== 0 && index > 0
                     }

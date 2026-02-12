@@ -29,6 +29,8 @@ export default function Uploader({
   maxSize,
   maxFiles,
   disabled,
+  /** e.g. 'banners' for type banner/slider images (POST /attachments?folder=banners) */
+  folder,
 }: any) {
   const { t } = useTranslation();
   const [files, setFiles] = useState<Attachment[]>(getPreviewImage(value));
@@ -51,8 +53,11 @@ export default function Uploader({
     multiple,
     onDrop: async (acceptedFiles) => {
       if (acceptedFiles.length) {
+        const uploadInput = folder
+          ? { files: acceptedFiles, folder }
+          : acceptedFiles;
         upload(
-          acceptedFiles, // it will be an array of uploaded attachments
+          uploadInput,
           {
             onSuccess: (data: any) => {
               // Ensure data is an array
