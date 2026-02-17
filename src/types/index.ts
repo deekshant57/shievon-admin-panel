@@ -460,6 +460,7 @@ export interface Shop {
   logo: IImage;
   address?: UserAddress;
   settings?: ShopSettings;
+  timings?: { open?: string; close?: string };
   created_at?: string;
   updated_at?: string;
   ownership_history?: {
@@ -508,6 +509,7 @@ export interface ShopSettings {
   contact: string;
   location: Location;
   website: string;
+  timings?: { open?: string; close?: string };
   notifications: {
     email: string;
     enable: boolean;
@@ -1818,11 +1820,13 @@ export interface ShopSettingsInput {
 
 export interface ShopInput {
   name: string;
+  slug?: string;
   description?: string;
   cover_image?: AttachmentInput;
   logo?: AttachmentInput;
   address?: UserAddressInput;
   settings?: ShopSettingsInput;
+  timings?: { open: string; close: string };
   categories?: Category[];
   balance?: BalanceInput;
 }

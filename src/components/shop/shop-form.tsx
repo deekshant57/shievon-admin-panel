@@ -7,7 +7,9 @@ import Description from '@/components/ui/description';
 import FileInput from '@/components/ui/file-input';
 import Input from '@/components/ui/input';
 import Label from '@/components/ui/label';
+import Select from '@/components/ui/select/select';
 import SelectInput from '@/components/ui/select-input';
+import TooltipLabel from '@/components/ui/tooltip-label';
 import SwitchInput from '@/components/ui/switch-input';
 import TextArea from '@/components/ui/text-area';
 import { Config } from '@/config';
@@ -33,7 +35,7 @@ import { join, split } from 'lodash';
 import omit from 'lodash/omit';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import OpenAIButton from '../openAI/openAI.button';
 import { useAtom } from 'jotai';
@@ -83,6 +85,13 @@ export const updatedIcons = socialIcon.map((item: any) => {
   return item;
 });
 
+const SHOP_TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+  const h = Math.floor(i / 2);
+  const m = (i % 2) * 30;
+  const value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  return { value, label: value };
+});
+
 type FormValues = {
   name: string;
   slug: string;
@@ -92,6 +101,7 @@ type FormValues = {
   balance: BalanceInput;
   address: UserAddressInput;
   settings: ShopSettings;
+  timings: { open: string; close: string };
   isShopUnderMaintenance?: boolean;
 };
 const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
@@ -119,6 +129,10 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
             cover_image: getFormattedImage(
               initialValues?.cover_image as IImage,
             ),
+            timings: {
+              open: initialValues?.timings?.open ?? '09:00',
+              close: initialValues?.timings?.close ?? '18:00',
+            },
             settings: {
               ...initialValues?.settings,
               socials: initialValues?.settings?.socials
@@ -130,9 +144,36 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
                   }))
                 : [],
             },
+            // Sync address from settings.location when address is empty (API may only return location)
+            address: {
+              country:
+                initialValues?.address?.country ??
+                (initialValues?.settings?.location as any)?.country ??
+                '',
+              city:
+                initialValues?.address?.city ??
+                (initialValues?.settings?.location as any)?.city ??
+                '',
+              state:
+                initialValues?.address?.state ??
+                (initialValues?.settings?.location as any)?.state ??
+                '',
+              zip:
+                initialValues?.address?.zip ??
+                (initialValues?.settings?.location as any)?.zip ??
+                '',
+              street_address:
+                initialValues?.address?.street_address ??
+                (initialValues?.settings?.location as any)?.street_address ??
+                '',
+            },
           },
         }
-      : {}),
+      : {
+          defaultValues: {
+            timings: { open: '09:00', close: '18:00' },
+          },
+        }),
     // @ts-ignore
     resolver: yupResolver(shopValidationSchema),
   });
@@ -182,6 +223,27 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
   });
 
   const [isSlugDisable, setIsSlugDisable] = useState<boolean>(true);
+
+  // Sync address into form state on mount when address is pre-filled (unregistered fields
+  // can be missing from form state with shouldUnregister, so setValue ensures they exist)
+  useEffect(() => {
+    if (!initialValues) return
+    const loc = initialValues?.settings?.location as any
+    const addr = initialValues?.address
+    const country = addr?.country ?? loc?.country ?? ''
+    const city = addr?.city ?? loc?.city ?? ''
+    const state = addr?.state ?? loc?.state ?? ''
+    const zip = addr?.zip ?? loc?.zip ?? ''
+    const street_address = addr?.street_address ?? loc?.street_address ?? ''
+    if (country || city || state || zip || street_address) {
+      setValue('address.country', country)
+      setValue('address.city', city)
+      setValue('address.state', state)
+      setValue('address.zip', zip)
+      setValue('address.street_address', street_address)
+    }
+  }, [initialValues, setValue])
+
   const isSlugEditable =
     (router?.query?.action === 'edit' || router?.pathname === '/[shop]/edit') &&
     router?.locale === Config.defaultLanguage;
@@ -205,6 +267,7 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
         ...values,
         address: restAddress,
         settings,
+        timings: values.timings,
         balance: {
           id: initialValues.balance?.id,
           ...values.balance,
@@ -214,6 +277,7 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
       createShop({
         ...values,
         settings,
+        timings: values.timings,
         balance: {
           ...values.balance,
         },
@@ -355,31 +419,27 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
               {...register('balance.payment_info.name')}
               variant="outline"
               className="mb-5"
-              error={t(errors.balance?.payment_info?.name?.message!)}
-              required
+              // error={t(errors.balance?.payment_info?.name?.message!)}
             />
             <Input
               label={t('form:input-label-account-holder-email')}
               {...register('balance.payment_info.email')}
               variant="outline"
               className="mb-5"
-              error={t(errors.balance?.payment_info?.email?.message!)}
-              required
+              // error={t(errors.balance?.payment_info?.email?.message!)}
             />
             <Input
               label={t('form:input-label-bank-name')}
               {...register('balance.payment_info.bank')}
               variant="outline"
               className="mb-5"
-              error={t(errors.balance?.payment_info?.bank?.message!)}
-              required
+              // error={t(errors.balance?.payment_info?.bank?.message!)}
             />
             <Input
               label={t('form:input-label-account-number')}
               {...register('balance.payment_info.account')}
               variant="outline"
-              error={t(errors.balance?.payment_info?.account?.message!)}
-              required
+              // error={t(errors.balance?.payment_info?.account?.message!)}
             />
           </Card>
         </div>
@@ -475,11 +535,12 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
                   </>
                 )}
               />
-              {errors.address?.country && (
-                <p className="mt-1 text-sm text-red-500">
-                  {t('form:error-address-required')}
-                </p>
-              )}
+              {errors.address?.country &&
+                !(getValues('settings.location') as any)?.formattedAddress && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {t('form:error-address-required')}
+                  </p>
+                )}
             </div>
           </Card>
         </div>
@@ -539,6 +600,64 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
               className="mb-5"
               error={t(errors.settings?.website?.message!)}
             />
+            <div className="grid grid-cols-1 gap-2 mb-5">
+              <div className="mb-5">
+                <TooltipLabel
+                  htmlFor="timings.open"
+                  label={t('form:input-label-opening-time')}
+                  required
+                />
+                <Controller
+                  control={control}
+                  name="timings.open"
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      value={
+                        SHOP_TIME_OPTIONS.find((o) => o.value === field.value) ?? null
+                      }
+                      onChange={(option: any) =>
+                        field.onChange(option?.value ?? '')
+                      }
+                      options={SHOP_TIME_OPTIONS}
+                    />
+                  )}
+                />
+                {errors.timings?.open?.message && (
+                  <p className="my-2 text-xs text-red-500 text-start">
+                    {t(errors.timings.open.message)}
+                  </p>
+                )}
+              </div>
+              <div className="mb-5">
+                <TooltipLabel
+                  htmlFor="timings.close"
+                  label={t('form:input-label-closing-time')}
+                  required
+                />
+                <Controller
+                  control={control}
+                  name="timings.close"
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      value={
+                        SHOP_TIME_OPTIONS.find((o) => o.value === field.value) ?? null
+                      }
+                      onChange={(option: any) =>
+                        field.onChange(option?.value ?? '')
+                      }
+                      options={SHOP_TIME_OPTIONS}
+                    />
+                  )}
+                />
+                {errors.timings?.close?.message && (
+                  <p className="my-2 text-xs text-red-500 text-start">
+                    {t(errors.timings.close.message)}
+                  </p>
+                )}
+              </div>
+            </div>
           </Card>
         </div>
 

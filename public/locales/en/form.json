@@ -77,6 +77,8 @@
   "input-label-password": "Password",
   "input-label-bio": "Bio",
   "input-label-contact": "Contact Number",
+  "input-label-opening-time": "Opening time",
+  "input-label-closing-time": "Closing time",
   "input-label-avatar": "Avatar",
   "input-label-old-password": "Old Password",
   "input-label-new-password": "New Password",
@@ -93,7 +95,7 @@
   "input-label-name": "Name",
   "input-label-description": "Description",
   "input-label-price": "Price",
-  "input-label-sale-price": "Sale Price",
+  "input-label-sale-price": "Student Retail Price",
   "input-label-quantity": "Quantity",
   "input-label-unit": "Unit",
   "input-label-width": "Width",
@@ -323,7 +325,7 @@
   "error-account-number-positive-required": "Account number must be positive",
   "error-account-number-integer-required": "Account number must be integer",
   "error-account-holder-email-required": "Account holder email required",
-  "error-account-holder-name-required": "Account holder name require.",
+  "error-account-holder-name-required": "Account holder name required",
   "error-amount-must-positive": "Amount must be positive",
   "error-amount-must-number": "Amount must be a number",
   "error-must-number": "Must be a number",
@@ -749,5 +751,8 @@
   "text-save-seller-information": "Save Seller Information",
   "error-digital-file-is-required": "Digital file is required",
   "error-external-product-url-required": "External product URL is required",
-  "error-external-product-button-text-required": "External product button text is required"
+  "error-external-product-button-text-required": "External product button text is required",
+  "error-opening-time-required": "Opening time is required",
+  "error-closing-time-required": "Closing time is required",
+  "error-closing-time-before-opening": "Closing time cannot be before opening time"
 }

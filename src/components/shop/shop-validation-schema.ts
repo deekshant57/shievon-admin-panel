@@ -7,18 +7,27 @@ export const shopValidationSchema = yup.object().shape({
   name: yup.string().required('form:error-name-required'),
   balance: yup.object().shape({
     payment_info: yup.object().shape({
-      email: yup
-        .string()
-        .required('form:error-account-holder-email-required')
-        .typeError('form:error-email-string')
-        .email('form:error-email-format'),
-      name: yup.string().required('form:error-account-holder-name-required'),
-      bank: yup.string().required('form:error-bank-name-required'),
+      // Payment info marked as not required - validation commented out
+      // email: yup
+      //   .string()
+      //   .required('form:error-account-holder-email-required')
+      //   .typeError('form:error-email-string')
+      //   .email('form:error-email-format'),
+      // name: yup.string().required('form:error-account-holder-name-required'),
+      // bank: yup.string().required('form:error-bank-name-required'),
+      // account: yup
+      //   .number()
+      //   .positive('form:error-account-number-positive-required')
+      //   .integer('form:error-account-number-integer-required')
+      //   .required('form:error-account-number-required')
+      //   .transform((value) => (isNaN(value) ? undefined : value)),
+      email: yup.string().nullable().optional(),
+      name: yup.string().nullable().optional(),
+      bank: yup.string().nullable().optional(),
       account: yup
         .number()
-        .positive('form:error-account-number-positive-required')
-        .integer('form:error-account-number-integer-required')
-        .required('form:error-account-number-required')
+        .nullable()
+        .optional()
         .transform((value) => (isNaN(value) ? undefined : value)),
     }),
   }),
@@ -78,6 +87,21 @@ export const shopValidationSchema = yup.object().shape({
     state: yup.string().required('form:error-state-required'),
     zip: yup.string().required('form:error-zip-required'),
     street_address: yup.string().required('form:error-street-address-required'),
+  }),
+  timings: yup.object().shape({
+    open: yup.string().required('form:error-opening-time-required'),
+    close: yup
+      .string()
+      .required('form:error-closing-time-required')
+      .test(
+        'close-after-open',
+        'form:error-closing-time-before-opening',
+        function (close) {
+          const { open } = this.parent;
+          if (!open || !close) return true;
+          return close >= open;
+        }
+      ),
   }),
 });
 

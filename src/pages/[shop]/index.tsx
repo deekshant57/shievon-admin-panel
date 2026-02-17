@@ -86,12 +86,14 @@ export default function ShopPage() {
     orders_count,
     balance,
     address,
+    settings: shopSettings,
     created_at,
     slug,
     owner,
     id: shop_id,
     ownership_history,
   } = data ?? {};
+  const timings = shopSettings?.timings;
 
   return (
     <div className="-m-5 md:-m-8">
@@ -233,6 +235,20 @@ export default function ShopPage() {
                 </h2>
 
                 <ShortDescription content={description} character={90} />
+                <div className="absolute top-0 -left-8 w-[calc(100%+64px)] border-b border-dashed border-b-[#F0F0F0]" />
+              </div>
+            ) : (
+              ''
+            )}
+
+            {timings?.open && timings?.close ? (
+              <div className="relative mt-5 pt-5 xl:mt-7 xl:pt-7">
+                <h2 className="mb-4 text-lg font-semibold text-muted-black xl:text-xl">
+                  {t('common:text-opening-hours')}
+                </h2>
+                <p className="text-muted-black">
+                  {timings.open} – {timings.close}
+                </p>
                 <div className="absolute top-0 -left-8 w-[calc(100%+64px)] border-b border-dashed border-b-[#F0F0F0]" />
               </div>
             ) : (
