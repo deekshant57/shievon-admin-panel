@@ -11,17 +11,20 @@ import { adminOnly } from '@/utils/auth-utils';
 export default function UpdateTypePage() {
   const { query, locale } = useRouter();
   const { t } = useTranslation();
+  const slug = query.groupSlug as string | undefined;
+  const isEdit = query.action === 'edit';
   const {
     data,
     isLoading: loading,
     error,
   } = useTypeQuery({
-    slug: query.groupSlug as string,
-    language:
-      query.action!.toString() === 'edit' ? locale! : Config.defaultLanguage,
+    slug: slug ?? '',
+    language: isEdit ? (locale ?? Config.defaultLanguage) : Config.defaultLanguage,
+    enabled: !!slug,
   });
-  if (loading) return <Loader text={t('common:text-loading')} />;
+  if (!slug || loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
+  if (isEdit && data == null) return <Loader text={t('common:text-loading')} />;
   return (
     <>
       <div className="flex border-b border-dashed border-border-base pb-5 md:pb-7">
@@ -29,7 +32,7 @@ export default function UpdateTypePage() {
           {t('form:form-title-edit-type')}
         </h1>
       </div>
-      <CreateOrUpdateTypeForm initialValues={data} />
+      <CreateOrUpdateTypeForm initialValues={data ?? undefined} />
     </>
   );
 }

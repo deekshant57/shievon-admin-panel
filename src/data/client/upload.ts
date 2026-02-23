@@ -1,6 +1,6 @@
 import { HttpClient } from './http-client';
 import { API_ENDPOINTS } from './api-endpoints';
-import { Attachment } from '@/types';
+import { Attachment, VideoUploadItem, VideoUploadResponse } from '@/types';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { AUTH_CRED } from '@/utils/constants';
@@ -82,5 +82,90 @@ export const uploadClient = {
       console.error('Error response:', error?.response?.data);
       throw error;
     }
+  },
+
+  /**
+   * Delete an attachment from the backend (and S3).
+   * URL: DELETE {baseURL}/attachments/{id}
+   */
+  delete: async (id: string | number): Promise<void> => {
+    const baseURL = process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:9000/api';
+    const url = `${baseURL}/${API_ENDPOINTS.ATTACHMENTS}/${id}`;
+
+    const authCred = Cookies.get(AUTH_CRED);
+    let token = '';
+    if (authCred) {
+      try {
+        const parsed = JSON.parse(authCred) as { token?: string };
+        token = parsed?.token ?? '';
+      } catch {
+        token = '';
+      }
+    }
+
+    await axios.delete(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  },
+
+  /**
+   * Upload video(s) for Type (S3 uploads/videos/). Field: video[] (multipart).
+   * Allowed: mp4, webm, mov. Max 100MB per file, 10 files per request.
+   * Returns { data: [{ id, url }, ...] }; use url in Type create/update video array.
+   */
+  uploadVideos: async (files: File[]): Promise<VideoUploadItem[]> => {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('video[]', file);
+    });
+    const baseURL = process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:9000/api';
+    const url = `${baseURL}/${API_ENDPOINTS.ATTACHMENTS_VIDEOS}`;
+
+    const authCred = Cookies.get(AUTH_CRED);
+    let token = '';
+    if (authCred) {
+      try {
+        const parsed = JSON.parse(authCred) as { token?: string };
+        token = parsed?.token ?? '';
+      } catch {
+        token = '';
+      }
+    }
+
+    const res = await axios.post<VideoUploadResponse>(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = res.data?.data;
+    return Array.isArray(data) ? data : [];
+  },
+
+  /**
+   * Delete a video from S3. id = numeric ID from upload response (data[].id).
+   */
+  deleteVideo: async (id: number): Promise<void> => {
+    const baseURL = process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:9000/api';
+    const url = `${baseURL}/${API_ENDPOINTS.ATTACHMENTS_VIDEOS}/${id}`;
+
+    const authCred = Cookies.get(AUTH_CRED);
+    let token = '';
+    if (authCred) {
+      try {
+        const parsed = JSON.parse(authCred) as { token?: string };
+        token = parsed?.token ?? '';
+      } catch {
+        token = '';
+      }
+    }
+
+    await axios.delete(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
   },
 };

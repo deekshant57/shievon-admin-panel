@@ -27,3 +27,9 @@ export const useUploadMutation = () => {
     }
   );
 };
+
+export const useDeleteAttachmentMutation = () => {
+  return useMutation((attachmentId: string | number) =>
+    uploadClient.delete(attachmentId)
+  );
+};

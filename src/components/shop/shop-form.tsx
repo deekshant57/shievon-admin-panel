@@ -261,10 +261,11 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
       shopMaintenance: values?.settings?.shopMaintenance,
     };
     if (initialValues) {
+      const { cover_image, logo, ...restValues } = values;
       const { ...restAddress } = values.address;
       updateShop({
         id: initialValues?.id as string,
-        ...values,
+        ...restValues,
         address: restAddress,
         settings,
         timings: values.timings,
@@ -272,6 +273,9 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
           id: initialValues.balance?.id,
           ...values.balance,
         },
+        cover_image_id:
+          cover_image?.id != null ? Number(cover_image.id) : null,
+        logo_id: logo?.id != null ? Number(logo.id) : null,
       });
     } else {
       createShop({
@@ -330,7 +334,12 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
           />
 
           <Card className="w-full sm:w-8/12 md:w-2/3">
-            <FileInput name="logo" control={control} multiple={false} />
+            <FileInput
+              name="logo"
+              control={control}
+              multiple={false}
+              skipDeleteOnRemove
+            />
           </Card>
         </div>
 
@@ -342,7 +351,12 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
           />
 
           <Card className="w-full sm:w-8/12 md:w-2/3">
-            <FileInput name="cover_image" control={control} multiple={false} />
+            <FileInput
+              name="cover_image"
+              control={control}
+              multiple={false}
+              skipDeleteOnRemove
+            />
           </Card>
         </div>
         <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">

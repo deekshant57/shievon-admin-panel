@@ -295,6 +295,25 @@ export interface TypeSettingsBanner {
   image: { original: string; thumbnail: string };
 }
 
+/** Video item in Type create/update payload (url from POST /attachments/videos) */
+export interface TypeVideoItem {
+  url: string;
+}
+
+/** Response item from POST /attachments/videos */
+export interface VideoUploadItem {
+  id: number;
+  url: string;
+}
+
+/** Response from POST /attachments/videos */
+export interface VideoUploadResponse {
+  code: number;
+  status: boolean;
+  message: string;
+  data: VideoUploadItem[];
+}
+
 export interface Type {
   id: string;
   name: string;
@@ -306,22 +325,31 @@ export interface Type {
   image_id?: number | null;
   promotional_sliders?: AttachmentInput[];
   settings?: TypeSettings;
+  /** Video URLs (from upload); used in create/update as video: [{ url }, ...] */
+  video?: TypeVideoItem[];
   products?: ProductPaginator;
   created_at: string;
   updated_at: string;
   translated_languages: string[];
 }
 
-export interface CreateTypeInput {
-  name: string;
+/** Create type – all optional at DTO level; API uses defaults (e.g. slug from name, language: 'en'). image_id is update-only (ignored on create). */
+export interface CreateTypePayload {
+  name?: string;
   slug?: string;
-  language?: string;
-  gallery?: AttachmentInput[];
   icon?: string;
-  /** Attachment id for type icon image. Use null to clear. */
+  language?: string;
+  settings?: TypeSettingsInput;
+  video?: TypeVideoItem[];
+  /** Update-only: attachment ID from upload; null to clear icon. Ignored on POST. */
   image_id?: number | null;
-  banner_text?: string;
 }
+
+/** Update type – all optional; send only what you change. image_id: attachment ID from upload; null to clear icon. */
+export type UpdateTypePayload = CreateTypePayload;
+
+/** Alias for create type request body (API accepts all optional; name is typically required by UI). */
+export type CreateTypeInput = CreateTypePayload;
 
 export interface Category {
   id: string;
@@ -602,6 +630,10 @@ export interface UpdateMeInput {
   date_of_birth?: string; // ISO date string, e.g. "1995-08-15"
   gender?: string;
   avatar?: AttachmentInput | null;
+  /** Attachment id from POST /attachments; set/update profile image. */
+  profile_image_attachment_id?: number | null;
+  /** { original, thumbnail } from upload; null to remove profile image. */
+  profile_image_url?: { original?: string; thumbnail?: string } | null;
   bio?: string | null;
 }
 
@@ -1120,6 +1152,8 @@ export interface CreateCategoryInput {
   parent?: number;
   details?: string;
   image?: AttachmentInput;
+  /** Sent on update; null to clear category image. */
+  image_id?: number | null;
   icon?: string;
 }
 
@@ -1824,6 +1858,10 @@ export interface ShopInput {
   description?: string;
   cover_image?: AttachmentInput;
   logo?: AttachmentInput;
+  /** Sent on update; attachment id or null. */
+  cover_image_id?: number | null;
+  /** Sent on update; attachment id or null. */
+  logo_id?: number | null;
   address?: UserAddressInput;
   settings?: ShopSettingsInput;
   timings?: { open: string; close: string };
@@ -1901,6 +1939,8 @@ export interface TypeSettings {
   productCard?: string;
   promotional_sliders?: Array<{ original: string; thumbnail: string }>;
   banners?: TypeSettingsBanner[];
+  /** Video URLs (returned under settings by API; also sent at type root on create/update) */
+  video?: TypeVideoItem[];
   bestSelling: {
     enable?: boolean;
     title?: string;

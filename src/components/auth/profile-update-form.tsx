@@ -78,21 +78,27 @@ export default function ProfileUpdate({ me }: any) {
         .trim() || undefined;
 
     // Map form values to the flat UpdateMeInput payload expected by PUT /api/me.
+    const hasAvatar =
+      profile?.avatar &&
+      (profile.avatar.original || profile.avatar.thumbnail);
     const input = {
       name: fullName,
       first_name: first_name || undefined,
       last_name: last_name || undefined,
-      // Use mobile_no as the primary contact field; backend also exposes
-      // phone as a separate optional field.
       mobile_no: profile?.contact,
       bio: profile?.bio,
-      avatar:
-        profile?.avatar?.original || profile?.avatar?.thumbnail
-          ? {
+      ...(hasAvatar
+        ? {
+            profile_image_attachment_id:
+              profile.avatar?.id != null
+                ? Number(profile.avatar.id)
+                : undefined,
+            profile_image_url: {
               original: profile?.avatar?.original,
               thumbnail: profile?.avatar?.thumbnail,
-            }
-          : undefined,
+            },
+          }
+        : { profile_image_url: null }),
     };
 
     updateUser(input);
@@ -108,7 +114,12 @@ export default function ProfileUpdate({ me }: any) {
         />
 
         <Card className="w-full sm:w-8/12 md:w-2/3">
-          <FileInput name="profile.avatar" control={control} multiple={false} />
+          <FileInput
+            name="profile.avatar"
+            control={control}
+            multiple={false}
+            skipDeleteOnRemove
+          />
         </Card>
       </div>
       {permission ? (

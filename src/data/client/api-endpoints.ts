@@ -1,5 +1,7 @@
 export const API_ENDPOINTS = {
   ATTACHMENTS: 'attachments',
+  /** POST multipart video[]; returns { data: [{ id, url }] }. DELETE /attachments/videos/:id */
+  ATTACHMENTS_VIDEOS: 'attachments/videos',
   ANALYTICS: 'analytics',
   ATTRIBUTES: 'attributes',
   ATTRIBUTE_VALUES: 'attribute-values',

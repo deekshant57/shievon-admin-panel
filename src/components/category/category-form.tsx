@@ -220,16 +220,13 @@ export default function CreateOrUpdateCategoriesForm({
     useUpdateCategoryMutation();
 
   const onSubmit = async (values: FormValues) => {
-    const input = {
+    const imageId =
+      values?.image?.id != null ? Number(values.image.id) : null;
+    const baseInput = {
       language: router.locale,
       name: values.name,
       slug: values.slug,
       details: values.details,
-      image: {
-        thumbnail: values?.image?.thumbnail,
-        original: values?.image?.original,
-        id: values?.image?.id,
-      },
       icon: values.icon?.value || '',
       parent: values.parent?.id ?? null,
       type_id: values.type?.id,
@@ -239,12 +236,18 @@ export default function CreateOrUpdateCategoriesForm({
       !initialValues.translated_languages.includes(router.locale!)
     ) {
       createCategory({
-        ...input,
+        ...baseInput,
+        image: {
+          thumbnail: values?.image?.thumbnail,
+          original: values?.image?.original,
+          id: values?.image?.id,
+        },
         ...(initialValues?.slug && { slug: initialValues.slug }),
       });
     } else {
       updateCategory({
-        ...input,
+        ...baseInput,
+        image_id: imageId,
         id: initialValues.id!,
       });
     }
@@ -260,7 +263,12 @@ export default function CreateOrUpdateCategoriesForm({
         />
 
         <Card className="w-full sm:w-8/12 md:w-2/3">
-          <FileInput name="image" control={control} multiple={false} />
+          <FileInput
+            name="image"
+            control={control}
+            multiple={false}
+            skipDeleteOnRemove
+          />
         </Card>
       </div>
 

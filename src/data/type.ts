@@ -68,9 +68,15 @@ export const useUpdateTypeMutation = () => {
   });
 };
 
-export const useTypeQuery = ({ slug, language }: GetParams) => {
-  return useQuery<Type, Error>([API_ENDPOINTS.TYPES, { slug, language }], () =>
-    typeClient.get({ slug, language })
+export const useTypeQuery = ({
+  slug,
+  language,
+  enabled = true,
+}: GetParams & { enabled?: boolean }) => {
+  return useQuery<Type, Error>(
+    [API_ENDPOINTS.TYPES, { slug, language }],
+    () => typeClient.get({ slug, language }),
+    { enabled: enabled && !!slug }
   );
 };
 

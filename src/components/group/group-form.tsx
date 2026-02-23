@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import { getIcon } from '@/utils/get-icon';
 import Label from '@/components/ui/label';
 import * as typeIcons from '@/components/icons/type';
-import { AttachmentInput, Category, Type, TypeSettingsInput } from '@/types';
+import { AttachmentInput, Type, TypeSettingsInput } from '@/types';
 import { typeIconList } from './group-icons';
 import { useTranslation } from 'next-i18next';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -15,6 +15,9 @@ import { typeValidationSchema } from './group-validation-schema';
 import SelectInput from '@/components/ui/select-input';
 import FileInput from '@/components/ui/file-input';
 import Uploader from '@/components/common/uploader';
+import VideoUploader, {
+  type VideoFormItem,
+} from '@/components/common/video-uploader';
 import Title from '@/components/ui/title';
 import Alert from '@/components/ui/alert';
 import TextArea from '@/components/ui/text-area';
@@ -124,6 +127,7 @@ type FormValues = {
   promotional_sliders: AttachmentInput[];
   banners: BannerInput[];
   settings: TypeSettingsInput;
+  video: VideoFormItem[];
 };
 
 type IProps = {
@@ -153,6 +157,10 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
       type_image: initialValues?.image ?? null,
       promotional_sliders: initialValues?.promotional_sliders ?? initialValues?.settings?.promotional_sliders ?? [],
       banners: initialValues?.settings?.banners ?? [],
+      video:
+        (initialValues?.settings?.video ?? initialValues?.video)?.map(
+          (v: { url: string; id?: number }) => ({ url: v.url, id: v.id })
+        ) ?? [],
       // @ts-ignore
       settings: {
         ...initialValues?.settings,
@@ -163,8 +171,19 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
           ? initialValues?.settings?.productCard
           : productCards[0].value,
         bestSelling: {
-          enable: initialValues?.settings?.bestSelling?.enable,
-          title: initialValues?.settings?.bestSelling?.title,
+          enable:
+            initialValues?.settings?.bestSelling === true ||
+            (typeof initialValues?.settings?.bestSelling === 'object' &&
+              initialValues?.settings?.bestSelling !== null &&
+              (initialValues.settings.bestSelling as { enable?: boolean })
+                ?.enable === true),
+          title:
+            typeof initialValues?.settings?.bestSelling === 'object' &&
+            initialValues?.settings?.bestSelling !== null &&
+            'title' in (initialValues.settings.bestSelling as object)
+              ? (initialValues.settings.bestSelling as { title?: string })
+                  ?.title ?? ''
+              : '',
         },
         popularProducts: {
           enable: initialValues?.settings?.popularProducts?.enable,
@@ -259,6 +278,8 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
         : initialValues
           ? { image_id: null as number | null }
           : {}),
+      video:
+        values.video?.map(({ url }) => ({ url })) ?? [],
       settings: {
         isHome: values?.settings?.isHome,
         productCard: values?.settings?.productCard,
@@ -442,6 +463,7 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
                     }}
                     multiple={false}
                     helperText={t('form:input-label-type-image-help')}
+                    skipDeleteOnRemove
                   />
                 );
               }}
@@ -455,6 +477,23 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
               options={updatedIcons}
               isClearable={true}
               placeholder="Select Icon"
+            />
+          </div>
+
+          <div className="mb-5">
+            <Label>{t('form:input-label-videos')}</Label>
+            <Controller
+              control={control}
+              name="video"
+              render={({ field: { value, onChange } }) => (
+                <VideoUploader
+                  value={value ?? []}
+                  onChange={onChange}
+                  helperText={
+                    t('form:input-label-videos-help')
+                  }
+                />
+              )}
             />
           </div>
         </Card>

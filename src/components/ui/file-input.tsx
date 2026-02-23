@@ -18,6 +18,8 @@ interface FileInputProps {
   error?: string;
   /** e.g. 'banners' for type banner/slider images (POST /attachments?folder=banners) */
   folder?: string;
+  /** When true, do not call DELETE attachment on remove (e.g. category/shop/profile/type image). */
+  skipDeleteOnRemove?: boolean;
 }
 
 const FileInput = ({
@@ -34,6 +36,7 @@ const FileInput = ({
   required,
   error,
   folder,
+  skipDeleteOnRemove,
 }: FileInputProps) => {
   return (
     <>
@@ -57,6 +60,7 @@ const FileInput = ({
             maxSize={maxSize}
             disabled={disabled}
             folder={folder}
+            skipDeleteOnRemove={skipDeleteOnRemove}
           />
         )}
       />
