@@ -5,6 +5,7 @@ import { Control } from 'react-hook-form';
 import { useTranslation } from 'next-i18next';
 import { useTypesQuery } from '@/data/type';
 import { useRouter } from 'next/router';
+import { isServiceType } from '@/utils/service-type';
 
 interface Props {
   control: Control<any>;
@@ -18,6 +19,8 @@ const ProductGroupInput = ({ control, error }: Props) => {
     limit: 200,
     language: locale,
   });
+
+  const productTypes = (types ?? []).filter((type: any) => !isServiceType(type));
   return (
     <div className="mb-5">
       <Label>{t('form:input-label-group')}*</Label>
@@ -26,7 +29,7 @@ const ProductGroupInput = ({ control, error }: Props) => {
         control={control}
         getOptionLabel={(option: any) => option.name}
         getOptionValue={(option: any) => option.id}
-        options={types!}
+        options={productTypes}
         isLoading={loading}
       />
       <ValidationError message={t(error!)} />

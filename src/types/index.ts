@@ -2135,6 +2135,73 @@ export interface ProductQueryOptions extends QueryOptions {
   include_subcategories?: boolean;
 }
 
+// Service Offerings (Vendor Services)
+
+export type ServiceOfferingStatus = 'active' | 'inactive' | 'draft' | string
+
+export interface ServiceOfferingAttributeValueInput {
+  definition_code: string
+  enum_value_id?: number
+  value_string?: string
+  value_number?: number
+  value_boolean?: boolean
+}
+
+export interface ServiceOffering {
+  id: string
+  shopId?: number
+  typeId?: number
+  offeringTypeId?: number
+  name: string
+  slug?: string
+  description?: string
+  basePrice?: string | number
+  salePrice?: string | number
+  currency?: string
+  durationMinutes?: number
+  status?: ServiceOfferingStatus
+  sortOrder?: number
+  image?: Attachment
+  gallery?: Attachment[]
+  attributes?: ServiceOfferingAttributeValueInput[]
+  // optional relations when backend includes them
+  shop?: Shop
+  type?: Type
+}
+
+export interface CreateServiceOfferingInput {
+  shop_id: number
+  type_id: number
+  offering_type_id: number
+  name: string
+  slug?: string
+  description?: string
+  base_price?: number
+  sale_price?: number
+  currency?: string
+  duration_minutes?: number
+  service_location_id?: number | null
+  service_category_id?: number | null
+  metadata?: Record<string, unknown>
+  status?: ServiceOfferingStatus
+  sort_order?: number
+  image?: AttachmentInput
+  gallery?: AttachmentInput[]
+  attributes?: ServiceOfferingAttributeValueInput[]
+}
+
+export interface ServiceOfferingQueryOptions extends QueryOptions {
+  shop_id: number | string
+  service_location_id?: number
+  service_category_id?: number
+  offering_type_id?: number
+  status?: string
+  search?: string
+}
+
+export interface ServiceOfferingPaginator
+  extends PaginatorInfo<ServiceOffering> {}
+
 export interface UserQueryOptions extends QueryOptions {
   name: string;
   search?: string;

@@ -705,6 +705,34 @@ export const siteSettings = {
         ],
       },
 
+      service: {
+        href: '',
+        label: 'text-service-management',
+        icon: 'ProductsIcon',
+        permissions: adminOwnerAndStaffOnly,
+        childMenu: [
+          {
+            href: (shop: string) => `/${shop}${Routes.serviceOffering.list}`,
+            label: 'sidebar-nav-item-services',
+            icon: 'ProductsIcon',
+            childMenu: [
+              {
+                href: (shop: string) => `/${shop}${Routes.serviceOffering.list}`,
+                label: 'text-all-services',
+                icon: 'ProductsIcon',
+                permissions: adminOwnerAndStaffOnly,
+              },
+              {
+                href: (shop: string) => `/${shop}${Routes.serviceOffering.create}`,
+                label: 'text-new-service',
+                icon: 'ProductsIcon',
+                permissions: adminOwnerAndStaffOnly,
+              },
+            ],
+          },
+        ],
+      },
+
       /*
        * Hidden in vendor portal:
        * - Financial Management (and its sections)
@@ -1005,6 +1033,34 @@ export const siteSettings = {
           //   icon: 'FountainPenIcon',
           //   permissions: adminAndOwnerOnly,
           // },
+        ],
+      },
+
+      service: {
+        href: '',
+        label: 'text-service-management',
+        icon: 'ProductsIcon',
+        permissions: adminOwnerAndStaffOnly,
+        childMenu: [
+          {
+            href: (shop: string) => `/${shop}${Routes.serviceOffering.list}`,
+            label: 'sidebar-nav-item-services',
+            icon: 'ProductsIcon',
+            childMenu: [
+              {
+                href: (shop: string) => `/${shop}${Routes.serviceOffering.list}`,
+                label: 'text-all-services',
+                icon: 'ProductsIcon',
+                permissions: adminOwnerAndStaffOnly,
+              },
+              {
+                href: (shop: string) => `/${shop}${Routes.serviceOffering.create}`,
+                label: 'text-new-service',
+                icon: 'ProductsIcon',
+                permissions: adminOwnerAndStaffOnly,
+              },
+            ],
+          },
         ],
       },
 

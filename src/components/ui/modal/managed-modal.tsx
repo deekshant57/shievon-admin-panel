@@ -39,6 +39,9 @@ const CouponDeleteView = dynamic(
 const ProductDeleteView = dynamic(
   () => import('@/components/product/product-delete-view'),
 );
+const ServiceOfferingDeleteView = dynamic(
+  () => import('@/components/service/service-delete-view'),
+);
 const TypeDeleteView = dynamic(
   () => import('@/components/group/group-delete-view'),
 );
@@ -167,6 +170,8 @@ function renderModal(view: MODAL_VIEWS | undefined, data: any) {
   switch (view) {
     case 'DELETE_PRODUCT':
       return <ProductDeleteView />;
+    case 'DELETE_SERVICE_OFFERING':
+      return <ServiceOfferingDeleteView />;
     case 'DELETE_TYPE':
       return <TypeDeleteView />;
     case 'DELETE_ATTRIBUTE':

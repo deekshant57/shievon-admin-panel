@@ -70,6 +70,9 @@ export const Routes = {
   product: {
     ...routesFactory('/products'),
   },
+  serviceOffering: {
+    ...routesFactory('/services'),
+  },
   shop: {
     ...routesFactory('/shops'),
   },

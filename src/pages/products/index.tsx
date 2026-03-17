@@ -16,6 +16,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import PageHeading from '@/components/common/page-heading';
+import { isServiceType } from '@/utils/service-type';
 
 interface ProductTypeOptions {
   name: string;
@@ -49,6 +50,8 @@ export default function ProductsPage() {
     orderBy,
     sortedBy,
   });
+
+  const filteredProducts = (products ?? []).filter((p: any) => !isServiceType(p?.type));
 
   if (loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
@@ -115,12 +118,13 @@ export default function ProductsPage() {
               enableCategory
               enableType
               enableProductType
+              typeNameDenyList={['Cafe', 'Salon']}
             />
           </div>
         </div>
       </Card>
       <ProductList
-        products={products}
+        products={filteredProducts}
         paginatorInfo={paginatorInfo}
         onPagination={handlePagination}
         onOrder={setOrder}

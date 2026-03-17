@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
   VERIFY_REGISTRATION_OTP: 'verify-registration-otp',
   PRODUCTS: 'products',
   POPULAR_PRODUCTS: 'popular-products',
+  SERVICE_OFFERINGS: 'service-offerings',
   COUPONS: 'coupons',
   VERIFY_COUPONS: 'coupons/verify',
   // CUSTOMERS: 'customers',

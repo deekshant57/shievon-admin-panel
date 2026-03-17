@@ -29,6 +29,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useRouter } from 'next/router';
 import { useState, useEffect, useRef } from 'react';
 import PageHeading from '@/components/common/page-heading';
+import { isServiceType } from '@/utils/service-type';
 
 interface ProductTypeOptions {
   name: string;
@@ -84,6 +85,8 @@ export default function ProductsPage() {
       enabled: Boolean(shopId),
     },
   );
+
+  const filteredProducts = (products ?? []).filter((p: any) => !isServiceType(p?.type));
 
   function handleImportModal() {
     openModal('EXPORT_IMPORT_PRODUCT', shopId);
@@ -228,12 +231,13 @@ export default function ProductsPage() {
               enableCategory
               enableType
               enableProductType
+              typeNameDenyList={['Cafe', 'Salon']}
             />
           </div>
         </div>
       </Card>
       <ProductList
-        products={products}
+        products={filteredProducts}
         paginatorInfo={paginatorInfo}
         onPagination={handlePagination}
         onOrder={setOrder}

@@ -23,6 +23,8 @@ type Props = {
   enableCategory?: boolean;
   enableAuthor?: boolean;
   enableProductType?: boolean;
+  typeNameAllowList?: string[];
+  typeNameDenyList?: string[];
 };
 
 export default function CategoryTypeFilter({
@@ -36,11 +38,25 @@ export default function CategoryTypeFilter({
   enableCategory,
   enableAuthor,
   enableProductType,
+  typeNameAllowList,
+  typeNameDenyList,
 }: Props) {
   const { locale } = useRouter();
   const { t } = useTranslation();
 
-  const { types, loading } = useTypesQuery({ language: locale });
+  const { types: rawTypes, loading } = useTypesQuery({ language: locale });
+  const normalizedAllow = (typeNameAllowList ?? []).map((v) =>
+    String(v).trim().toLowerCase(),
+  );
+  const normalizedDeny = (typeNameDenyList ?? []).map((v) =>
+    String(v).trim().toLowerCase(),
+  );
+  const types = (rawTypes ?? []).filter((t: any) => {
+    const name = String(t?.name ?? '').trim().toLowerCase();
+    if (normalizedAllow.length) return normalizedAllow.includes(name);
+    if (normalizedDeny.length) return !normalizedDeny.includes(name);
+    return true;
+  });
   const { categories, loading: categoryLoading } = useCategoriesQuery({
     limit: 999,
     language: locale,
