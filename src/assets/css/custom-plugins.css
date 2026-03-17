@@ -547,7 +547,7 @@ group
 
 /* React toastify */
 .Toastify__toast-theme--colored.Toastify__toast--success {
-  @apply !bg-accent;
+  background-color: rgb(var(--color-complete)) !important;
 }
 
 .Toastify__toast-theme--colored.Toastify__toast--error {

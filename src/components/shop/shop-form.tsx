@@ -278,13 +278,17 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
         logo_id: logo?.id != null ? Number(logo.id) : null,
       });
     } else {
+      const { cover_image, logo, ...restValues } = values;
       createShop({
-        ...values,
+        ...restValues,
         settings,
         timings: values.timings,
         balance: {
           ...values.balance,
         },
+        logo_id: logo?.id != null ? Number(logo.id) : null,
+        cover_image_id:
+          cover_image?.id != null ? Number(cover_image.id) : null,
       });
     }
   }

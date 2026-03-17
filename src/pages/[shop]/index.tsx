@@ -202,7 +202,12 @@ export default function ShopPage() {
                   {t('common:text-edit-shop')}
                 </Link>
 
-                {!OWNERSHIP_TRANSFER_STATUS?.includes(
+                {/*
+                  Hidden in vendor portal:
+                  Transfer Ownership button next to "Edit shop".
+                  (Code kept intentionally, only commented.)
+                */}
+                {/* {!OWNERSHIP_TRANSFER_STATUS?.includes(
                   ownership_history?.status as OwnerShipTransferStatus,
                 ) ? (
                   <Link
@@ -214,7 +219,7 @@ export default function ShopPage() {
                   </Link>
                 ) : (
                   ''
-                )}
+                )} */}
               </div>
             )}
           </div>

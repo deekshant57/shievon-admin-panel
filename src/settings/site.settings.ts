@@ -678,181 +678,215 @@ export const siteSettings = {
             icon: 'InventoryIcon',
             permissions: adminOwnerAndStaffOnly,
           },
-          {
-            href: (shop: string) => `/${shop}${Routes.attribute.list}`,
-            label: 'sidebar-nav-item-attributes',
-            icon: 'AttributeIcon',
-            permissions: adminOwnerAndStaffOnly,
-          },
-          {
-            href: (shop: string) => `/${shop}${Routes.manufacturer.list}`,
-            label: 'sidebar-nav-item-manufacturers',
-            icon: 'DiaryIcon',
-            permissions: adminAndOwnerOnly,
-          },
-          {
-            href: (shop: string) => `/${shop}${Routes.author.list}`,
-            label: 'sidebar-nav-item-authors',
-            icon: 'FountainPenIcon',
-            permissions: adminAndOwnerOnly,
-          },
+          /*
+           * Hidden in vendor portal (My Shops -> Product Management menu):
+           * - Attributes
+           * - Manufacturers/Publications
+           * - Authors
+           */
+          // {
+          //   href: (shop: string) => `/${shop}${Routes.attribute.list}`,
+          //   label: 'sidebar-nav-item-attributes',
+          //   icon: 'AttributeIcon',
+          //   permissions: adminOwnerAndStaffOnly,
+          // },
+          // {
+          //   href: (shop: string) => `/${shop}${Routes.manufacturer.list}`,
+          //   label: 'sidebar-nav-item-manufacturers',
+          //   icon: 'DiaryIcon',
+          //   permissions: adminAndOwnerOnly,
+          // },
+          // {
+          //   href: (shop: string) => `/${shop}${Routes.author.list}`,
+          //   label: 'sidebar-nav-item-authors',
+          //   icon: 'FountainPenIcon',
+          //   permissions: adminAndOwnerOnly,
+          // },
         ],
       },
 
-      financial: {
-        href: '',
-        label: 'text-financial-management',
-        icon: 'WithdrawIcon',
-        childMenu: [
-          {
-            href: (shop: string) => `/${shop}${Routes.withdraw.list}`,
-            label: 'sidebar-nav-item-withdraws',
-            icon: 'AttributeIcon',
-            permissions: adminAndOwnerOnly,
-          },
-          {
-            href: (shop: string) => `/${shop}${Routes.refund.list}`,
-            label: 'sidebar-nav-item-refunds',
-            icon: 'RefundsIcon',
-            permissions: adminOwnerAndStaffOnly,
-          },
-        ],
-      },
+      /*
+       * Hidden in vendor portal:
+       * - Financial Management (and its sections)
+       */
+      // financial: {
+      //   href: '',
+      //   label: 'text-financial-management',
+      //   icon: 'WithdrawIcon',
+      //   childMenu: [
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.withdraw.list}`,
+      //       label: 'sidebar-nav-item-withdraws',
+      //       icon: 'AttributeIcon',
+      //       permissions: adminAndOwnerOnly,
+      //     },
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.refund.list}`,
+      //       label: 'sidebar-nav-item-refunds',
+      //       icon: 'RefundsIcon',
+      //       permissions: adminOwnerAndStaffOnly,
+      //     },
+      //   ],
+      // },
 
-      order: {
-        href: '',
-        label: 'text-order-management',
-        icon: 'OrdersIcon',
-        childMenu: [
-          {
-            href: (shop: string) => `/${shop}${Routes.order.list}`,
-            label: 'sidebar-nav-item-orders',
-            icon: 'OrdersIcon',
-            permissions: adminOwnerAndStaffOnly,
-          },
-          {
-            href: (shop: string) => `/${shop}${Routes.transaction}`,
-            label: 'text-transactions',
-            icon: 'CalendarScheduleIcon',
-            permissions: adminAndOwnerOnly,
-          },
-        ],
-      },
+      /*
+       * Hidden in vendor portal:
+       * - Order management (and its sections)
+       */
+      // order: {
+      //   href: '',
+      //   label: 'text-order-management',
+      //   icon: 'OrdersIcon',
+      //   childMenu: [
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.order.list}`,
+      //       label: 'sidebar-nav-item-orders',
+      //       icon: 'OrdersIcon',
+      //       permissions: adminOwnerAndStaffOnly,
+      //     },
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.transaction}`,
+      //       label: 'text-transactions',
+      //       icon: 'CalendarScheduleIcon',
+      //       permissions: adminAndOwnerOnly,
+      //     },
+      //   ],
+      // },
 
-      feature: {
-        href: '',
-        label: 'text-feature-management',
-        icon: 'ProductsIcon',
-        childMenu: [
-          {
-            href: (shop: string) => `/${shop}${Routes.storeNotice.list}`,
-            label: 'sidebar-nav-item-store-notice',
-            icon: 'StoreNoticeIcon',
-            permissions: adminAndOwnerOnly,
-          },
-          {
-            href: (shop: string) => `${Routes.ownerDashboardMessage}`,
-            label: 'sidebar-nav-item-message',
-            icon: 'ChatIcon',
-            permissions: adminAndOwnerOnly,
-          },
-        ],
-      },
+      /*
+       * Hidden in vendor portal:
+       * - Feature Management (Store Notice, Messages)
+       */
+      // feature: {
+      //   href: '',
+      //   label: 'text-feature-management',
+      //   icon: 'ProductsIcon',
+      //   childMenu: [
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.storeNotice.list}`,
+      //       label: 'sidebar-nav-item-store-notice',
+      //       icon: 'StoreNoticeIcon',
+      //       permissions: adminAndOwnerOnly,
+      //     },
+      //     {
+      //       href: (shop: string) => `${Routes.ownerDashboardMessage}`,
+      //       label: 'sidebar-nav-item-message',
+      //       icon: 'ChatIcon',
+      //       permissions: adminAndOwnerOnly,
+      //     },
+      //   ],
+      // },
 
-      feedback: {
-        href: '',
-        label: 'text-feedback-control',
-        icon: 'SettingsIcon',
-        childMenu: [
-          {
-            href: (shop: string) => `/${shop}${Routes.reviews.list}`,
-            label: 'sidebar-nav-item-reviews',
-            icon: 'ReviewIcon',
-            permissions: adminAndOwnerOnly,
-          },
-          {
-            href: (shop: string) => `/${shop}${Routes.question.list}`,
-            label: 'sidebar-nav-item-questions',
-            icon: 'QuestionIcon',
-            permissions: adminAndOwnerOnly,
-          },
-        ],
-      },
+      /*
+       * Hidden in vendor portal:
+       * - Feedback control (and its sections)
+       */
+      // feedback: {
+      //   href: '',
+      //   label: 'text-feedback-control',
+      //   icon: 'SettingsIcon',
+      //   childMenu: [
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.reviews.list}`,
+      //       label: 'sidebar-nav-item-reviews',
+      //       icon: 'ReviewIcon',
+      //       permissions: adminAndOwnerOnly,
+      //     },
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.question.list}`,
+      //       label: 'sidebar-nav-item-questions',
+      //       icon: 'QuestionIcon',
+      //       permissions: adminAndOwnerOnly,
+      //     },
+      //   ],
+      // },
 
-      user: {
-        href: '',
-        label: 'text-user-control',
-        icon: 'SettingsIcon',
-        childMenu: [
-          {
-            href: (shop: string) => `/${shop}${Routes.staff.list}`,
-            label: 'sidebar-nav-item-staffs',
-            icon: 'UsersIcon',
-            permissions: adminAndOwnerOnly,
-          },
-        ],
-      },
+      /*
+       * Hidden in vendor portal:
+       * - User control (and its sections)
+       */
+      // user: {
+      //   href: '',
+      //   label: 'text-user-control',
+      //   icon: 'SettingsIcon',
+      //   childMenu: [
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.staff.list}`,
+      //       label: 'sidebar-nav-item-staffs',
+      //       icon: 'UsersIcon',
+      //       permissions: adminAndOwnerOnly,
+      //     },
+      //   ],
+      // },
 
-      promotional: {
-        href: '',
-        label: 'text-promotional-control',
-        icon: 'SettingsIcon',
-        childMenu: [
-          {
-            href: (shop: string) => `/${shop}${Routes.coupon.list}`,
-            label: 'Coupons',
-            icon: 'CouponsIcon',
-            permissions: adminAndOwnerOnly,
-          },
-          {
-            href: (shop: string) => `/${shop}${Routes.flashSale.list}`,
-            label: 'text-flash-sale',
-            icon: 'UsersIcon',
-            childMenu: [
-              {
-                href: (shop: string) => `/${shop}${Routes.flashSale.list}`,
-                label: 'text-available-flash-deals',
-                icon: 'ProductsIcon',
-                permissions: adminOwnerAndStaffOnly,
-              },
-              {
-                href: (shop: string) =>
-                  `/${shop}${Routes.myProductsInFlashSale}`,
-                label: 'text-my-products-in-deals',
-                icon: 'ProductsIcon',
-                permissions: adminOwnerAndStaffOnly,
-              },
-              {
-                href: (shop: string) =>
-                  `/${shop}${Routes.vendorRequestForFlashSale.list}`,
-                label: 'Ask for enrollment',
-                icon: 'ProductsIcon',
-                permissions: adminOwnerAndStaffOnly,
-              },
-            ],
-          },
-        ],
-      },
+      /*
+       * Hidden in vendor portal:
+       * - Promotional control (and its sections)
+       */
+      // promotional: {
+      //   href: '',
+      //   label: 'text-promotional-control',
+      //   icon: 'SettingsIcon',
+      //   childMenu: [
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.coupon.list}`,
+      //       label: 'Coupons',
+      //       icon: 'CouponsIcon',
+      //       permissions: adminAndOwnerOnly,
+      //     },
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.flashSale.list}`,
+      //       label: 'text-flash-sale',
+      //       icon: 'UsersIcon',
+      //       childMenu: [
+      //         {
+      //           href: (shop: string) => `/${shop}${Routes.flashSale.list}`,
+      //           label: 'text-available-flash-deals',
+      //           icon: 'ProductsIcon',
+      //           permissions: adminOwnerAndStaffOnly,
+      //         },
+      //         {
+      //           href: (shop: string) =>
+      //             `/${shop}${Routes.myProductsInFlashSale}`,
+      //           label: 'text-my-products-in-deals',
+      //           icon: 'ProductsIcon',
+      //           permissions: adminOwnerAndStaffOnly,
+      //         },
+      //         {
+      //           href: (shop: string) =>
+      //             `/${shop}${Routes.vendorRequestForFlashSale.list}`,
+      //           label: 'Ask for enrollment',
+      //           icon: 'ProductsIcon',
+      //           permissions: adminOwnerAndStaffOnly,
+      //         },
+      //       ],
+      //     },
+      //   ],
+      // },
 
-      layout: {
-        href: '',
-        label: 'text-page-management',
-        icon: 'SettingsIcon',
-        childMenu: [
-          {
-            href: (shop: string) => `/${shop}${Routes.faqs.list}`,
-            label: 'text-faqs',
-            icon: 'TypesIcon',
-            permissions: adminOwnerAndStaffOnly,
-          },
-          {
-            href: (shop: string) => `/${shop}${Routes.termsAndCondition.list}`,
-            label: 'Terms And Conditions',
-            icon: 'TypesIcon',
-            permissions: adminAndOwnerOnly,
-          },
-        ],
-      },
+      /*
+       * Hidden in vendor portal:
+       * - Layout/Page management (and its sections)
+       */
+      // layout: {
+      //   href: '',
+      //   label: 'text-page-management',
+      //   icon: 'SettingsIcon',
+      //   childMenu: [
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.faqs.list}`,
+      //       label: 'text-faqs',
+      //       icon: 'TypesIcon',
+      //       permissions: adminOwnerAndStaffOnly,
+      //     },
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.termsAndCondition.list}`,
+      //       label: 'Terms And Conditions',
+      //       icon: 'TypesIcon',
+      //       permissions: adminAndOwnerOnly,
+      //     },
+      //   ],
+      // },
     },
 
     staff: {
@@ -947,66 +981,80 @@ export const siteSettings = {
             icon: 'InventoryIcon',
             permissions: adminOwnerAndStaffOnly,
           },
-          {
-            href: (shop: string) => `/${shop}${Routes.attribute.list}`,
-            label: 'sidebar-nav-item-attributes',
-            icon: 'AttributeIcon',
-            permissions: adminOwnerAndStaffOnly,
-          },
-          {
-            href: (shop: string) => `/${shop}${Routes.manufacturer.list}`,
-            label: 'sidebar-nav-item-manufacturers',
-            icon: 'DiaryIcon',
-            permissions: adminAndOwnerOnly,
-          },
-          {
-            href: (shop: string) => `/${shop}${Routes.author.list}`,
-            label: 'sidebar-nav-item-authors',
-            icon: 'FountainPenIcon',
-            permissions: adminAndOwnerOnly,
-          },
-        ],
-      },
-
-      financial: {
-        href: '',
-        label: 'text-financial-management',
-        icon: 'WithdrawIcon',
-        childMenu: [
+          /*
+           * Hidden in vendor portal (My Shops -> Product Management menu):
+           * - Attributes
+           * - Manufacturers/Publications
+           * - Authors
+           */
           // {
-          //   href: (shop: string) => `/${shop}${Routes.withdraw.list}`,
-          //   label: 'sidebar-nav-item-withdraws',
+          //   href: (shop: string) => `/${shop}${Routes.attribute.list}`,
+          //   label: 'sidebar-nav-item-attributes',
           //   icon: 'AttributeIcon',
+          //   permissions: adminOwnerAndStaffOnly,
+          // },
+          // {
+          //   href: (shop: string) => `/${shop}${Routes.manufacturer.list}`,
+          //   label: 'sidebar-nav-item-manufacturers',
+          //   icon: 'DiaryIcon',
           //   permissions: adminAndOwnerOnly,
           // },
-          {
-            href: (shop: string) => `/${shop}${Routes.refund.list}`,
-            label: 'sidebar-nav-item-refunds',
-            icon: 'RefundsIcon',
-            permissions: adminOwnerAndStaffOnly,
-          },
+          // {
+          //   href: (shop: string) => `/${shop}${Routes.author.list}`,
+          //   label: 'sidebar-nav-item-authors',
+          //   icon: 'FountainPenIcon',
+          //   permissions: adminAndOwnerOnly,
+          // },
         ],
       },
 
-      order: {
-        href: '',
-        label: 'text-order-management',
-        icon: 'OrdersIcon',
-        childMenu: [
-          {
-            href: (shop: string) => `/${shop}${Routes.order.list}`,
-            label: 'sidebar-nav-item-orders',
-            icon: 'OrdersIcon',
-            permissions: adminOwnerAndStaffOnly,
-          },
-          // {
-          //   href: (shop: string) => `/${shop}${Routes.transaction}`,
-          //   label: 'Transactions',
-          //   icon: 'CalendarScheduleIcon',
-          //   permissions: adminAndOwnerOnly,
-          // },
-        ],
-      },
+      /*
+       * Hidden in vendor portal:
+       * - Financial Management (and its sections)
+       */
+      // financial: {
+      //   href: '',
+      //   label: 'text-financial-management',
+      //   icon: 'WithdrawIcon',
+      //   childMenu: [
+      //     // {
+      //     //   href: (shop: string) => `/${shop}${Routes.withdraw.list}`,
+      //     //   label: 'sidebar-nav-item-withdraws',
+      //     //   icon: 'AttributeIcon',
+      //     //   permissions: adminAndOwnerOnly,
+      //     // },
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.refund.list}`,
+      //       label: 'sidebar-nav-item-refunds',
+      //       icon: 'RefundsIcon',
+      //       permissions: adminOwnerAndStaffOnly,
+      //     },
+      //   ],
+      // },
+
+      /*
+       * Hidden in vendor portal:
+       * - Order management (and its sections)
+       */
+      // order: {
+      //   href: '',
+      //   label: 'text-order-management',
+      //   icon: 'OrdersIcon',
+      //   childMenu: [
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.order.list}`,
+      //       label: 'sidebar-nav-item-orders',
+      //       icon: 'OrdersIcon',
+      //       permissions: adminOwnerAndStaffOnly,
+      //     },
+      //     // {
+      //     //   href: (shop: string) => `/${shop}${Routes.transaction}`,
+      //     //   label: 'Transactions',
+      //     //   icon: 'CalendarScheduleIcon',
+      //     //   permissions: adminAndOwnerOnly,
+      //     // },
+      //   ],
+      // },
 
       // feature: {
       //   href: '',
@@ -1062,66 +1110,74 @@ export const siteSettings = {
       //   ],
       // },
 
-      promotional: {
-        href: '',
-        label: 'text-promotional-control',
-        icon: 'SettingsIcon',
-        childMenu: [
-          {
-            href: (shop: string) => `/${shop}${Routes.coupon.list}`,
-            label: 'Coupons',
-            icon: 'CouponsIcon',
-            permissions: adminOwnerAndStaffOnly,
-          },
-          {
-            href: (shop: string) => `/${shop}${Routes.flashSale.list}`,
-            label: 'text-flash-sale',
-            icon: 'UsersIcon',
-            childMenu: [
-              {
-                href: (shop: string) => `/${shop}${Routes.flashSale.list}`,
-                label: 'text-available-flash-deals',
-                icon: 'ProductsIcon',
-                permissions: adminOwnerAndStaffOnly,
-              },
-              {
-                href: (shop: string) =>
-                  `/${shop}${Routes.myProductsInFlashSale}`,
-                label: 'text-my-products-in-deals',
-                icon: 'ProductsIcon',
-                permissions: adminOwnerAndStaffOnly,
-              },
-              {
-                href: (shop: string) =>
-                  `/${shop}${Routes.vendorRequestForFlashSale.list}`,
-                label: 'See all enrollment request',
-                icon: 'ProductsIcon',
-                permissions: adminOwnerAndStaffOnly,
-              },
-            ],
-          },
-        ],
-      },
+      /*
+       * Hidden in vendor portal:
+       * - Promotional control (and its sections)
+       */
+      // promotional: {
+      //   href: '',
+      //   label: 'text-promotional-control',
+      //   icon: 'SettingsIcon',
+      //   childMenu: [
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.coupon.list}`,
+      //       label: 'Coupons',
+      //       icon: 'CouponsIcon',
+      //       permissions: adminOwnerAndStaffOnly,
+      //     },
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.flashSale.list}`,
+      //       label: 'text-flash-sale',
+      //       icon: 'UsersIcon',
+      //       childMenu: [
+      //         {
+      //           href: (shop: string) => `/${shop}${Routes.flashSale.list}`,
+      //           label: 'text-available-flash-deals',
+      //           icon: 'ProductsIcon',
+      //           permissions: adminOwnerAndStaffOnly,
+      //         },
+      //         {
+      //           href: (shop: string) =>
+      //             `/${shop}${Routes.myProductsInFlashSale}`,
+      //           label: 'text-my-products-in-deals',
+      //           icon: 'ProductsIcon',
+      //           permissions: adminOwnerAndStaffOnly,
+      //         },
+      //         {
+      //           href: (shop: string) =>
+      //             `/${shop}${Routes.vendorRequestForFlashSale.list}`,
+      //           label: 'See all enrollment request',
+      //           icon: 'ProductsIcon',
+      //           permissions: adminOwnerAndStaffOnly,
+      //         },
+      //       ],
+      //     },
+      //   ],
+      // },
 
-      layout: {
-        href: '',
-        label: 'text-page-management',
-        icon: 'SettingsIcon',
-        childMenu: [
-          {
-            href: (shop: string) => `/${shop}${Routes.faqs.list}`,
-            label: 'text-faqs',
-            icon: 'TypesIcon',
-            permissions: adminOwnerAndStaffOnly,
-          },
-          // {
-          //   href: (shop: string) => `/${shop}${Routes.termsAndCondition.list}`,
-          //   label: 'Terms And Conditions',
-          //   icon: 'TypesIcon',
-          //   permissions: adminAndOwnerOnly,
-          // },
-        ],
-      },
+      /*
+       * Hidden in vendor portal:
+       * - Layout/Page management (and its sections)
+       */
+      // layout: {
+      //   href: '',
+      //   label: 'text-page-management',
+      //   icon: 'SettingsIcon',
+      //   childMenu: [
+      //     {
+      //       href: (shop: string) => `/${shop}${Routes.faqs.list}`,
+      //       label: 'text-faqs',
+      //       icon: 'TypesIcon',
+      //       permissions: adminOwnerAndStaffOnly,
+      //     },
+      //     // {
+      //     //   href: (shop: string) => `/${shop}${Routes.termsAndCondition.list}`,
+      //     //   label: 'Terms And Conditions',
+      //     //   icon: 'TypesIcon',
+      //     //   permissions: adminAndOwnerOnly,
+      //     // },
+      //   ],
+      // },
     },
 
     ownerDashboard: [
@@ -1137,24 +1193,30 @@ export const siteSettings = {
         icon: 'MyShopOwnerIcon',
         permissions: ownerAndStaffOnly,
       },
-      {
-        href: Routes?.ownerDashboardMessage,
-        label: 'common:sidebar-nav-item-message',
-        icon: 'ChatOwnerIcon',
-        permissions: ownerAndStaffOnly,
-      },
-      {
-        href: Routes?.ownerDashboardNotice,
-        label: 'common:sidebar-nav-item-store-notice',
-        icon: 'StoreNoticeOwnerIcon',
-        permissions: ownerAndStaffOnly,
-      },
-      {
-        href: Routes?.ownerDashboardShopTransferRequest,
-        label: 'Shop Transfer Request',
-        icon: 'MyShopIcon',
-        permissions: adminAndOwnerOnly,
-      },
+      /*
+       * Hidden in vendor portal menu:
+       * - Messages
+       * - Store Notice
+       * - Shop Transfer Request
+       */
+      // {
+      //   href: Routes?.ownerDashboardMessage,
+      //   label: 'common:sidebar-nav-item-message',
+      //   icon: 'ChatOwnerIcon',
+      //   permissions: ownerAndStaffOnly,
+      // },
+      // {
+      //   href: Routes?.ownerDashboardNotice,
+      //   label: 'common:sidebar-nav-item-store-notice',
+      //   icon: 'StoreNoticeOwnerIcon',
+      //   permissions: ownerAndStaffOnly,
+      // },
+      // {
+      //   href: Routes?.ownerDashboardShopTransferRequest,
+      //   label: 'Shop Transfer Request',
+      //   icon: 'MyShopIcon',
+      //   permissions: adminAndOwnerOnly,
+      // },
     ],
   },
   product: {

@@ -232,18 +232,23 @@ const OwnerShopLayout = () => {
         </div>
       )}
 
-      <div className="grid gap-8 xl:grid-cols-12">
-        <TopRatedProducts
-          products={topRatedProducts}
-          title={'text-most-rated-products'}
-          className="xl:col-span-5 2xl:me-20"
-        />
-        <ProductCountByCategory
-          products={productByCategory}
-          title={'text-most-category-products'}
-          className="xl:col-span-7 2xl:ltr:-ml-20 2xl:rtl:-mr-20"
-        />
-      </div>
+      {/*
+        Hidden on vendor dashboard (Owner dashboard):
+        - "Top 10 Most Rated Products"
+        - "Top 10 Category with most products"
+      */}
+      {/* <div className="grid gap-8 xl:grid-cols-12">
+          <TopRatedProducts
+            products={topRatedProducts}
+            title={'text-most-rated-products'}
+            className="xl:col-span-5 2xl:me-20"
+          />
+          <ProductCountByCategory
+            products={productByCategory}
+            title={'text-most-category-products'}
+            className="xl:col-span-7 2xl:ltr:-ml-20 2xl:rtl:-mr-20"
+          />
+        </div> */}
     </>
   );
 };
