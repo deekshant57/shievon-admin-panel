@@ -26,13 +26,19 @@ export const useMeQuery = () => {
   return useQuery<User, Error>([API_ENDPOINTS.ME], userClient.me, {
     retry: false,
 
-    onSuccess: () => {
+    onSuccess: (me) => {
       if (router.pathname === Routes.verifyLicense) {
         router.replace(Routes.dashboard);
       }
       if (router.pathname === Routes.verifyEmail) {
-        setEmailVerified(true);
-        router.replace(Routes.dashboard);
+        // Only redirect away from verify-email when the backend confirms verification.
+        // Some backends return 200 for unverified users (with a flag), so don't force-dashboard here.
+        if (me?.email_verified) {
+          setEmailVerified(true);
+          router.replace(Routes.dashboard);
+        } else {
+          setEmailVerified(false);
+        }
       }
     },
 
@@ -62,38 +68,24 @@ export function useLogin() {
   return useMutation(userClient.login);
 }
 
-export function useSendLoginOtp() {
+export function useSendVerifyEmailOtp() {
   const { t } = useTranslation();
-  return useMutation(userClient.sendLoginOtp, {
+  return useMutation(userClient.sendVerifyEmailOtp, {
     onSuccess: () => {
-      toast.success(t('OTP sent successfully to your email') || 'OTP sent successfully to your email');
+      toast.success(
+        t('Verification code sent to your email') || 'Verification code sent to your email'
+      );
     },
     onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || t('Error sending OTP') || 'Failed to send OTP';
+      const errorMessage =
+        error?.response?.data?.message || t('Error sending verification code') || 'Failed to send code';
       toast.error(errorMessage);
     },
   });
 }
 
-export function useVerifyLoginOtp() {
-  return useMutation(userClient.verifyLoginOtp);
-}
-
-export function useSendRegistrationOtp() {
-  const { t } = useTranslation();
-  return useMutation(userClient.sendRegistrationOtp, {
-    onSuccess: () => {
-      toast.success(t('OTP sent successfully to your email') || 'OTP sent successfully to your email');
-    },
-    onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || t('Error sending OTP') || 'Failed to send OTP';
-      toast.error(errorMessage);
-    },
-  });
-}
-
-export function useVerifyRegistrationOtp() {
-  return useMutation(userClient.verifyRegistrationOtp);
+export function useVerifyEmailOtp() {
+  return useMutation(userClient.verifyEmailOtp);
 }
 
 export const useLogoutMutation = () => {

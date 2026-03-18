@@ -19,15 +19,11 @@ import {
   KeyInput,
   LicensedDomainPaginator,
   LicenseAdditionalData,
-  SendLoginOtpInput,
-  SendLoginOtpResponse,
-  VerifyLoginOtpInput,
-  VerifyLoginOtpResponse,
   MeResponse,
-  SendRegistrationOtpInput,
-  SendRegistrationOtpResponse,
-  VerifyRegistrationOtpInput,
-  VerifyRegistrationOtpResponse,
+  SendVerifyEmailOtpInput,
+  SendVerifyEmailOtpResponse,
+  VerifyEmailOtpInput,
+  VerifyEmailOtpResponse,
 } from '@/types';
 import { API_ENDPOINTS } from './api-endpoints';
 import { HttpClient } from './http-client';
@@ -84,50 +80,28 @@ export const userClient = {
   login: (variables: LoginInput) => {
     return HttpClient.post<AuthResponse>(API_ENDPOINTS.TOKEN, variables);
   },
-  sendLoginOtp: async (variables: SendLoginOtpInput) => {
-    // HttpClient.post now returns the unwrapped data directly
-    return await HttpClient.post<SendLoginOtpResponse['data']>(
-      API_ENDPOINTS.SEND_LOGIN_OTP,
-      variables
-    );
-  },
-  verifyLoginOtp: async (variables: VerifyLoginOtpInput) => {
-    // HttpClient.post now returns the unwrapped data directly
-    const response = await HttpClient.post<VerifyLoginOtpResponse['data']>(
-      API_ENDPOINTS.VERIFY_LOGIN_OTP,
-      variables
-    );
-    // Transform to AuthResponse format
-    return {
-      token: response.token,
-      permissions: response.permissions,
-      role: response.role,
-    };
-  },
   logout: () => {
     return HttpClient.post<any>(API_ENDPOINTS.LOGOUT, {});
   },
   register: (variables: RegisterInput) => {
     return HttpClient.post<AuthResponse>(API_ENDPOINTS.REGISTER, variables);
   },
-  sendRegistrationOtp: async (variables: SendRegistrationOtpInput) => {
-    // HttpClient.post now returns the unwrapped data directly
-    return await HttpClient.post<SendRegistrationOtpResponse['data']>(
-      API_ENDPOINTS.SEND_REGISTRATION_OTP,
+  sendVerifyEmailOtp: async (variables: SendVerifyEmailOtpInput) => {
+    return await HttpClient.post<SendVerifyEmailOtpResponse['data']>(
+      API_ENDPOINTS.SEND_VERIFY_EMAIL_OTP,
       variables
     );
   },
-  verifyRegistrationOtp: async (variables: VerifyRegistrationOtpInput) => {
-    // HttpClient.post now returns the unwrapped data directly
-    const response = await HttpClient.post<VerifyRegistrationOtpResponse['data']>(
-      API_ENDPOINTS.VERIFY_REGISTRATION_OTP,
+  verifyEmailOtp: async (variables: VerifyEmailOtpInput) => {
+    const response = await HttpClient.post<VerifyEmailOtpResponse['data']>(
+      API_ENDPOINTS.VERIFY_EMAIL_OTP,
       variables
     );
-    // Transform to AuthResponse format
     return {
       token: response.token,
       permissions: response.permissions,
       role: response.role,
+      isEmailVerified: response.isEmailVerified ?? true,
     };
   },
   update: ({ id, input }: { id: string; input: UpdateUser }) => {

@@ -31,7 +31,15 @@ export function getEmailVerified(): {
   emailVerified: boolean;
 } {
   const emailVerified = Cookie.get(EMAIL_VERIFIED);
-  return emailVerified ? JSON.parse(emailVerified) : false;
+  if (!emailVerified) return { emailVerified: false };
+  try {
+    const parsed = JSON.parse(emailVerified);
+    return typeof parsed?.emailVerified === 'boolean'
+      ? { emailVerified: parsed.emailVerified }
+      : { emailVerified: false };
+  } catch {
+    return { emailVerified: false };
+  }
 }
 
 export function getAuthCredentials(context?: any): {

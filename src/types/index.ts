@@ -204,38 +204,7 @@ export interface AuthResponse {
   token: string;
   permissions: string[];
   role: string;
-}
-
-// OTP Login Types
-export interface SendLoginOtpInput {
-  email: string;
-}
-
-export interface SendLoginOtpResponse {
-  code: number;
-  status: boolean;
-  message: string;
-  data: {
-    id: string;
-    email: string;
-    expires_at: string;
-  };
-}
-
-export interface VerifyLoginOtpInput {
-  email: string;
-  code: string;
-}
-
-export interface VerifyLoginOtpResponse {
-  code: number;
-  status: boolean;
-  message: string;
-  data: {
-    token: string;
-    permissions: string[];
-    role: string;
-  };
+  isEmailVerified?: boolean;
 }
 
 // Me endpoint response
@@ -253,14 +222,12 @@ export interface MeResponse {
   };
 }
 
-// Registration OTP Types
-export interface SendRegistrationOtpInput {
+// Verify-email OTP (one-time email verification after password register/login)
+export interface SendVerifyEmailOtpInput {
   email: string;
-  name: string;
-  role: string;
 }
 
-export interface SendRegistrationOtpResponse {
+export interface SendVerifyEmailOtpResponse {
   code: number;
   status: boolean;
   message: string;
@@ -271,13 +238,12 @@ export interface SendRegistrationOtpResponse {
   };
 }
 
-export interface VerifyRegistrationOtpInput {
+export interface VerifyEmailOtpInput {
   email: string;
   code: string;
-  name: string;
 }
 
-export interface VerifyRegistrationOtpResponse {
+export interface VerifyEmailOtpResponse {
   code: number;
   status: boolean;
   message: string;
@@ -285,6 +251,7 @@ export interface VerifyRegistrationOtpResponse {
     token: string;
     permissions: string[];
     role: string;
+    isEmailVerified: boolean;
   };
 }
 
@@ -1765,7 +1732,8 @@ export interface RegisterInput {
   password: string;
   name: string;
   shop_id?: number;
-  // permission: Permission;
+  /** Role: "Customer" | "Store owner". Default "Customer". */
+  permission?: string;
 }
 
 export interface ChangePasswordInput {
