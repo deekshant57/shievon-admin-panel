@@ -1,8 +1,5 @@
 import Card from '@/components/common/card';
-import GooglePlacesAutocomplete from '@/components/form/google-places-autocomplete';
-import { EditIcon } from '@/components/icons/edit';
 import * as socialIcons from '@/components/icons/social';
-import Alert from '@/components/ui/alert';
 import Button from '@/components/ui/button';
 import Description from '@/components/ui/description';
 import FileInput from '@/components/ui/file-input';
@@ -36,11 +33,9 @@ import { join, split } from 'lodash';
 import omit from 'lodash/omit';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import OpenAIButton from '../openAI/openAI.button';
-import { useAtom } from 'jotai';
-import { locationAtom } from '@/utils/use-location';
 import { useModalAction } from '../ui/modal/modal.context';
 import { shopValidationSchema } from './shop-validation-schema';
 import { formatSlug } from '@/utils/use-slug';
@@ -106,7 +101,6 @@ type FormValues = {
   isShopUnderMaintenance?: boolean;
 };
 const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
-  const [location] = useAtom(locationAtom);
   const { mutate: createShop, isLoading: creating } = useCreateShopMutation();
   const { mutate: updateShop, isLoading: updating } = useUpdateShopMutation();
   // const { permissions } = getAuthCredentials();
@@ -115,8 +109,7 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
   const {
     register,
     handleSubmit,
-    formState: { errors, submitCount },
-    getValues,
+    formState: { errors },
     watch,
     setValue,
     control,
@@ -225,66 +218,11 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
   const today = new Date();
 
   const { t } = useTranslation();
-  const watchedAddress = watch('address');
-  const watchedLocation = watch('settings.location') as
-    | {
-        formattedAddress?: string;
-        lat?: number | string;
-        lng?: number | string;
-      }
-    | undefined;
-
-  const missingAddressFields = useMemo(() => {
-    const parts: { key: keyof UserAddressInput; label: string }[] = [
-      {
-        key: 'street_address',
-        label: t('form:input-label-street-address'),
-      },
-      { key: 'city', label: t('form:input-label-city') },
-      { key: 'state', label: t('form:input-label-state') },
-      { key: 'zip', label: t('form:input-label-zip') },
-      { key: 'country', label: t('form:input-label-country') },
-    ];
-    return parts
-      .filter(
-        ({ key }) =>
-          String((watchedAddress as UserAddressInput | undefined)?.[key] ?? '')
-            .trim() === '',
-      );
-  }, [watchedAddress, t]);
-
-  const missingAddressLabels = useMemo(
-    () => missingAddressFields.map(({ label }) => label),
-    [missingAddressFields],
-  );
-
-  const missingLocationFields = useMemo(() => {
-    const fields = [
-      {
-        key: 'lat',
-        label: t('form:input-label-latitude'),
-        value: watchedLocation?.lat,
-      },
-      {
-        key: 'lng',
-        label: t('form:input-label-longitude'),
-        value: watchedLocation?.lng,
-      },
-    ];
-    return fields.filter(
-      ({ value }) => String(value ?? '').trim() === '',
-    ) as Array<{ key: 'lat' | 'lng'; label: string; value?: number | string }>;
-  }, [watchedLocation?.lat, watchedLocation?.lng, t]);
-
-  const shouldShowCompletionFields =
-    Boolean(watchedLocation?.formattedAddress) || submitCount > 0;
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'settings.socials',
   });
-
-  const [isSlugDisable, setIsSlugDisable] = useState<boolean>(true);
 
   // Sync address into form state on mount when address is pre-filled (unregistered fields
   // can be missing from form state with shouldUnregister, so setValue ensures they exist)
@@ -330,6 +268,15 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
   const isSlugEditable =
     (router?.query?.action === 'edit' || router?.pathname === '/[shop]/edit') &&
     router?.locale === Config.defaultLanguage;
+
+  // Slug stays in payload but is hidden in UI (create/edit).
+  // Keep it in sync with the auto-suggested value when user types name.
+  useEffect(() => {
+    if (initialValues) return
+    if (isSlugEditable) return
+    if (!slugAutoSuggest) return
+    setValue('slug', slugAutoSuggest)
+  }, [initialValues, isSlugEditable, setValue, slugAutoSuggest])
 
   function onSubmit(values: FormValues) {
     const settings = {
@@ -462,34 +409,7 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
               required
             />
 
-            {isSlugEditable ? (
-              <div className="relative mb-5">
-                <Input
-                  label={t('form:input-label-slug')}
-                  {...register('slug')}
-                  error={t(errors.slug?.message!)}
-                  variant="outline"
-                  disabled={isSlugDisable}
-                />
-                <button
-                  className="absolute top-[27px] right-px z-0 flex h-[46px] w-11 items-center justify-center rounded-tr rounded-br border-l border-solid border-border-base bg-white px-2 text-body transition duration-200 hover:text-heading focus:outline-none"
-                  type="button"
-                  title={t('common:text-edit')}
-                  onClick={() => setIsSlugDisable(false)}
-                >
-                  <EditIcon width={14} />
-                </button>
-              </div>
-            ) : (
-              <Input
-                label={t('form:input-label-slug')}
-                {...register('slug')}
-                value={slugAutoSuggest}
-                variant="outline"
-                className="mb-5"
-                disabled
-              />
-            )}
+            <input type="hidden" {...register('slug')} />
 
             <div className="relative">
               {options?.useAi && (
@@ -553,160 +473,72 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
 
           <Card className="w-full sm:w-8/12 md:w-2/3">
             <div className="mb-5">
-              <Label>
-                {t('form:input-label-autocomplete')}
-                <span className="text-red-500">*</span>
-              </Label>
-              <Controller
-                control={control}
-                name="settings.location"
-                render={({ field: { onChange, value } }) => (
-                  <>
-                    <GooglePlacesAutocomplete
-                      // @ts-ignore
-                      onChange={(location: any) => {
-                        onChange(location);
-                        setValue('address.country', location?.country || '');
-                        setValue('address.city', location?.city || '');
-                        setValue('address.state', location?.state || '');
-                        setValue('address.zip', location?.zip || '');
-                        setValue(
-                          'address.street_address',
-                          location?.street_address || '',
-                        );
-                        setValue('settings.location.lat', location?.lat || '');
-                        setValue('settings.location.lng', location?.lng || '');
-                      }}
-                      data={getValues('settings.location')!}
-                      onChangeCurrentLocation={(location: any) => {
-                        onChange(location);
-                        setValue('address.country', location?.country || '');
-                        setValue('address.city', location?.city || '');
-                        setValue('address.state', location?.state || '');
-                        setValue('address.zip', location?.zip || '');
-                        setValue(
-                          'address.street_address',
-                          location?.street_address || '',
-                        );
-                        setValue('settings.location.lat', location?.lat || '');
-                        setValue('settings.location.lng', location?.lng || '');
-                      }}
-                      placeholder="enter your shop address"
-                    />
-                    {(value as any)?.formattedAddress && (
-                      <div className="mt-4 rounded-lg border border-border-200 bg-gray-50 p-4">
-                        <p className="mb-2 text-sm font-medium text-heading">
-                          {t('form:selected-address') || 'Selected Address'}:
-                        </p>
-                        {(value as any).placeName && (
-                          <p className="mb-2 text-sm font-semibold text-heading">
-                            {(value as any).placeName}
-                          </p>
-                        )}
-                        <p className="text-sm text-body">
-                          {(value as any).formattedAddress}
-                        </p>
-                        {(value as any)?.street_address && (
-                          <div className="mt-3 border-t border-border-200 pt-3">
-                            <p className="mb-1 text-xs font-medium text-muted-black">
-                              {t('form:address-details') || 'Address Details'}:
-                            </p>
-                            <div className="space-y-1 text-xs text-body">
-                              {(value as any).street_address && (
-                                <p>
-                                  <span className="font-medium">Street: </span>
-                                  {(value as any).street_address}
-                                </p>
-                              )}
-                              {(value as any).city && (
-                                <p>
-                                  <span className="font-medium">City: </span>
-                                  {(value as any).city}
-                                </p>
-                              )}
-                              {(value as any).state && (
-                                <p>
-                                  <span className="font-medium">State: </span>
-                                  {(value as any).state}
-                                </p>
-                              )}
-                              {(value as any).zip && (
-                                <p>
-                                  <span className="font-medium">Zip: </span>
-                                  {(value as any).zip}
-                                </p>
-                              )}
-                              {(value as any).country && (
-                                <p>
-                                  <span className="font-medium">Country: </span>
-                                  {(value as any).country}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
-              />
               <div className="mt-6 border-t border-border-200 pt-6">
                 <p className="mb-1 text-sm font-medium text-heading">
                   {t('form:shop-address-structured-title')}
                 </p>
-                <p className="mb-4 text-xs text-body">
-                  {t('form:shop-address-structured-hint')}
-                </p>
-                {shouldShowCompletionFields &&
-                  missingAddressLabels.length > 0 && (
-                    <div className="mb-4">
-                      <Alert
-                        variant="warningOutline"
-                        message={t('form:shop-address-missing-banner', {
-                          parts: missingAddressLabels.join(', '),
-                        })}
-                      />
-                    </div>
-                  )}
-                {shouldShowCompletionFields && (
-                  <div className="space-y-5">
-                    {missingAddressFields.map(({ key, label }) => (
-                      <Input
-                        key={key}
-                        label={label}
-                        {...register(`address.${key}`)}
-                        variant="outline"
-                        className="mb-0"
-                        error={t(errors.address?.[key]?.message as string)}
-                        required
-                      />
-                    ))}
-
-                    {missingLocationFields.length > 0 && (
-                      <>
-                        <p className="text-xs text-body">
-                          {t('form:shop-location-coordinates-hint')}
-                        </p>
-                        {missingLocationFields.map(({ key, label }) => (
-                          <Input
-                            key={key}
-                            label={label}
-                            {...register(`settings.location.${key}`)}
-                            variant="outline"
-                            type="number"
-                            step="any"
-                            className="mb-0"
-                            error={t(
-                              errors.settings?.location?.[key]
-                                ?.message as string,
-                            )}
-                            required
-                          />
-                        ))}
-                      </>
-                    )}
-                  </div>
-                )}
+                <div className="space-y-5">
+                  <Input
+                    label={t('form:input-label-street-address')}
+                    {...register('address.street_address')}
+                    variant="outline"
+                    className="mb-0"
+                    error={t(errors.address?.street_address?.message as string)}
+                    required
+                  />
+                  <Input
+                    label={t('form:input-label-city')}
+                    {...register('address.city')}
+                    variant="outline"
+                    className="mb-0"
+                    error={t(errors.address?.city?.message as string)}
+                    required
+                  />
+                  <Input
+                    label={t('form:input-label-state')}
+                    {...register('address.state')}
+                    variant="outline"
+                    className="mb-0"
+                    error={t(errors.address?.state?.message as string)}
+                    required
+                  />
+                  <Input
+                    label={t('form:input-label-zip')}
+                    {...register('address.zip')}
+                    variant="outline"
+                    className="mb-0"
+                    error={t(errors.address?.zip?.message as string)}
+                    required
+                  />
+                  <Input
+                    label={t('form:input-label-country')}
+                    {...register('address.country')}
+                    variant="outline"
+                    className="mb-0"
+                    error={t(errors.address?.country?.message as string)}
+                    required
+                  />
+                  <Input
+                    label={t('form:input-label-latitude')}
+                    {...register('settings.location.lat')}
+                    variant="outline"
+                    type="number"
+                    step="any"
+                    className="mb-0"
+                    error={t(errors.settings?.location?.lat?.message as string)}
+                    required
+                  />
+                  <Input
+                    label={t('form:input-label-longitude')}
+                    {...register('settings.location.lng')}
+                    variant="outline"
+                    type="number"
+                    step="any"
+                    className="mb-0"
+                    error={t(errors.settings?.location?.lng?.message as string)}
+                    required
+                  />
+                </div>
               </div>
             </div>
           </Card>
