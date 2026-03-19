@@ -92,6 +92,19 @@ function getLocation(placeOrResult: any) {
     location.placeName = premiseName;
   }
 
+  // If Google omits postal_code in components, try PIN/postal from formatted address
+  // (common for India: 6-digit PIN often appears in formatted_address string)
+  if (
+    !location.zip &&
+    placeOrResult.formatted_address &&
+    typeof placeOrResult.formatted_address === 'string'
+  ) {
+    const pinMatch = placeOrResult.formatted_address.match(/\b\d{6}\b/)
+    if (pinMatch) {
+      location.zip = pinMatch[0]
+    }
+  }
+
   // Combine all street address parts
   if (streetAddressParts.length > 0) {
     // Join with comma and space for readability

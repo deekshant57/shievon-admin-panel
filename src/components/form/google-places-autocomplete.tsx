@@ -17,7 +17,7 @@ export default function GooglePlacesAutocomplete({
   placeholder,
 }: {
   onChange?: () => void;
-  onChangeCurrentLocation?: () => void;
+  onChangeCurrentLocation?: (location: GoogleMapLocation) => void;
   data?: GoogleMapLocation;
   disabled?: boolean;
   icon?: boolean;

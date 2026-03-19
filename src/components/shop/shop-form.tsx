@@ -2,6 +2,7 @@ import Card from '@/components/common/card';
 import GooglePlacesAutocomplete from '@/components/form/google-places-autocomplete';
 import { EditIcon } from '@/components/icons/edit';
 import * as socialIcons from '@/components/icons/social';
+import Alert from '@/components/ui/alert';
 import Button from '@/components/ui/button';
 import Description from '@/components/ui/description';
 import FileInput from '@/components/ui/file-input';
@@ -114,7 +115,7 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, submitCount },
     getValues,
     watch,
     setValue,
@@ -172,6 +173,13 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
       : {
           defaultValues: {
             timings: { open: '09:00', close: '18:00' },
+            address: {
+              country: '',
+              city: '',
+              state: '',
+              zip: '',
+              street_address: '',
+            },
           },
         }),
     // @ts-ignore
@@ -217,6 +225,60 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
   const today = new Date();
 
   const { t } = useTranslation();
+  const watchedAddress = watch('address');
+  const watchedLocation = watch('settings.location') as
+    | {
+        formattedAddress?: string;
+        lat?: number | string;
+        lng?: number | string;
+      }
+    | undefined;
+
+  const missingAddressFields = useMemo(() => {
+    const parts: { key: keyof UserAddressInput; label: string }[] = [
+      {
+        key: 'street_address',
+        label: t('form:input-label-street-address'),
+      },
+      { key: 'city', label: t('form:input-label-city') },
+      { key: 'state', label: t('form:input-label-state') },
+      { key: 'zip', label: t('form:input-label-zip') },
+      { key: 'country', label: t('form:input-label-country') },
+    ];
+    return parts
+      .filter(
+        ({ key }) =>
+          String((watchedAddress as UserAddressInput | undefined)?.[key] ?? '')
+            .trim() === '',
+      );
+  }, [watchedAddress, t]);
+
+  const missingAddressLabels = useMemo(
+    () => missingAddressFields.map(({ label }) => label),
+    [missingAddressFields],
+  );
+
+  const missingLocationFields = useMemo(() => {
+    const fields = [
+      {
+        key: 'lat',
+        label: t('form:input-label-latitude'),
+        value: watchedLocation?.lat,
+      },
+      {
+        key: 'lng',
+        label: t('form:input-label-longitude'),
+        value: watchedLocation?.lng,
+      },
+    ];
+    return fields.filter(
+      ({ value }) => String(value ?? '').trim() === '',
+    ) as Array<{ key: 'lat' | 'lng'; label: string; value?: number | string }>;
+  }, [watchedLocation?.lat, watchedLocation?.lng, t]);
+
+  const shouldShowCompletionFields =
+    Boolean(watchedLocation?.formattedAddress) || submitCount > 0;
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'settings.socials',
@@ -230,17 +292,38 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
     if (!initialValues) return
     const loc = initialValues?.settings?.location as any
     const addr = initialValues?.address
+    const addrAny = addr as any
     const country = addr?.country ?? loc?.country ?? ''
     const city = addr?.city ?? loc?.city ?? ''
     const state = addr?.state ?? loc?.state ?? ''
     const zip = addr?.zip ?? loc?.zip ?? ''
     const street_address = addr?.street_address ?? loc?.street_address ?? ''
+    const lat = addrAny?.lat ?? loc?.lat ?? ''
+    const lng = addrAny?.lng ?? loc?.lng ?? ''
     if (country || city || state || zip || street_address) {
       setValue('address.country', country)
       setValue('address.city', city)
       setValue('address.state', state)
       setValue('address.zip', zip)
       setValue('address.street_address', street_address)
+
+      const formattedAddress =
+        loc?.formattedAddress ||
+        [street_address, city, state, zip, country]
+          .filter((part) => String(part ?? '').trim() !== '')
+          .join(', ')
+
+      setValue('settings.location', {
+        ...loc,
+        country,
+        city,
+        state,
+        zip,
+        street_address,
+        lat,
+        lng,
+        formattedAddress,
+      })
     }
   }, [initialValues, setValue])
 
@@ -491,9 +574,23 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
                           'address.street_address',
                           location?.street_address || '',
                         );
+                        setValue('settings.location.lat', location?.lat || '');
+                        setValue('settings.location.lng', location?.lng || '');
                       }}
                       data={getValues('settings.location')!}
-                      onChangeCurrentLocation={onChange}
+                      onChangeCurrentLocation={(location: any) => {
+                        onChange(location);
+                        setValue('address.country', location?.country || '');
+                        setValue('address.city', location?.city || '');
+                        setValue('address.state', location?.state || '');
+                        setValue('address.zip', location?.zip || '');
+                        setValue(
+                          'address.street_address',
+                          location?.street_address || '',
+                        );
+                        setValue('settings.location.lat', location?.lat || '');
+                        setValue('settings.location.lng', location?.lng || '');
+                      }}
                       placeholder="enter your shop address"
                     />
                     {(value as any)?.formattedAddress && (
@@ -553,12 +650,64 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
                   </>
                 )}
               />
-              {errors.address?.country &&
-                !(getValues('settings.location') as any)?.formattedAddress && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {t('form:error-address-required')}
-                  </p>
+              <div className="mt-6 border-t border-border-200 pt-6">
+                <p className="mb-1 text-sm font-medium text-heading">
+                  {t('form:shop-address-structured-title')}
+                </p>
+                <p className="mb-4 text-xs text-body">
+                  {t('form:shop-address-structured-hint')}
+                </p>
+                {shouldShowCompletionFields &&
+                  missingAddressLabels.length > 0 && (
+                    <div className="mb-4">
+                      <Alert
+                        variant="warningOutline"
+                        message={t('form:shop-address-missing-banner', {
+                          parts: missingAddressLabels.join(', '),
+                        })}
+                      />
+                    </div>
+                  )}
+                {shouldShowCompletionFields && (
+                  <div className="space-y-5">
+                    {missingAddressFields.map(({ key, label }) => (
+                      <Input
+                        key={key}
+                        label={label}
+                        {...register(`address.${key}`)}
+                        variant="outline"
+                        className="mb-0"
+                        error={t(errors.address?.[key]?.message as string)}
+                        required
+                      />
+                    ))}
+
+                    {missingLocationFields.length > 0 && (
+                      <>
+                        <p className="text-xs text-body">
+                          {t('form:shop-location-coordinates-hint')}
+                        </p>
+                        {missingLocationFields.map(({ key, label }) => (
+                          <Input
+                            key={key}
+                            label={label}
+                            {...register(`settings.location.${key}`)}
+                            variant="outline"
+                            type="number"
+                            step="any"
+                            className="mb-0"
+                            error={t(
+                              errors.settings?.location?.[key]
+                                ?.message as string,
+                            )}
+                            required
+                          />
+                        ))}
+                      </>
+                    )}
+                  </div>
                 )}
+              </div>
             </div>
           </Card>
         </div>

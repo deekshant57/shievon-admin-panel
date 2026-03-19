@@ -45,6 +45,20 @@ export const shopValidationSchema = yup.object().shape({
         }
         return URLRegExp.test(value);
       }),
+    location: yup.object().shape({
+      lat: yup
+        .number()
+        .typeError('form:error-lat-required')
+        .required('form:error-lat-required')
+        .min(-90, 'form:error-lat-range')
+        .max(90, 'form:error-lat-range'),
+      lng: yup
+        .number()
+        .typeError('form:error-lng-required')
+        .required('form:error-lng-required')
+        .min(-180, 'form:error-lng-range')
+        .max(180, 'form:error-lng-range'),
+    }),
     socials: yup.array().of(
       yup.object().shape({
         url: yup.string().when('icon', (data) => {
