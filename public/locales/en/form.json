@@ -371,7 +371,7 @@
   "error-account-must-number": "Account must be a number",
   "error-price-must-positive": "Price must be positive",
   "error-price-required": "Price is required",
-  "error-sale-price-less-number": "Sale Price should be less than",
+  "error-sale-price-less-number": "Sale Price should be less than price",
   "error-sale-price-must-positive": "Sale price must be positive",
   "error-free-shipping-amount-must-positive": "Free shipping amount must be positive",
   "error-quantity-must-number": "Quantity must be a number",

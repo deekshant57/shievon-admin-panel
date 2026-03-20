@@ -338,7 +338,7 @@
   "error-account-must-number": "帐号必须是数字",
   "error-price-must-positive": "价格必须为正",
   "error-price-required": "价格为必填项",
-  "error-sale-price-less-number": "销售价格应低于",
+  "error-sale-price-less-number": "销售价格应低于或等于",
   "error-sale-price-must-positive": "销售价格必须为正",
   "error-free-shipping-amount-must-positive": "免运费金额必须为正数",
   "error-quantity-must-number": "数量必须是数字",

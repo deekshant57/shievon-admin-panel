@@ -39,16 +39,29 @@ const serviceValidationSchema = yup.object().shape({
   name: yup.string().required('form:error-name-required'),
   base_price: yup
     .number()
+    .typeError('form:error-price-must-number')
     .transform((value, originalValue) =>
       originalValue === '' || originalValue == null ? undefined : value,
     )
+    .positive('form:error-price-must-positive')
     .optional(),
   sale_price: yup
     .number()
+    .typeError('form:error-price-must-number')
     .transform((value, originalValue) =>
       originalValue === '' || originalValue == null ? undefined : value,
     )
-    .optional(),
+    .positive('form:error-sale-price-must-positive')
+    .optional()
+    .test(
+      'sale_price_not_higher_than_base_price',
+      'form:error-sale-price-less-number',
+      function (salePrice) {
+        const { base_price } = this.parent as any
+        if (salePrice == null || base_price == null) return true
+        return Number(salePrice) <= Number(base_price)
+      },
+    ),
 })
 
 const defaultValues: FormValues = {
@@ -260,7 +273,9 @@ export default function CreateOrUpdateServiceOfferingForm({
             <Input
               label={t('form:input-label-price') || 'Base price'}
               type="number"
+              inputMode="decimal"
               step="0.01"
+              min={0}
               {...register('base_price')}
               error={t((errors as any)?.base_price?.message)}
               variant="outline"
@@ -268,7 +283,9 @@ export default function CreateOrUpdateServiceOfferingForm({
             <Input
               label={t('form:input-label-sale-price') || 'Sale price'}
               type="number"
+              inputMode="decimal"
               step="0.01"
+              min={0}
               {...register('sale_price')}
               error={t((errors as any)?.sale_price?.message)}
               variant="outline"

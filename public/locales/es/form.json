@@ -338,7 +338,7 @@
   "error-account-must-number": "La cuenta debe ser un número.",
   "error-price-must-positive": "El precio debe ser positivo.",
   "error-price-required": "Se requiere precio",
-  "error-sale-price-less-number": "El precio de venta debe ser inferior a",
+  "error-sale-price-less-number": "El precio de venta debe ser inferior o igual a",
   "error-sale-price-must-positive": "El precio de venta debe ser positivo.",
   "error-free-shipping-amount-must-positive": "El importe del envío gratuito debe ser positivo.",
   "error-quantity-must-number": "La cantidad debe ser un número.",

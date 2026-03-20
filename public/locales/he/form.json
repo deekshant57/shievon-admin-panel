@@ -339,7 +339,7 @@
   "error-account-must-number": "החשבון חייב להיות מספר",
   "error-price-must-positive": "המחיר חייב להיות חיובי",
   "error-price-required": "מחיר נדרש",
-  "error-sale-price-less-number": "מחיר המכירה צריך להיות נמוך מ",
+  "error-sale-price-less-number": "מחיר המכירה צריך להיות נמוך או שווה ל-",
   "error-sale-price-must-positive": "מחיר המכירה חייב להיות חיובי",
   "error-free-shipping-amount-must-positive": "סכום המשלוח חינם חייב להיות חיובי",
   "error-quantity-must-number": "הכמות חייבת להיות מספר",

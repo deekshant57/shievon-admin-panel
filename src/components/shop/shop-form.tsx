@@ -100,6 +100,36 @@ type FormValues = {
   timings: { open: string; close: string };
   isShopUnderMaintenance?: boolean;
 };
+
+const resolveAttachmentIdForUpdate = (
+  currentValue: any,
+  initialValue: any,
+): number | null | undefined => {
+  // Uploader can emit [] when user removes a single-file image.
+  if (Array.isArray(currentValue)) {
+    if (currentValue.length === 0) return null;
+    const first = currentValue[0];
+    return first?.id != null ? Number(first.id) : undefined;
+  }
+
+  // Explicit clear (if emitted as null/empty).
+  if (currentValue == null || currentValue === '') {
+    return null;
+  }
+
+  // Newly uploaded image.
+  if (currentValue?.id != null) {
+    return Number(currentValue.id);
+  }
+
+  // Preloaded image without id (common API shape). Keep existing image by omitting *_id.
+  if (initialValue?.id != null) {
+    return Number(initialValue.id);
+  }
+
+  return undefined;
+};
+
 const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
   const { mutate: createShop, isLoading: creating } = useCreateShopMutation();
   const { mutate: updateShop, isLoading: updating } = useUpdateShopMutation();
@@ -279,9 +309,29 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
   }, [initialValues, isSlugEditable, setValue, slugAutoSuggest])
 
   function onSubmit(values: FormValues) {
+    const location = { ...omit(values?.settings?.location, '__typename') } as any;
+    const normalizedLat =
+      location?.lat != null && String(location.lat).trim() !== ''
+        ? Number(location.lat)
+        : undefined;
+    const normalizedLng =
+      location?.lng != null && String(location.lng).trim() !== ''
+        ? Number(location.lng)
+        : undefined;
+
+    const normalizedAddress = {
+      ...values.address,
+      ...(normalizedLat !== undefined ? { lat: normalizedLat } : {}),
+      ...(normalizedLng !== undefined ? { lng: normalizedLng } : {}),
+    };
+
     const settings = {
       ...values?.settings,
-      location: { ...omit(values?.settings?.location, '__typename') },
+      location: {
+        ...location,
+        ...(normalizedLat !== undefined ? { lat: normalizedLat } : {}),
+        ...(normalizedLng !== undefined ? { lng: normalizedLng } : {}),
+      },
       socials: values?.settings?.socials
         ? values?.settings?.socials?.map((social: any) => ({
             icon: social?.icon?.value,
@@ -291,26 +341,38 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
       shopMaintenance: values?.settings?.shopMaintenance,
     };
     if (initialValues) {
-      const { cover_image, logo, ...restValues } = values;
-      const { ...restAddress } = values.address;
-      updateShop({
+      const { cover_image, logo, address: _address, settings: _settings, ...restValues } = values;
+      const payload = {
         id: initialValues?.id as string,
         ...restValues,
-        address: restAddress,
+        address: normalizedAddress,
         settings,
         timings: values.timings,
         balance: {
           id: initialValues.balance?.id,
           ...values.balance,
         },
-        cover_image_id:
-          cover_image?.id != null ? Number(cover_image.id) : null,
-        logo_id: logo?.id != null ? Number(logo.id) : null,
-      });
+      } as any;
+
+      const nextCoverImageId = resolveAttachmentIdForUpdate(
+        cover_image,
+        initialValues?.cover_image,
+      );
+      const nextLogoId = resolveAttachmentIdForUpdate(logo, initialValues?.logo);
+
+      if (nextCoverImageId !== undefined) {
+        payload.cover_image_id = nextCoverImageId;
+      }
+      if (nextLogoId !== undefined) {
+        payload.logo_id = nextLogoId;
+      }
+
+      updateShop(payload);
     } else {
-      const { cover_image, logo, ...restValues } = values;
+      const { cover_image, logo, address: _address, settings: _settings, ...restValues } = values;
       createShop({
         ...restValues,
+        address: normalizedAddress,
         settings,
         timings: values.timings,
         balance: {

@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router';
 import { useSettingsQuery } from '@/data/settings';
-import VisitStore from '@/components/layouts/topbar/visit-store';
 import SearchBar from '@/components/layouts/topbar/search-bar';
 import MessageBar from '@/components/layouts/topbar/message-bar';
 import StoreNoticeBar from '@/components/layouts/topbar/store-notice-bar';
@@ -22,7 +21,6 @@ const DashboardTopBar = ({}: IProps) => {
   return (
     <>
       <div className="mb-6 overflow-hidden rounded shadow">
-        <VisitStore />
         <SearchBar />
 
         {options?.pushNotification?.all?.message ? (

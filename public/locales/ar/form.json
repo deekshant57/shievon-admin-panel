@@ -338,7 +338,7 @@
   "error-account-must-number": "يجب أن يكون الحساب رقمًا",
   "error-price-must-positive": "يجب أن يكون السعر إيجابيا",
   "error-price-required": "السعر مطلوب",
-  "error-sale-price-less-number": "يجب أن يكون سعر البيع أقل من",
+  "error-sale-price-less-number": "يجب أن يكون سعر البيع أقل من أو يساوي",
   "error-sale-price-must-positive": "يجب أن يكون سعر البيع إيجابيا",
   "error-free-shipping-amount-must-positive": "يجب أن يكون مبلغ الشحن المجاني موجبًا",
   "error-quantity-must-number": "يجب أن تكون الكمية رقمًا",

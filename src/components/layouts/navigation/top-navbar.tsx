@@ -4,7 +4,6 @@ import MessageBar from '@/components/layouts/topbar/message-bar';
 import RecentOrderBar from '@/components/layouts/topbar/recent-order-bar';
 import SearchBar from '@/components/layouts/topbar/search-bar';
 import StoreNoticeBar from '@/components/layouts/topbar/store-notice-bar';
-import VisitStore from '@/components/layouts/topbar/visit-store';
 import Alert from '@/components/ui/alert';
 import CountdownTimer from '@/components/ui/countdown-timer';
 import LinkButton from '@/components/ui/link-button';
@@ -255,7 +254,7 @@ const Navbar = () => {
           <div className="flex shrink-0 grow-0 basis-auto items-center">
             {hasAccess(adminAndOwnerOnly, permissions) && (
               <>
-                <div className="hidden border-gray-200/80 px-6 py-5 border-e 2xl:block">
+                <div className="border-gray-200/80 px-6 py-5 border-e">
                   <LinkButton
                     href={Routes.shop.create}
                     size="small"
@@ -263,10 +262,6 @@ const Navbar = () => {
                   >
                     {t('common:text-create-shop')}
                   </LinkButton>
-                </div>
-
-                <div className="hidden px-6 py-5 2xl:block">
-                  <VisitStore />
                 </div>
 
                 {options?.pushNotification?.all?.order ||
@@ -299,8 +294,9 @@ const Navbar = () => {
           </div>
 
           {enableMultiLang ? <LanguageSwitcher /> : null}
-
-          <AuthorizedMenu />
+          <div className="ms-auto">
+            <AuthorizedMenu />
+          </div>
         </div>
       </nav>
     </header>
