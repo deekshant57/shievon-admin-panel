@@ -281,6 +281,8 @@
   "error-token-required": "¡Se requiere ficha!",
   "error-old-password-required": "¡Se requiere contraseña anterior!",
   "error-password-required": "¡Se requiere contraseña!",
+  "error-password-length": "¡La contraseña debe tener al menos 6 caracteres!",
+  "error-password-same-as-old": "¡La nueva contraseña debe ser diferente a la contraseña anterior!",
   "error-confirm-password": "¡Por favor confirme la contraseña!",
   "error-match-passwords": "¡Las contraseñas deben coincidir!",
   "error-credential-wrong": "¡Las credenciales estaban equivocadas!",

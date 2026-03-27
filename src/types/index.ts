@@ -286,6 +286,8 @@ export interface Type {
   name: string;
   icon: string;
   slug: string;
+  /** Display order in UI (ascending). */
+  sort_order?: number;
   /** Type icon image (from attachment). Use image_id on create/update. */
   image?: Attachment;
   /** Attachment id for type icon. Sent as image_id on PUT. */
@@ -306,6 +308,8 @@ export interface CreateTypePayload {
   slug?: string;
   icon?: string;
   language?: string;
+  /** Display order in UI (ascending). */
+  sort_order?: number;
   settings?: TypeSettingsInput;
   video?: TypeVideoItem[];
   /** Update-only: attachment ID from upload; null to clear icon. Ignored on POST. */
@@ -2071,6 +2075,8 @@ export interface RefundReasonQueryOptions extends QueryOptions {
 
 export interface TypeQueryOptions extends QueryOptions {
   name: string;
+  text?: string;
+  search?: string;
 }
 
 export interface AnalyticsQueryOptions extends QueryOptions {

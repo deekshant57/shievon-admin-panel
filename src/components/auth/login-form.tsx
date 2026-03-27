@@ -95,7 +95,12 @@ const LoginForm = () => {
               className="mb-4"
               error={t(errors?.password?.message ?? '')}
             />
-            <Button className="w-full" loading={isLoggingIn} disabled={isLoggingIn}>
+            <Button
+              className="w-full"
+              loading={isLoggingIn}
+              spinnerColor="rgb(var(--color-accent))"
+              disabled={isLoggingIn}
+            >
               {loginLabel}
             </Button>
 

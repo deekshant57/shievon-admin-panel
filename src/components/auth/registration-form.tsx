@@ -17,6 +17,7 @@ import { useRegisterMutation } from '@/data/user';
 import type { RegisterInput } from '@/types';
 import Router from 'next/router';
 import { getFormErrors } from '@/data/client/http-client';
+import PasswordInput from '@/components/ui/password-input';
 
 const registrationFormSchema = yup.object().shape({
   name: yup.string().required('form:error-name-required').min(2, 'form:error-name-required'),
@@ -103,13 +104,14 @@ const RegistrationForm = () => {
               className="mb-4"
               error={t(errors?.email?.message ?? '')}
             />
-            <Input
+            <PasswordInput
               label={t('form:input-label-password')}
+              name="password"
               {...register('password')}
-              type="password"
               variant="outline"
               className="mb-4"
-              error={t(errors?.password?.message ?? '')}
+              required={true}
+              error={errors?.password?.message ? t(errors.password.message) : undefined}
             />
             <Button className="w-full" loading={isRegistering} disabled={isRegistering}>
               {'Register'}

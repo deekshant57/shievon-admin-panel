@@ -1,85 +1,46 @@
 import { Table } from '@/components/ui/table';
-import { SortOrder, Type } from '@/types';
+import { Type } from '@/types';
 import { getIcon } from '@/utils/get-icon';
 import * as typeIcons from '@/components/icons/type';
 import { useTranslation } from 'next-i18next';
 import { useIsRTL } from '@/utils/locals';
-import { useState } from 'react';
-import TitleWithSort from '@/components/ui/title-with-sort';
 import { Routes } from '@/config/routes';
-import { Config } from '@/config';
-import Link from '@/components/ui/link';
 import LanguageSwitcher from '@/components/ui/lang-action/action';
 import { NoDataFound } from '@/components/icons/no-data-found';
 
 export type IProps = {
   types: Type[] | undefined;
-  onSort: (current: any) => void;
-  onOrder: (current: string) => void;
 };
 
-const TypeList = ({ types, onSort, onOrder }: IProps) => {
+const TypeList = ({ types }: IProps) => {
   const { t } = useTranslation();
   const { alignLeft, alignRight } = useIsRTL();
-  const [sortingObj, setSortingObj] = useState<{
-    sort: SortOrder;
-    column: string | null;
-  }>({
-    sort: SortOrder.Desc,
-    column: null,
-  });
-
-  const onHeaderClick = (column: string | null) => ({
-    onClick: () => {
-      onSort((currentSortDirection: SortOrder) =>
-        currentSortDirection === SortOrder.Desc ? SortOrder.Asc : SortOrder.Desc
-      );
-      onOrder(column!);
-
-      setSortingObj({
-        sort:
-          sortingObj.sort === SortOrder.Desc ? SortOrder.Asc : SortOrder.Desc,
-        column: column,
-      });
-    },
-  });
 
   const columns = [
     {
-      title: (
-        <TitleWithSort
-          title={t('table:table-item-id')}
-          ascending={
-            sortingObj.sort === SortOrder.Asc && sortingObj.column === 'id'
-          }
-          isActive={sortingObj.column === 'id'}
-        />
-      ),
-      className: 'cursor-pointer',
+      title: t('table:table-item-id'),
       dataIndex: 'id',
       key: 'id',
       align: alignLeft,
       width: 150,
-      onHeaderCell: () => onHeaderClick('id'),
       render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
     },
     {
-      title: (
-        <TitleWithSort
-          title={t('table:table-homepage-name')}
-          ascending={
-            sortingObj.sort === SortOrder.Asc && sortingObj.column === 'name'
-          }
-          isActive={sortingObj.column === 'name'}
-        />
-      ),
+      title: t('table:table-homepage-name'),
       width: 220,
-      className: 'cursor-pointer',
       dataIndex: 'name',
       key: 'name',
       align: alignLeft,
-      onHeaderCell: () => onHeaderClick('name'),
       render: (name: any) => <span className="whitespace-nowrap">{name}</span>,
+    },
+    {
+      title: 'Sort Order',
+      dataIndex: 'sort_order',
+      key: 'sort_order',
+      align: 'center',
+      width: 140,
+      render: (sortOrder: number | null | undefined) =>
+        Number.isFinite(sortOrder) ? sortOrder : '-',
     },
     {
       title: t('table:table-item-slug'),

@@ -121,6 +121,7 @@ type BannerInput = {
 type FormValues = {
   name: string;
   slug?: string | null;
+  sort_order: number;
   icon?: any;
   /** Type icon image (uploaded attachment). Sent as image_id on create/update. */
   type_image?: AttachmentInput | null;
@@ -154,6 +155,7 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
     resolver: yupResolver(typeValidationSchema),
     defaultValues: {
       ...initialValues,
+      sort_order: initialValues?.sort_order ?? 0,
       type_image: initialValues?.image ?? null,
       promotional_sliders: initialValues?.promotional_sliders ?? initialValues?.settings?.promotional_sliders ?? [],
       banners: initialValues?.settings?.banners ?? [],
@@ -272,6 +274,10 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
       language: router.locale,
       name: values.name!,
       slug: values.slug!,
+      sort_order:
+        Number.isFinite(values.sort_order) && values.sort_order >= 0
+          ? Math.trunc(values.sort_order)
+          : 0,
       icon: values.icon?.value,
       ...(imageId != null
         ? { image_id: imageId }
@@ -439,6 +445,17 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
               disabled
             />
           )}
+          <Input
+            label="Sort Order"
+            type="number"
+            min={0}
+            {...register('sort_order', {
+              valueAsNumber: true,
+            })}
+            error={t((errors as any).sort_order?.message)}
+            variant="outline"
+            className="mb-5"
+          />
 
           <div className="mb-5">
             <Label>{t('form:input-label-type-image')}</Label>
@@ -499,59 +516,65 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
         </Card>
       </div>
 
-      <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-        <Description
-          title={t('form:group-settings')}
-          details={t('form:group-settings-help-text')}
-          className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-        />
-        <Card className="w-full sm:w-8/12 md:w-2/3">
-          <Checkbox
-            {...register('settings.isHome')}
-            error={t(errors.settings?.isHome?.message!)}
-            label={t('form:input-label-is-home')}
-            className="mb-5"
+      {/* Group-related settings wrapper is hidden for now by request.
+          Keeping defaults/payload logic intact for compatibility. */}
+      {false && (
+        <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
+          <Description
+            title={t('form:group-settings')}
+            details={t('form:group-settings-help-text')}
+            className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
           />
-          <div className="mb-10">
-            <Label className="mb-5">{t('form:input-label-layout-type')}</Label>
+          <Card className="w-full sm:w-8/12 md:w-2/3">
+            <Checkbox
+              {...register('settings.isHome')}
+              error={t(errors.settings?.isHome?.message!)}
+              label={t('form:input-label-is-home')}
+              className="mb-5"
+            />
+            <div className="mb-10">
+              <Label className="mb-5">
+                {t('form:input-label-layout-type')}
+              </Label>
 
-            <div className="grid grid-cols-3 gap-5">
-              {layoutTypes?.map((layout, index) => {
-                return (
-                  <RadioCard
-                    key={index}
-                    {...register('settings.layoutType')}
-                    label={t(layout.label)}
-                    value={layout.value}
-                    src={layout.img}
-                    id={layout?.value}
-                  />
-                );
-              })}
+              <div className="grid grid-cols-3 gap-5">
+                {layoutTypes?.map((layout, index) => {
+                  return (
+                    <RadioCard
+                      key={index}
+                      {...register('settings.layoutType')}
+                      label={t(layout.label)}
+                      value={layout.value}
+                      src={layout.img}
+                      id={layout?.value}
+                    />
+                  )
+                })}
+              </div>
             </div>
-          </div>
-          <div className="mb-5">
-            <Label className="mb-5">
-              {t('form:input-label-product-card-type')}
-            </Label>
+            <div className="mb-5">
+              <Label className="mb-5">
+                {t('form:input-label-product-card-type')}
+              </Label>
 
-            <div className="grid grid-cols-3 gap-5">
-              {productCards?.map((productCard, index) => {
-                return (
-                  <RadioCard
-                    key={`product-card-${index}`}
-                    {...register('settings.productCard')}
-                    label={t(productCard.label)}
-                    value={productCard.value}
-                    src={productCard.img}
-                    id={`product-card-${index}`}
-                  />
-                );
-              })}
+              <div className="grid grid-cols-3 gap-5">
+                {productCards?.map((productCard, index) => {
+                  return (
+                    <RadioCard
+                      key={`product-card-${index}`}
+                      {...register('settings.productCard')}
+                      label={t(productCard.label)}
+                      value={productCard.value}
+                      src={productCard.img}
+                      id={`product-card-${index}`}
+                    />
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        </Card>
-      </div>
+          </Card>
+        </div>
+      )}
 
       {layoutType === 'classic' ? (
         <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">

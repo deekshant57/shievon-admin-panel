@@ -9,7 +9,6 @@ import Loader from '@/components/ui/loader/loader';
 import { Config } from '@/config';
 import { Routes } from '@/config/routes';
 import { useTypesQuery } from '@/data/type';
-import { SortOrder } from '@/types';
 import { adminOnly } from '@/utils/auth-utils';
 import { GetStaticProps } from 'next';
 import { useTranslation } from 'next-i18next';
@@ -19,14 +18,10 @@ import { useState } from 'react';
 export default function TypesPage() {
   const { locale } = useRouter();
   const { t } = useTranslation();
-  const [orderBy, setOrder] = useState('created_at');
-  const [sortedBy, setColumn] = useState<SortOrder>(SortOrder.Desc);
   const [searchTerm, setSearchTerm] = useState('');
   const { types, loading, error } = useTypesQuery({
     name: searchTerm,
     language: locale,
-    orderBy,
-    sortedBy,
   });
 
   if (loading) return <Loader text={t('common:text-loading')} />;
@@ -64,7 +59,7 @@ export default function TypesPage() {
           )}
         </div>
       </Card>
-      <TypeList types={types} onOrder={setOrder} onSort={setColumn} />
+      <TypeList types={types} />
     </>
   );
 }

@@ -281,6 +281,8 @@
   "error-token-required": "需要令牌！",
   "error-old-password-required": "需要旧密码！",
   "error-password-required": "密码是必需的！",
+  "error-password-length": "密码长度至少需要 6 个字符！",
+  "error-password-same-as-old": "新密码必须与旧密码不同！",
   "error-confirm-password": "请确认密码！",
   "error-match-passwords": "密码应该匹配！",
   "error-credential-wrong": "凭证错误！",

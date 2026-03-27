@@ -45,8 +45,30 @@ const DefaultSeo = () => {
       ]}
       additionalLinkTags={[
         {
+          rel: 'icon',
+          type: 'image/x-icon',
+          href: '/icons/favicon/favicon.ico',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '32x32',
+          href: '/icons/favicon/favicon-32x32.png',
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '16x16',
+          href: '/icons/favicon/favicon-16x16.png',
+        },
+        {
+          rel: 'shortcut icon',
+          href: '/icons/favicon/favicon.ico',
+        },
+        {
           rel: 'apple-touch-icon',
-          href: 'icons/apple-icon-180.png',
+          sizes: '180x180',
+          href: '/icons/favicon/apple-touch-icon.png',
         },
         {
           rel: 'manifest',

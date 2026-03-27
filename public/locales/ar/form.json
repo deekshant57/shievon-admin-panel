@@ -281,6 +281,8 @@
   "error-token-required": "الرمز مطلوب!",
   "error-old-password-required": "كلمة المرور القديمة مطلوبة!",
   "error-password-required": "كلمة المرور مطلوبة!",
+  "error-password-length": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل!",
+  "error-password-same-as-old": "يجب أن تكون كلمة المرور الجديدة مختلفة عن كلمة المرور القديمة!",
   "error-confirm-password": "الرجاء تأكيد كلمة المرور!",
   "error-match-passwords": "يجب أن تتطابق كلمات المرور!",
   "error-credential-wrong": "أوراق الاعتماد كانت خاطئة!",

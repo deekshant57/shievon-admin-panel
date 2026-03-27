@@ -116,7 +116,9 @@ function SelectCategories({
       <SelectInput
         name="parent"
         control={control}
-        getOptionLabel={(option: any) => option.name}
+        getOptionLabel={(option: any) =>
+          option?.slug ? `${option.name} (${option.slug})` : option.name
+        }
         getOptionValue={(option: any) => option.id}
         options={categories}
         isClearable={true}

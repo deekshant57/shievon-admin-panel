@@ -281,6 +281,8 @@
   "error-token-required": "Token ist erforderlich!",
   "error-old-password-required": "Altes Passwort ist erforderlich!",
   "error-password-required": "Passwort wird benötigt!",
+  "error-password-length": "Das Passwort muss mindestens 6 Zeichen lang sein!",
+  "error-password-same-as-old": "Das neue Passwort muss sich vom alten Passwort unterscheiden!",
   "error-confirm-password": "Bitte Passwort bestätigen!",
   "error-match-passwords": "Passwörter sollten übereinstimmen!",
   "error-credential-wrong": "Die Anmeldedaten waren falsch!",

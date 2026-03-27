@@ -40,7 +40,7 @@ import { useModalAction } from '../ui/modal/modal.context';
 import { shopValidationSchema } from './shop-validation-schema';
 import { formatSlug } from '@/utils/use-slug';
 import StickyFooterPanel from '@/components/ui/sticky-footer-panel';
-import { socialIcon } from '@/settings/site.settings';
+import { siteSettings, socialIcon } from '@/settings/site.settings';
 import { ShopDescriptionSuggestion } from '@/components/shop/shop-ai-prompt';
 import PhoneNumberInput from '@/components/ui/phone-input';
 import DatePicker from '@/components/ui/date-picker';
@@ -387,6 +387,27 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
 
   const askForAQuote = watch('settings.askForAQuote.enable');
 
+  const backendLogoWidth = Number((options as any)?.logo?.width);
+  const backendLogoHeight = Number((options as any)?.logo?.height);
+  const shopLogoWidth =
+    Number.isFinite(backendLogoWidth) && backendLogoWidth > 0
+      ? backendLogoWidth
+      : siteSettings.logo.width;
+  const shopLogoHeight =
+    Number.isFinite(backendLogoHeight) && backendLogoHeight > 0
+      ? backendLogoHeight
+      : siteSettings.logo.height;
+
+  const shopLogoInformation = (
+    <span>
+      {t('form:shop-logo-help-text')} <br />
+      {t('form:logo-dimension-help-text')} &nbsp;
+      <span className="font-bold">
+        {shopLogoWidth}x{shopLogoHeight} {t('common:pixel')}
+      </span>
+    </span>
+  );
+
   const coverImageInformation = (
     <span>
       {t('form:shop-cover-image-help-text')} <br />
@@ -425,7 +446,7 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
         <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
           <Description
             title={t('form:input-label-logo')}
-            details={t('form:shop-logo-help-text')}
+            details={shopLogoInformation}
             className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
           />
 

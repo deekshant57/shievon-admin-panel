@@ -2,6 +2,12 @@ import * as yup from 'yup';
 
 export const typeValidationSchema = yup.object().shape({
   name: yup.string().required('form:error-name-required'),
+  sort_order: yup
+    .number()
+    .typeError('Sort order must be a number.')
+    .integer('Sort order must be an integer.')
+    .min(0, 'Sort order must be 0 or greater.')
+    .required('Sort order is required.'),
   banners: yup
     .array()
     .min(1, 'form:error-min-one-banner')

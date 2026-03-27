@@ -24,6 +24,8 @@ import {
 } from '@/utils/auth-utils';
 import {
   RESPONSIVE_WIDTH,
+  STORE_OWNER,
+  SUPER_ADMIN,
   checkIsMaintenanceModeComing,
   checkIsMaintenanceModeStart,
   miniSidebarInitialValue,
@@ -48,9 +50,9 @@ export const isInArray = (array: Date[], value: Date) => {
 const Navbar = () => {
   const { t } = useTranslation();
   const { toggleSidebar } = useUI();
-  const { permissions } = getAuthCredentials();
+  const { role, permissions } = getAuthCredentials();
   const { enableMultiLang } = Config;
-  const { locale, query } = useRouter();
+  const { locale, pathname, query } = useRouter();
   const { data } = useMeQuery();
   const { openModal } = useModalAction();
   const [searchModal, setSearchModal] = useAtom(searchModalInitialValues);
@@ -161,6 +163,10 @@ const Navbar = () => {
     setSearchModal(true);
   }
 
+  const showCreateShopButton =
+    role === STORE_OWNER ||
+    (role === SUPER_ADMIN && pathname === Routes.dashboard);
+
   return (
     <header className="fixed top-0 z-40 w-full bg-white shadow">
       {width >= RESPONSIVE_WIDTH && isMaintenanceMode ? (
@@ -254,15 +260,17 @@ const Navbar = () => {
           <div className="flex shrink-0 grow-0 basis-auto items-center">
             {hasAccess(adminAndOwnerOnly, permissions) && (
               <>
-                <div className="border-gray-200/80 px-6 py-5 border-e">
-                  <LinkButton
-                    href={Routes.shop.create}
-                    size="small"
-                    className="px-3.5"
-                  >
-                    {t('common:text-create-shop')}
-                  </LinkButton>
-                </div>
+                {showCreateShopButton ? (
+                  <div className="border-gray-200/80 px-6 py-5 border-e">
+                    <LinkButton
+                      href={Routes.shop.create}
+                      size="small"
+                      className="px-3.5"
+                    >
+                      {t('common:text-create-shop')}
+                    </LinkButton>
+                  </div>
+                ) : null}
 
                 {options?.pushNotification?.all?.order ||
                 options?.pushNotification?.all?.message ||

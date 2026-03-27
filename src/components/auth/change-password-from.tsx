@@ -5,9 +5,11 @@ import Description from '@/components/ui/description';
 import { toast } from 'react-toastify';
 import PasswordInput from '@/components/ui/password-input';
 import { useChangePasswordMutation } from '@/data/user';
+import { Routes } from '@/config/routes';
 import { useTranslation } from 'next-i18next';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { useRouter } from 'next/router';
 
 interface FormValues {
   oldPassword: string;
@@ -16,8 +18,23 @@ interface FormValues {
 }
 
 const changePasswordSchema = yup.object().shape({
-  oldPassword: yup.string().required('form:error-old-password-required'),
-  newPassword: yup.string().required('form:error-password-required'),
+  oldPassword: yup
+    .string()
+    .required('form:error-old-password-required')
+    .min(6, 'form:error-password-length'),
+  newPassword: yup
+    .string()
+    .required('form:error-password-required')
+    .min(6, 'form:error-password-length')
+    .test(
+      'not-same-as-old',
+      'form:error-password-same-as-old',
+      function (value) {
+        const oldPassword = this.parent?.oldPassword as string | undefined;
+        if (!value || !oldPassword) return true;
+        return value !== oldPassword;
+      },
+    ),
   passwordConfirmation: yup
     .string()
     .oneOf([yup.ref('newPassword')], 'form:error-match-passwords')
@@ -26,6 +43,7 @@ const changePasswordSchema = yup.object().shape({
 
 const ChangePasswordForm = () => {
   const { t } = useTranslation();
+  const router = useRouter();
   const { mutate: changePassword, isLoading: loading } =
     useChangePasswordMutation();
   const {
@@ -47,23 +65,18 @@ const ChangePasswordForm = () => {
       },
       {
         onError: (error: any) => {
-          Object.keys(error?.response?.data).forEach((field: any) => {
-            setError(field, {
-              type: 'manual',
-              message: error?.response?.data[field][0],
-            });
-          });
-        },
-        onSuccess: (data) => {
-          if (!data?.success) {
+          const message = error?.response?.data?.message;
+          if (message) {
             setError('oldPassword', {
               type: 'manual',
-              message: data?.message ?? '',
+              message,
             });
-          } else if (data?.success) {
-            toast.success(t('common:password-changed-successfully'));
-            reset();
           }
+        },
+        onSuccess: () => {
+          toast.success(t('common:password-changed-successfully'));
+          reset();
+          router.replace(Routes.dashboard);
         },
       }
     );

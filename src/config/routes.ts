@@ -19,6 +19,7 @@ export const Routes = {
   storeSettings: '/vendor/settings',
   storeKeepers: '/vendor/store_keepers',
   profileUpdate: '/profile-update',
+  changePassword: '/change-password',
   checkout: '/orders/checkout',
   verifyEmail: '/verify-email',
   verifyLicense: '/verify-license',

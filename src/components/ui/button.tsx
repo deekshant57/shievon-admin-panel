@@ -8,6 +8,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'big' | 'medium' | 'small';
   active?: boolean;
   loading?: boolean;
+  spinnerColor?: string;
   disabled?: boolean;
   children?: React.ReactNode;
 }
@@ -38,6 +39,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       active,
       children,
       loading = false,
+      spinnerColor,
       disabled = false,
       ...rest
     } = props;
@@ -70,7 +72,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             className={classes.loading}
             style={{
               borderTopColor:
-                variant === 'outline' ? 'currentColor' : '#ffffff',
+                spinnerColor ??
+                (variant === 'outline' ? 'currentColor' : '#ffffff'),
             }}
           />
         )}

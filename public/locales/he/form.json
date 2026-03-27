@@ -282,6 +282,8 @@
   "error-token-required": "אסימון נדרש!",
   "error-old-password-required": "סיסמה ישנה נדרשת!",
   "error-password-required": "דרושה סיסמא!",
+  "error-password-length": "הסיסמה חייבת להכיל לפחות 6 תווים!",
+  "error-password-same-as-old": "הסיסמה החדשה חייבת להיות שונה מהסיסמה הישנה!",
   "error-confirm-password": "נא לאשר את הסיסמה!",
   "error-match-passwords": "סיסמאות צריכות להתאים!",
   "error-credential-wrong": "האישורים היו שגויים!",

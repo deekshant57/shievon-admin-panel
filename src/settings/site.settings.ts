@@ -38,8 +38,14 @@ export const siteSettings = {
       permission: adminOwnerAndStaffOnly,
     },
     {
+      href: Routes.changePassword,
+      labelTransKey: 'authorized-nav-item-change-password',
+      icon: 'SettingsIcon',
+      permission: adminOwnerAndStaffOnly,
+    },
+    {
       href: Routes.shop.create,
-      labelTransKey: 'common:text-create-shop',
+      labelTransKey: 'text-create-shop',
       icon: 'ShopIcon',
       permission: adminAndOwnerOnly,
     },

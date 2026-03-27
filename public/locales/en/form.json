@@ -314,6 +314,8 @@
   "error-token-required": "Token is Required!",
   "error-old-password-required": "Old Password is Required!",
   "error-password-required": "Password is Required!",
+  "error-password-length": "Password must be at least 6 characters!",
+  "error-password-same-as-old": "New password must be different from old password!",
   "error-confirm-password": "Please confirm password!",
   "error-match-passwords": "Passwords should match!",
   "error-credential-wrong": "The credentials was wrong!",
