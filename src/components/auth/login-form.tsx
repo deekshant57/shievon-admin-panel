@@ -1,5 +1,6 @@
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
+import PasswordInput from '@/components/ui/password-input';
 import { useTranslation } from 'next-i18next';
 import * as yup from 'yup';
 import Link from '@/components/ui/link';
@@ -87,13 +88,16 @@ const LoginForm = () => {
               className="mb-4"
               error={t(errors?.email?.message ?? '')}
             />
-            <Input
+            <PasswordInput
               label={t('form:input-label-password')}
+              name="password"
               {...register('password')}
-              type="password"
               variant="outline"
               className="mb-4"
-              error={t(errors?.password?.message ?? '')}
+              required={true}
+              error={
+                errors?.password?.message ? t(errors.password.message) : undefined
+              }
             />
             <Button
               className="w-full"
