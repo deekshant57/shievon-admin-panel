@@ -1751,12 +1751,12 @@ export interface ForgetPasswordInput {
 
 export interface VerifyForgetPasswordTokenInput {
   token: string;
-  email: string;
+  rid: string;
 }
 
 export interface ResetPasswordInput {
   token: string;
-  email: string;
+  rid: string;
   password: string;
 }
 
