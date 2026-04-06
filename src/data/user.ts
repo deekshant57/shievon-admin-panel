@@ -18,6 +18,7 @@ import {
 import { mapPaginatorData } from '@/utils/data-mappers';
 import axios from 'axios';
 import { setEmailVerified } from '@/utils/auth-utils';
+import { getApiErrorMessage } from '@/data/client/http-client';
 
 export const useMeQuery = () => {
   const queryClient = useQueryClient();
@@ -77,8 +78,10 @@ export function useSendVerifyEmailOtp() {
       );
     },
     onError: (error: any) => {
-      const errorMessage =
-        error?.response?.data?.message || t('Error sending verification code') || 'Failed to send code';
+      const errorMessage = getApiErrorMessage(
+        error,
+        t('Error sending verification code') || 'Failed to send code'
+      );
       toast.error(errorMessage);
     },
   });
@@ -172,11 +175,7 @@ export const useUpdateUserEmailMutation = () => {
       toast.success(t('common:successfully-updated'));
     },
     onError: (error) => {
-      const {
-        response: { data },
-      }: any = error ?? {};
-
-      toast.error(data?.message);
+      toast.error(getApiErrorMessage(error));
     },
     // Always refetch after error or success:
     onSettled: () => {

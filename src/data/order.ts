@@ -14,6 +14,7 @@ import {
 import { orderClient } from './client/order';
 import { useRouter } from 'next/router';
 import { Routes } from '@/config/routes';
+import { getApiErrorMessage } from '@/data/client/http-client';
 
 export const useOrdersQuery = (
   params: Partial<OrderQueryOptions>,
@@ -74,10 +75,7 @@ export function useCreateOrderMutation() {
       }
     },
     onError: (error) => {
-      const {
-        response: { data },
-      }: any = error ?? {};
-      toast.error(data?.message);
+      toast.error(getApiErrorMessage(error));
     },
   });
 

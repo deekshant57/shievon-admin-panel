@@ -10,7 +10,7 @@ import { useLogin } from '@/data/user';
 import type { LoginInput } from '@/types';
 import { useState } from 'react';
 import Alert from '@/components/ui/alert';
-import Router from 'next/router';
+import { useRouter } from 'next/router';
 import {
   allowedRoles,
   hasAccess,
@@ -35,6 +35,7 @@ const defaultLoginValues: LoginInput = {
 const LoginForm = () => {
   const { t } = useTranslation();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
 
   const { mutate: login, isLoading: isLoggingIn } = useLogin();
 
@@ -45,24 +46,30 @@ const LoginForm = () => {
     setErrorMessage(null);
     login(variables, {
       onSuccess: (data) => {
+        const permissionGranted = hasAccess(allowedRoles, data.permissions);
         if (!data?.token) {
           setErrorMessage(t('form:error-credential-wrong') || 'Invalid credentials');
           return;
         }
-        if (!hasAccess(allowedRoles, data.permissions)) {
+        if (!permissionGranted) {
           setErrorMessage(t('form:error-enough-permission') || 'Insufficient permission');
           return;
         }
         setAuthCredentials(data.token, data.permissions, data.role);
         if (data.isEmailVerified === false) {
           setEmailVerified(false);
-          Router.push({
+          router.push({
             pathname: Routes.verifyEmail,
             query: { email: variables.email },
           });
           return;
         }
-        Router.push(Routes.dashboard);
+        const queryNext = typeof router.query?.next === 'string' ? router.query.next : '';
+        const nextPath =
+          queryNext.startsWith('/') && !queryNext.startsWith('//')
+            ? queryNext
+            : Routes.dashboard;
+        router.push(nextPath);
       },
       onError: (error: unknown) => {
         const msg = getFormErrors(error) || (error as Error)?.message;
@@ -90,7 +97,6 @@ const LoginForm = () => {
             />
             <PasswordInput
               label={t('form:input-label-password')}
-              name="password"
               {...register('password')}
               variant="outline"
               className="mb-4"

@@ -35,6 +35,7 @@ const AdminsList = ({
 }: IProps) => {
   const { t } = useTranslation();
   const { alignLeft, alignRight } = useIsRTL();
+  const { data: currentUser } = useMeQuery();
 
   const [sortingObj, setSortingObj] = useState<{
     sort: SortOrder;
@@ -176,10 +177,9 @@ const AdminsList = ({
       align: alignRight,
       width: 120,
       render: function Render(id: string, { is_active }: any) {
-        const { data } = useMeQuery();
         return (
           <>
-            {data?.id != id && (
+            {currentUser?.id != id && (
               <ActionButtons
                 id={id}
                 userStatus={true}

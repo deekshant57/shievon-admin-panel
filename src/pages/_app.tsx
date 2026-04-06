@@ -20,9 +20,21 @@ import type { NextPageWithLayout } from '@/types';
 import { useRouter } from 'next/router';
 import PrivateRoute from '@/utils/private-route';
 import { Config } from '@/config';
+import axios from 'axios';
 const Noop: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
   <>{children}</>
 );
+
+const shouldRetryQuery = (failureCount: number, error: unknown) => {
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
+    if (status === 429 || (status >= 400 && status < 500)) {
+      return false;
+    }
+  }
+
+  return failureCount < 2;
+};
 
 const AppSettings: React.FC<{ children?: React.ReactNode }> = (props) => {
   const { query, locale } = useRouter();
@@ -39,7 +51,19 @@ type AppPropsWithLayout = AppProps & {
 const CustomApp = ({ Component, pageProps }: AppPropsWithLayout) => {
   const Layout = (Component as any).Layout || Noop;
   const authProps = (Component as any).authenticate;
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60 * 1000,
+            refetchOnWindowFocus: false,
+            refetchOnReconnect: false,
+            retry: shouldRetryQuery,
+          },
+        },
+      })
+  );
   const getLayout = Component.getLayout ?? ((page) => page);
 
   const { locale } = useRouter();

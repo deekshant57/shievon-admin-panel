@@ -116,12 +116,57 @@ export const useServiceOfferingsQuery = (
   )
 
   const items = data?.data ?? []
+  const normalizedPaginator = normalizeServicePaginatorData(data)
 
   return {
     serviceOfferings: items,
-    paginatorInfo: mapPaginatorData(data),
+    paginatorInfo: mapPaginatorData(normalizedPaginator),
     error,
     loading: isLoading,
   }
+}
+
+type ServiceOfferingPaginatorWithNestedData = ServiceOfferingPaginator & {
+  paginator?: ServiceOfferingPaginator & {
+    page?: number
+    limit?: number
+    totalPages?: number
+    currentPage?: number
+    perPage?: number
+    lastPage?: number
+  }
+}
+
+function normalizeServicePaginatorData(
+  data: ServiceOfferingPaginator | undefined,
+): ServiceOfferingPaginator | undefined {
+  if (!data) return undefined
+
+  const paginatorFromNestedData = (data as ServiceOfferingPaginatorWithNestedData)
+    ?.paginator
+  if (paginatorFromNestedData) {
+    const currentPage =
+      paginatorFromNestedData.current_page ??
+      paginatorFromNestedData.currentPage ??
+      paginatorFromNestedData.page
+    const perPage =
+      paginatorFromNestedData.per_page ??
+      paginatorFromNestedData.perPage ??
+      paginatorFromNestedData.limit
+    const lastPage =
+      paginatorFromNestedData.last_page ??
+      paginatorFromNestedData.lastPage ??
+      paginatorFromNestedData.totalPages
+
+    return {
+      ...paginatorFromNestedData,
+      current_page: currentPage,
+      per_page: perPage,
+      last_page: lastPage,
+      data: data?.data ?? paginatorFromNestedData?.data ?? [],
+    } as ServiceOfferingPaginator
+  }
+
+  return data
 }
 

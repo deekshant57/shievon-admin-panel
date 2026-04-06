@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 import Router from 'next/router';
 import invariant from 'tiny-invariant';
 import { AUTH_CRED } from '@/utils/constants';
+import { API_ENDPOINTS } from './api-endpoints';
 
 // Use the specified base URL, fallback to env variable if needed
 const baseURL = process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:9000/api';
@@ -41,8 +42,10 @@ Axios.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
     const message = error.response?.data?.message;
+    const requestUrl = String(error.config?.url ?? '');
+    const isLoginRequest = requestUrl.includes(API_ENDPOINTS.TOKEN);
     const isAuthFailure =
-      status === 401 ||
+      (status === 401 && !isLoginRequest) ||
       (status === 403 && message === 'PICKBAZAR_ERROR.NOT_AUTHORIZED');
     if (isAuthFailure) {
       Cookies.remove(AUTH_CRED);
@@ -142,11 +145,39 @@ export class HttpClient {
   }
 }
 
-export function getFormErrors(error: unknown) {
-  if (axios.isAxiosError(error)) {
-    return error.response?.data.message;
+const THROTTLE_FALLBACK_MESSAGE = 'Please wait a moment and try again.';
+
+function isThrottleError(status?: number, message?: string) {
+  if (status === 429) return true;
+  if (!message) return false;
+  const normalizedMessage = message.toLowerCase();
+  return (
+    normalizedMessage.includes('throttlerexception') ||
+    normalizedMessage.includes('too many requests')
+  );
+}
+
+export function getApiErrorMessage(
+  error: unknown,
+  fallbackMessage: string | null = 'Something went wrong. Please try again.'
+) {
+  if (!axios.isAxiosError(error)) {
+    return fallbackMessage;
   }
-  return null;
+
+  const status = error.response?.status;
+  const message = error.response?.data?.message;
+  if (isThrottleError(status, message)) {
+    return THROTTLE_FALLBACK_MESSAGE;
+  }
+  if (typeof message === 'string' && message.trim()) {
+    return message;
+  }
+  return fallbackMessage;
+}
+
+export function getFormErrors(error: unknown) {
+  return getApiErrorMessage(error, null);
 }
 
 export function getFieldErrors(error: unknown) {

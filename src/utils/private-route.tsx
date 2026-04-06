@@ -17,8 +17,14 @@ const PrivateRoute: React.FC<{
     !!permissions.length &&
     hasAccess(authProps.permissions, permissions);
   React.useEffect(() => {
-    if (!isUser) router.replace(Routes.login); // If not authenticated, force log in
-  }, [isUser]);
+    if (!isUser) {
+      const nextPath = router.asPath || Routes.dashboard;
+      router.replace({
+        pathname: Routes.login,
+        query: { next: nextPath },
+      });
+    } // If not authenticated, force log in
+  }, [isUser, router]);
 
   if (isUser && hasPermission) {
     return <>{children}</>;

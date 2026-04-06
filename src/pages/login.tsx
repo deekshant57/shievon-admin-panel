@@ -23,10 +23,15 @@ export default function LoginPage() {
     if (hasRedirectedRef.current) {
       return;
     }
-  if (isAuthenticated({ token, permissions })) {
+    if (isAuthenticated({ token, permissions })) {
       hasRedirectedRef.current = true;
-    router.replace(Routes.dashboard);
-  }
+      const queryNext = typeof router.query?.next === 'string' ? router.query.next : '';
+      const nextPath =
+        queryNext.startsWith('/') && !queryNext.startsWith('//')
+          ? queryNext
+          : Routes.dashboard;
+      router.replace(nextPath);
+    }
   }, [token, permissions, router]);
 
   const { t } = useTranslation('common');
