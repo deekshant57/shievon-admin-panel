@@ -2127,6 +2127,7 @@ export interface ServiceOffering {
   shopId?: number
   typeId?: number
   offeringTypeId?: number
+  serviceCategoryId?: number
   name: string
   slug?: string
   description?: string
@@ -2142,6 +2143,7 @@ export interface ServiceOffering {
   // optional relations when backend includes them
   shop?: Shop
   type?: Type
+  serviceCategory?: ServiceCategory
 }
 
 export interface CreateServiceOfferingInput {

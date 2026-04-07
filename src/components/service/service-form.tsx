@@ -17,12 +17,13 @@ import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import { useTypesQuery } from '@/data/type'
 import { isServiceType } from '@/utils/service-type'
-import type { ServiceOffering } from '@/types'
+import type { ServiceCategory, ServiceOffering } from '@/types'
 import {
   useCreateServiceOfferingMutation,
   useUpdateServiceOfferingMutation,
 } from '@/data/service-offering'
 import { getErrorMessage } from '@/utils/form-error'
+import ServiceCategoryCascader from '@/components/service/service-category-cascader'
 
 type FormValues = {
   type: any
@@ -32,6 +33,11 @@ type FormValues = {
   sale_price?: number
   image?: any
   gallery?: any[]
+  service_category_id?: number | null
+  service_primary_category?: ServiceCategory | null
+  service_secondary_category?: ServiceCategory | null
+  service_tertiary_category?: ServiceCategory | null
+  service_quaternary_category?: ServiceCategory | null
 }
 
 const serviceValidationSchema = yup.object().shape({
@@ -72,6 +78,11 @@ const defaultValues: FormValues = {
   sale_price: undefined,
   image: null,
   gallery: [],
+  service_category_id: null,
+  service_primary_category: null,
+  service_secondary_category: null,
+  service_tertiary_category: null,
+  service_quaternary_category: null,
 }
 
 type Props = {
@@ -96,6 +107,18 @@ export default function CreateOrUpdateServiceOfferingForm({
     () => (types ?? []).filter((type: any) => isServiceType(type)),
     [types],
   )
+
+  const initialServiceCategoryChain = useMemo(() => {
+    const leaf = (initialValues as any)?.serviceCategory ?? null
+    if (!leaf) return []
+    const chain: any[] = []
+    let current: any = leaf
+    while (current) {
+      chain.push({ id: current.id, name: current.name, slug: current.slug })
+      current = current.parent ?? null
+    }
+    return chain.reverse().slice(0, 4)
+  }, [initialValues])
 
   const {
     register,
@@ -130,6 +153,18 @@ export default function CreateOrUpdateServiceOfferingForm({
               : (initialValues?.salePrice as number | undefined),
           image: (initialValues as any)?.image ?? null,
           gallery: (initialValues as any)?.gallery ?? [],
+          service_category_id:
+            (initialValues as any)?.serviceCategoryId ??
+            (initialValues as any)?.serviceCategory?.id ??
+            null,
+          service_primary_category:
+            (initialServiceCategoryChain as any[])[0] ?? null,
+          service_secondary_category:
+            (initialServiceCategoryChain as any[])[1] ?? null,
+          service_tertiary_category:
+            (initialServiceCategoryChain as any[])[2] ?? null,
+          service_quaternary_category:
+            (initialServiceCategoryChain as any[])[3] ?? null,
         }
       : defaultValues,
     //@ts-ignore
@@ -163,6 +198,10 @@ export default function CreateOrUpdateServiceOfferingForm({
     const input = {
       shop_id: shopId,
       type_id: Number(values.type?.id),
+      service_category_id:
+        values.service_category_id != null
+          ? Number(values.service_category_id)
+          : undefined,
       // Hidden from UI by request; keep safe defaults for API compatibility.
       offering_type_id: Number((initialValues as any)?.offeringTypeId ?? 1),
       name: values.name,
@@ -201,7 +240,7 @@ export default function CreateOrUpdateServiceOfferingForm({
         })
       }
     } catch (err) {
-      setErrorMessage(getErrorMessage(err))
+      setErrorMessage(getErrorMessage(err)?.message ?? null)
     }
   }
 
@@ -230,6 +269,21 @@ export default function CreateOrUpdateServiceOfferingForm({
         </Card>
       </div>
 
+      <div className="my-5 flex flex-wrap border-b border-dashed border-border-base pb-8 sm:my-8">
+        <Description
+          title={t('form:gallery-title') || 'Gallery'}
+          details={
+            t('form:gallery-help-text') ||
+            t('Upload multiple images for this service') ||
+            'Upload multiple images for this service'
+          }
+          className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
+        />
+        <Card className="w-full sm:w-8/12 md:w-2/3">
+          <FileInput name="gallery" control={control} />
+        </Card>
+      </div>
+
       <div className="my-5 flex flex-wrap sm:my-8">
         <Description
           title={t('Service details') || 'Service details'}
@@ -253,6 +307,12 @@ export default function CreateOrUpdateServiceOfferingForm({
             />
             <ValidationError message={t((errors as any)?.type?.message)} />
           </div>
+
+          <ServiceCategoryCascader
+            control={control}
+            setValue={setValue}
+            getValues={getValues}
+          />
 
           <Input
             label={(t('form:input-label-name') || 'Name') + '*'}
