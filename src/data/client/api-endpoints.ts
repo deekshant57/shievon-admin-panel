@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
   PRODUCTS: 'products',
   POPULAR_PRODUCTS: 'popular-products',
   SERVICE_OFFERINGS: 'service-offerings',
+  SERVICE_CATEGORIES: 'service-categories',
   COUPONS: 'coupons',
   VERIFY_COUPONS: 'coupons/verify',
   // CUSTOMERS: 'customers',

@@ -32,6 +32,9 @@ const ShippingDeleteView = dynamic(
 const CategoryDeleteView = dynamic(
   () => import('@/components/category/category-delete-view'),
 );
+const ServiceCategoryDeleteView = dynamic(
+  () => import('@/components/service-category/service-category-delete-view'),
+);
 const CouponDeleteView = dynamic(
   () => import('@/components/coupon/coupon-delete-view'),
 );
@@ -178,6 +181,8 @@ function renderModal(view: MODAL_VIEWS | undefined, data: any) {
       return <AttributeDeleteView />;
     case 'DELETE_CATEGORY':
       return <CategoryDeleteView />;
+    case 'DELETE_SERVICE_CATEGORY':
+      return <ServiceCategoryDeleteView />;
     case 'DELETE_COUPON':
       return <CouponDeleteView />;
     case 'DELETE_TAX':

@@ -52,12 +52,13 @@ export const useUpdateCategoryMutation = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   return useMutation(categoryClient.update, {
-    onSuccess: async (data) => {
+    onSuccess: async (data, variables) => {
       const generateRedirectUrl = router.query.shop
         ? `/${router.query.shop}${Routes.category.list}`
         : Routes.category.list;
+      const redirectSlug = data?.slug ?? variables?.slug;
       await router.push(
-        `${generateRedirectUrl}/${data?.slug}/edit`,
+        `${generateRedirectUrl}/${redirectSlug}/edit`,
         undefined,
         {
           locale: Config.defaultLanguage,

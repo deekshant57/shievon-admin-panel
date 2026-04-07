@@ -1119,10 +1119,11 @@ export interface CreateRefundReasonInput {
 
 export interface CreateCategoryInput {
   name: string;
-  type_id?: string;
-  parent?: number;
+  slug?: string;
+  language?: string;
+  type_id?: number;
+  parent_id?: number | null;
   details?: string;
-  image?: AttachmentInput;
   /** Sent on update; null to clear category image. */
   image_id?: number | null;
   icon?: string;
@@ -2006,7 +2007,7 @@ export interface UserProfileInput {
 export interface CategoryQueryOptions extends QueryOptions {
   type: string;
   name: string;
-  parent: number | null;
+  parent: number | string | null;
   self: string;
   /** Filter by type id (backend GET /categories); when set, backend can filter by type_id directly */
   type_id?: number;
@@ -2175,6 +2176,50 @@ export interface ServiceOfferingQueryOptions extends QueryOptions {
 
 export interface ServiceOfferingPaginator
   extends PaginatorInfo<ServiceOffering> {}
+
+export interface ServiceCategory {
+  id: number
+  name: string
+  slug?: string | null
+  parentId?: number | null
+  path?: string | null
+  level?: number
+  sortOrder?: number
+  isActive?: boolean
+  createdAt?: string
+  updatedAt?: string
+  parent?: ServiceCategory | null
+  children?: ServiceCategory[]
+}
+
+export interface CreateServiceCategoryInput {
+  name: string
+  slug?: string
+  parent_id?: number | null
+  sort_order?: number
+  is_active?: boolean
+}
+
+export interface ServiceCategoryQueryOptions {
+  limit?: number
+  page?: number
+  parent_id?: number
+  search?: string
+}
+
+/** Nested list payload from GET /service-categories (before normalizing to PaginatorInfo) */
+export interface ServiceCategoryListPayload {
+  data: ServiceCategory[]
+  paginator: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
+}
+
+export interface ServiceCategoryPaginator
+  extends PaginatorInfo<ServiceCategory> {}
 
 export interface UserQueryOptions extends QueryOptions {
   name: string;

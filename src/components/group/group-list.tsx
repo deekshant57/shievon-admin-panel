@@ -10,9 +10,10 @@ import { NoDataFound } from '@/components/icons/no-data-found';
 
 export type IProps = {
   types: Type[] | undefined;
+  routes?: typeof Routes.type;
 };
 
-const TypeList = ({ types }: IProps) => {
+const TypeList = ({ types, routes = Routes.type }: IProps) => {
   const { t } = useTranslation();
   const { alignLeft, alignRight } = useIsRTL();
 
@@ -80,7 +81,7 @@ const TypeList = ({ types }: IProps) => {
           slug={slug}
           record={record}
           deleteModalView="DELETE_TYPE"
-          routes={Routes?.type}
+          routes={routes}
         />
       ),
     },

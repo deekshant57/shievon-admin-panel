@@ -68,6 +68,54 @@ export const useUpdateTypeMutation = () => {
   });
 };
 
+/** Same as useCreateTypeMutation; redirects under `/${shop}/service-types` for shop service-type admin pages */
+export const useCreateServiceTypeMutation = () => {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  return useMutation(typeClient.create, {
+    onSuccess: () => {
+      const shop = router.query.shop as string;
+      const url = shop
+        ? `/${shop}${Routes.serviceType.list}`
+        : Routes.serviceType.list;
+      Router.push(url, undefined, {
+        locale: Config.defaultLanguage,
+      });
+      toast.success(t('common:successfully-created'));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(API_ENDPOINTS.TYPES);
+    },
+  });
+};
+
+/** Same as useUpdateTypeMutation; redirects under `/${shop}/service-types` when editing from that area */
+export const useUpdateServiceTypeMutation = () => {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  return useMutation(typeClient.update, {
+    onSuccess: async (data) => {
+      const shop = router.query.shop as string;
+      const base = shop
+        ? `/${shop}${Routes.serviceType.list}`
+        : Routes.serviceType.list;
+      await router.push(
+        `${base}/${data?.slug}/edit`,
+        undefined,
+        {
+          locale: Config.defaultLanguage,
+        }
+      );
+      toast.success(t('common:successfully-updated'));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(API_ENDPOINTS.TYPES);
+    },
+  });
+};
+
 export const useTypeQuery = ({
   slug,
   language,

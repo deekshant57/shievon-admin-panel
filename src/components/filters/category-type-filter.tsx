@@ -82,13 +82,13 @@ export default function CategoryTypeFilter({
     >
       {enableType ? (
         <div className="w-full">
-          <Label>{t('common:filter-by-group')}</Label>
+          <Label>{t('common:filter-by-type')}</Label>
           <Select
             options={types}
             isLoading={loading}
             getOptionLabel={(option: any) => option.name}
             getOptionValue={(option: any) => option.slug}
-            placeholder={t('common:filter-by-group-placeholder')}
+            placeholder={t('common:filter-by-type-placeholder')}
             onChange={onTypeFilter}
             isClearable={true}
           />

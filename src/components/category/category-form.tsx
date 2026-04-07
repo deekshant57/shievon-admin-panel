@@ -192,7 +192,17 @@ export default function CreateOrUpdateCategoriesForm({
   });
 
   const { openModal } = useModalAction();
-  const slugAutoSuggest = formatSlug(watch('name'));
+  const watchedParent = watch('parent');
+  const slugAutoSuggest =
+    watchedParent?.slug && watch('name')
+      ? formatSlug(`${watchedParent.slug}-${watch('name')}`)
+      : formatSlug(watch('name'));
+  useEffect(() => {
+    // Keep form slug in sync with auto suggestion while slug is not manually editable.
+    if (!isSlugEditable || isSlugDisable) {
+      setValue('slug', slugAutoSuggest);
+    }
+  }, [isSlugEditable, isSlugDisable, setValue, slugAutoSuggest]);
   const { locale } = router;
   const {
     // @ts-ignore
@@ -224,13 +234,23 @@ export default function CreateOrUpdateCategoriesForm({
   const onSubmit = async (values: FormValues) => {
     const imageId =
       values?.image?.id != null ? Number(values.image.id) : null;
+    const parentId =
+      values.parent?.id != null ? Number(values.parent.id) : null;
+    const hasExplicitSlug =
+      typeof values.slug === 'string' && values.slug.trim().length > 0;
+    const resolvedSlug = hasExplicitSlug
+      ? formatSlug(values.slug.trim())
+      : parentId != null && values.parent?.slug
+        ? formatSlug(`${values.parent.slug}-${values.name}`)
+        : formatSlug(values.name);
     const baseInput = {
       language: router.locale,
       name: values.name,
-      slug: values.slug,
+      slug: resolvedSlug,
       details: values.details,
       icon: values.icon?.value || '',
-      parent: values.parent?.id ?? null,
+      // Backend expects parent_id (not parent object) for hierarchy linkage.
+      parent_id: parentId,
       type_id: values.type?.id,
     };
     if (
@@ -239,11 +259,8 @@ export default function CreateOrUpdateCategoriesForm({
     ) {
       createCategory({
         ...baseInput,
-        image: {
-          thumbnail: values?.image?.thumbnail,
-          original: values?.image?.original,
-          id: values?.image?.id,
-        },
+        // Backend persists category image via image_id.
+        image_id: imageId,
         ...(initialValues?.slug && { slug: initialValues.slug }),
       });
     } else {

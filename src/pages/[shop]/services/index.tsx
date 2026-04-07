@@ -173,13 +173,13 @@ export default function ServicesPage() {
         >
           <div className="mt-5 flex w-full flex-col border-t border-gray-200 pt-5 md:mt-8 md:flex-row md:items-center md:pt-8">
             <div className="w-full">
-              <Label>{t('common:filter-by-group') || 'Filter by group'}</Label>
+              <Label>{t('common:filter-by-type') || 'Filter by type'}</Label>
               <Select
                 options={serviceTypes}
                 isLoading={loadingTypes}
                 getOptionLabel={(option: any) => option.name}
                 getOptionValue={(option: any) => option.slug}
-                placeholder={t('common:filter-by-group-placeholder')}
+                placeholder={t('common:filter-by-type-placeholder')}
                 onChange={(typeOption: any) => {
                   setType(typeOption ?? null)
                   setPage(1)

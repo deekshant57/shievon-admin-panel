@@ -74,6 +74,12 @@ export const Routes = {
   serviceOffering: {
     ...routesFactory('/services'),
   },
+  serviceCategory: {
+    ...routesFactory('/service-categories'),
+  },
+  serviceType: {
+    ...routesFactory('/service-types'),
+  },
   shop: {
     ...routesFactory('/shops'),
   },

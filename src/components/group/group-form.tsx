@@ -23,7 +23,12 @@ import Alert from '@/components/ui/alert';
 import TextArea from '@/components/ui/text-area';
 import RadioCard from '@/components/ui/radio-card/radio-card';
 import Checkbox from '@/components/ui/checkbox/checkbox';
-import { useCreateTypeMutation, useUpdateTypeMutation } from '@/data/type';
+import {
+  useCreateServiceTypeMutation,
+  useCreateTypeMutation,
+  useUpdateServiceTypeMutation,
+  useUpdateTypeMutation,
+} from '@/data/type';
 import { EditIcon } from '@/components/icons/edit';
 import { Config } from '@/config';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -263,8 +268,19 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
     name: 'settings.manufactures.enable',
   });
 
-  const { mutate: createType, isLoading: creating } = useCreateTypeMutation();
-  const { mutate: updateType, isLoading: updating } = useUpdateTypeMutation();
+  const useShopServiceTypeRoutes =
+    typeof router.pathname === 'string' &&
+    router.pathname.includes('/service-types');
+  const defaultCreate = useCreateTypeMutation();
+  const menuCreate = useCreateServiceTypeMutation();
+  const defaultUpdate = useUpdateTypeMutation();
+  const menuUpdate = useUpdateServiceTypeMutation();
+  const { mutate: createType, isLoading: creating } = useShopServiceTypeRoutes
+    ? menuCreate
+    : defaultCreate;
+  const { mutate: updateType, isLoading: updating } = useShopServiceTypeRoutes
+    ? menuUpdate
+    : defaultUpdate;
   const slugAutoSuggest = formatSlug(watch('name'));
   const onSubmit = (values: FormValues) => {
     const imageId =

@@ -734,6 +734,19 @@ export const siteSettings = {
                 icon: 'ProductsIcon',
                 permissions: adminOwnerAndStaffOnly,
               },
+              {
+                href: (shop: string) =>
+                  `/${shop}${Routes.serviceCategory.list}`,
+                label: 'sidebar-nav-item-service-categories',
+                icon: 'CategoriesIcon',
+                permissions: adminOnly,
+              },
+              {
+                href: (shop: string) => `/${shop}${Routes.serviceType.list}`,
+                label: 'sidebar-nav-item-service-types',
+                icon: 'HomeIcon',
+                permissions: adminOnly,
+              },
             ],
           },
         ],
@@ -1064,6 +1077,19 @@ export const siteSettings = {
                 label: 'text-new-service',
                 icon: 'ProductsIcon',
                 permissions: adminOwnerAndStaffOnly,
+              },
+              {
+                href: (shop: string) =>
+                  `/${shop}${Routes.serviceCategory.list}`,
+                label: 'sidebar-nav-item-service-categories',
+                icon: 'CategoriesIcon',
+                permissions: adminOnly,
+              },
+              {
+                href: (shop: string) => `/${shop}${Routes.serviceType.list}`,
+                label: 'sidebar-nav-item-service-types',
+                icon: 'HomeIcon',
+                permissions: adminOnly,
               },
             ],
           },
