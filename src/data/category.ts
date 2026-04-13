@@ -13,6 +13,7 @@ import {
 import { mapPaginatorData } from '@/utils/data-mappers';
 import { categoryClient } from './client/category';
 import { Config } from '@/config';
+import { getApiErrorMessage } from './client/http-client';
 
 export const useCreateCategoryMutation = () => {
   const queryClient = useQueryClient();
@@ -24,6 +25,10 @@ export const useCreateCategoryMutation = () => {
         locale: Config.defaultLanguage,
       });
       toast.success(t('common:successfully-created'));
+    },
+    onError: (error: any) => {
+      const errorMessage = getApiErrorMessage(error);
+      toast.error(errorMessage);
     },
     // Always refetch after error or success:
     onSettled: () => {
@@ -103,9 +108,10 @@ export const useCategoriesQuery = (
     }
   );
 
+  const mappedPaginatorInfo = mapPaginatorData(data);
   return {
     categories: data?.data ?? [],
-    paginatorInfo: mapPaginatorData(data),
+    paginatorInfo: mappedPaginatorInfo,
     error,
     loading: isLoading,
   };

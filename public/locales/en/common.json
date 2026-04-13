@@ -230,6 +230,7 @@
   "PICKBAZAR_ERROR.YOU_CAN_NOT_SEND_MESSAGE_TO_YOUR_OWN_SHOP": "You can't send message to your own shop",
   "text-access-denied": "Access Denied",
   "text-access-denied-message": "You don't have the permission to access this page.",
+  "text-url-not-available": "The URL requested is not available.",
   "text-return-home": "Return to home",
   "text-upload-highlight": "Upload an image",
   "text-upload-message": "or drag and drop",

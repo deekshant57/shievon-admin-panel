@@ -31,8 +31,8 @@ export default function Categories() {
     name: searchTerm,
     orderBy,
     sortedBy,
-    // Show full hierarchy when type/group filter is applied; otherwise keep root-only list.
-    parent: type ? 'all' : 'null',
+    // Request all categories so pagination counts include nested categories as well.
+    parent: 'all',
     language: locale,
   });
 
