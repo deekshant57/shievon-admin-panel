@@ -23,6 +23,8 @@ export const Routes = {
   checkout: '/orders/checkout',
   verifyEmail: '/verify-email',
   verifyLicense: '/verify-license',
+  privacyPolicy: '/privacy-policy',
+  publicTermsAndConditions: '/terms-and-conditions',
   user: {
     ...routesFactory('/users'),
   },

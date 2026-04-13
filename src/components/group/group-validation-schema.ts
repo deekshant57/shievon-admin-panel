@@ -1,5 +1,9 @@
 import * as yup from 'yup';
 
+const hasCompactLayout = (layout: string | undefined) => {
+  return typeof layout === 'string' && layout.includes('compact');
+};
+
 export const typeValidationSchema = yup.object().shape({
   name: yup.string().required('form:error-name-required'),
   sort_order: yup
@@ -12,7 +16,7 @@ export const typeValidationSchema = yup.object().shape({
     .array()
     .min(1, 'form:error-min-one-banner')
     .when('settings.layoutType', {
-      is: (layout: string) => !layout.includes('compact'),
+      is: (layout: string | undefined) => !hasCompactLayout(layout),
       then: () =>
         yup.array().of(
           yup.object().shape({
@@ -34,7 +38,7 @@ export const typeValidationSchema = yup.object().shape({
     }),
   settings: yup.object().shape({
     bestSelling: yup.object().when('layoutType', {
-      is: (layout: string) => layout.includes('compact'),
+      is: (layout: string | undefined) => hasCompactLayout(layout),
       then: () =>
         yup.object().shape({
           title: yup.string().when('enable', {
@@ -49,7 +53,7 @@ export const typeValidationSchema = yup.object().shape({
         }),
     }),
     popularProducts: yup.object().when('layoutType', {
-      is: (layout: string) => layout.includes('compact'),
+      is: (layout: string | undefined) => hasCompactLayout(layout),
       then: () =>
         yup.object().shape({
           title: yup.string().when('enable', {
@@ -64,7 +68,7 @@ export const typeValidationSchema = yup.object().shape({
         }),
     }),
     category: yup.object().when('layoutType', {
-      is: (layout: string) => layout.includes('compact'),
+      is: (layout: string | undefined) => hasCompactLayout(layout),
       then: () =>
         yup.object().shape({
           title: yup.string().when('enable', {
@@ -78,7 +82,7 @@ export const typeValidationSchema = yup.object().shape({
         }),
     }),
     handpickedProducts: yup.object().when('layoutType', {
-      is: (layout: string) => layout.includes('compact'),
+      is: (layout: string | undefined) => hasCompactLayout(layout),
       then: () =>
         yup.object().shape({
           products: yup.array().when('enable', {
@@ -102,7 +106,7 @@ export const typeValidationSchema = yup.object().shape({
         }),
     }),
     newArrival: yup.object().when('layoutType', {
-      is: (layout: string) => layout.includes('compact'),
+      is: (layout: string | undefined) => hasCompactLayout(layout),
       then: () =>
         yup.object().shape({
           title: yup.string().when('enable', {
@@ -117,7 +121,7 @@ export const typeValidationSchema = yup.object().shape({
         }),
     }),
     authors: yup.object().when('layoutType', {
-      is: (layout: string) => layout.includes('compact'),
+      is: (layout: string | undefined) => hasCompactLayout(layout),
       then: () =>
         yup.object().shape({
           title: yup.string().when('enable', {
@@ -131,7 +135,7 @@ export const typeValidationSchema = yup.object().shape({
         }),
     }),
     manufactures: yup.object().when('layoutType', {
-      is: (layout: string) => layout.includes('compact'),
+      is: (layout: string | undefined) => hasCompactLayout(layout),
       then: () =>
         yup.object().shape({
           title: yup.string().when('enable', {

@@ -989,7 +989,7 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
           >
             {initialValues
               ? t('form:button-label-update-group')
-              : t('form:button-label-add-group')}
+              : t('form:button-label-add-type')}
           </Button>
         </div>
       </StickyFooterPanel>
