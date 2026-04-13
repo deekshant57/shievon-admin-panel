@@ -136,7 +136,29 @@ export const Routes = {
   productInventory: '/products/inventory',
   transaction: '/orders/transaction',
   termsAndCondition: {
-    ...routesFactory('/terms-and-conditions'),
+    list: '/terms-and-conditions/list',
+    create: '/terms-and-conditions/create',
+    editWithoutLang: (slug: string, shop?: string) => {
+      return shop
+        ? `/${shop}/terms-and-conditions/${slug}/edit`
+        : `/terms-and-conditions/${slug}/edit`;
+    },
+    edit: (slug: string, language: string, shop?: string) => {
+      return shop
+        ? `/${language}/${shop}/terms-and-conditions/${slug}/edit`
+        : `${language}/terms-and-conditions/${slug}/edit`;
+    },
+    translate: (slug: string, language: string, shop?: string) => {
+      return shop
+        ? `/${language}/${shop}/terms-and-conditions/${slug}/translate`
+        : `${language}/terms-and-conditions/${slug}/translate`;
+    },
+    details: (slug: string) => `/terms-and-conditions/${slug}`,
+    editByIdWithoutLang: (id: string, shop?: string) => {
+      return shop
+        ? `/${shop}/terms-and-conditions/${id}/edit`
+        : `/terms-and-conditions/${id}/edit`;
+    },
   },
   adminList: '/users/admins',
   vendorList: '/users/vendors',
