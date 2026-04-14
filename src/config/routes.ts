@@ -22,6 +22,7 @@ export const Routes = {
   changePassword: '/change-password',
   checkout: '/orders/checkout',
   verifyEmail: '/verify-email',
+  deleteAccount: '/delete-account',
   verifyLicense: '/verify-license',
   privacyPolicy: '/privacy-policy',
   publicTermsAndConditions: '/terms-and-conditions',

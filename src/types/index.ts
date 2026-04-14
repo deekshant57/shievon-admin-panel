@@ -255,6 +255,35 @@ export interface VerifyEmailOtpResponse {
   };
 }
 
+export interface SendAccountDeletionOtpInput {
+  email: string;
+}
+
+export interface SendAccountDeletionOtpResponse {
+  code: number;
+  status: boolean;
+  message: string;
+  data: {
+    id: string;
+    email: string;
+    expires_at: string;
+  };
+}
+
+export interface ConfirmAccountDeletionInput {
+  email: string;
+  code: string;
+}
+
+export interface ConfirmAccountDeletionResponse {
+  code: number;
+  status: boolean;
+  message: string;
+  data: {
+    id: string;
+  };
+}
+
 /** Banner item in type settings (title, description, image URLs) */
 export interface TypeSettingsBanner {
   title?: string;

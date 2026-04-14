@@ -28,6 +28,8 @@ export const API_ENDPOINTS = {
   TOKEN: 'token',
   SEND_VERIFY_EMAIL_OTP: 'send-verify-email-otp',
   VERIFY_EMAIL_OTP: 'verify-email-otp',
+  SEND_ACCOUNT_DELETION_OTP: 'send-account-deletion-otp',
+  CONFIRM_ACCOUNT_DELETION: 'confirm-account-deletion',
   BLOCK_USER: 'users/block-user',
   UNBLOCK_USER: 'users/unblock-user',
   // User list endpoints (Swagger: /api/users, /api/admin/list, /api/vendors/list, /api/my-staffs, /api/all-staffs, /api/customers/list)

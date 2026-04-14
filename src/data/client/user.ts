@@ -24,6 +24,10 @@ import {
   SendVerifyEmailOtpResponse,
   VerifyEmailOtpInput,
   VerifyEmailOtpResponse,
+  SendAccountDeletionOtpInput,
+  SendAccountDeletionOtpResponse,
+  ConfirmAccountDeletionInput,
+  ConfirmAccountDeletionResponse,
 } from '@/types';
 import { API_ENDPOINTS } from './api-endpoints';
 import { HttpClient } from './http-client';
@@ -103,6 +107,18 @@ export const userClient = {
       role: response.role,
       isEmailVerified: response.isEmailVerified ?? true,
     };
+  },
+  sendAccountDeletionOtp: async (variables: SendAccountDeletionOtpInput) => {
+    return await HttpClient.post<SendAccountDeletionOtpResponse['data']>(
+      API_ENDPOINTS.SEND_ACCOUNT_DELETION_OTP,
+      variables
+    );
+  },
+  confirmAccountDeletion: async (variables: ConfirmAccountDeletionInput) => {
+    return await HttpClient.post<ConfirmAccountDeletionResponse['data']>(
+      API_ENDPOINTS.CONFIRM_ACCOUNT_DELETION,
+      variables
+    );
   },
   update: ({ id, input }: { id: string; input: UpdateUser }) => {
     // Admin/super-admin updating arbitrary users by ID.

@@ -20,6 +20,13 @@ import axios from 'axios';
 import { setEmailVerified } from '@/utils/auth-utils';
 import { getApiErrorMessage } from '@/data/client/http-client';
 
+const clearLocalAuthSession = (queryClient: ReturnType<typeof useQueryClient>) => {
+  Cookies.remove(AUTH_CRED);
+  const AUTH_TOKEN_KEY = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY ?? 'authToken';
+  Cookies.remove(AUTH_TOKEN_KEY);
+  queryClient.clear();
+};
+
 export const useMeQuery = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -91,6 +98,19 @@ export function useVerifyEmailOtp() {
   return useMutation(userClient.verifyEmailOtp);
 }
 
+export function useSendAccountDeletionOtp() {
+  return useMutation(userClient.sendAccountDeletionOtp);
+}
+
+export function useConfirmAccountDeletion() {
+  const queryClient = useQueryClient();
+  return useMutation(userClient.confirmAccountDeletion, {
+    onSuccess: () => {
+      clearLocalAuthSession(queryClient);
+    },
+  });
+}
+
 export const useLogoutMutation = () => {
   const router = useRouter();
   const { t } = useTranslation();
@@ -98,13 +118,7 @@ export const useLogoutMutation = () => {
 
   return useMutation(userClient.logout, {
     onSuccess: () => {
-      // Clear JWT token from storage
-      Cookies.remove(AUTH_CRED);
-      // Also clear the auth token key cookie if it exists
-      const AUTH_TOKEN_KEY = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY ?? 'authToken';
-      Cookies.remove(AUTH_TOKEN_KEY);
-      // Clear all query cache
-      queryClient.clear();
+      clearLocalAuthSession(queryClient);
       // Redirect to login
       router.replace(Routes.login);
       toast.success(t('common:successfully-logout'), {
@@ -113,10 +127,7 @@ export const useLogoutMutation = () => {
     },
     onError: () => {
       // Even if logout endpoint fails, clear local storage and redirect
-      Cookies.remove(AUTH_CRED);
-      const AUTH_TOKEN_KEY = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY ?? 'authToken';
-      Cookies.remove(AUTH_TOKEN_KEY);
-      queryClient.clear();
+      clearLocalAuthSession(queryClient);
       router.replace(Routes.login);
     },
   });
