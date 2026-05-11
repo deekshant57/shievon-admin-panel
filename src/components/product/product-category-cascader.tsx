@@ -42,9 +42,16 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
       : undefined;
   const hasGroup = typeId != null && !Number.isNaN(typeId);
 
-  // When type (group) changes or is cleared, reset all category-related fields. Only depend on typeId (not dirtyFields) to avoid loop.
+  // When type (group) is intentionally cleared by user, reset all category-related fields.
+  // Guard: don't clear when typeId is temporarily undefined during form reset cycle (edit mode)
+  // — the form's reset() can cause useWatch to briefly return undefined before settling.
+  const prevTypeId = useRef(typeId);
   useEffect(() => {
-    if (!hasGroup) {
+    const wasSet = prevTypeId.current != null && !isNaN(Number(prevTypeId.current));
+    prevTypeId.current = typeId;
+    // Only clear when typeId goes from a valid value to empty (user cleared the group).
+    // Skip when typeId is undefined on mount or during form reset transients.
+    if (!hasGroup && wasSet) {
       setValue('categories', []);
       setValue('primary_category', null);
       setValue('secondary_category', null);
@@ -59,7 +66,7 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
     {
       limit: 999,
       type_id: typeId,
-      parent: null,
+      parent: 'all',
       language: locale,
     },
     { enabled: hasGroup },
@@ -78,6 +85,54 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
         : stableRawCategories,
     [hasGroup, stableRawCategories, typeId],
   );
+
+  // When editing: resolve the pre-filled leaf category back to its full hierarchy path.
+  // e.g. category_id=254 (T-shirts, level 3) → primary=Men(244), secondary=Top Wear(250), tertiary=T-shirts(254)
+  // Track hierarchy resolution state:
+  // - hierarchyResolved: true once we've resolved (or skipped for level-1)
+  // - hierarchyResolvedAt: timestamp when resolution happened; clear effects skip for 1s after
+  const hierarchyResolved = useRef(false);
+  const hierarchyResolvedAt = useRef(0);
+  useEffect(() => {
+    if (hierarchyResolved.current) return;
+    const all = Array.isArray(rootCategories) ? (rootCategories as any[]) : [];
+    if (all.length === 0) return; // categories not loaded yet
+
+    const currentPrimary = getValues('primary_category');
+    if (!currentPrimary?.id) return;
+
+    const leafId = Number(currentPrimary.id);
+    const leaf = all.find((c: any) => c.id === leafId);
+    if (!leaf) return;
+
+    // Already a level-1 category — no resolution needed
+    if (leaf.level === 1 || !leaf.parent_id) {
+      hierarchyResolved.current = true;
+      return;
+    }
+
+    // Walk up parent chain to build the path
+    const path: any[] = [leaf];
+    let current = leaf;
+    while (current.parent_id != null) {
+      const parent = all.find((c: any) => c.id === current.parent_id);
+      if (!parent) break;
+      path.unshift(parent);
+      current = parent;
+    }
+
+    // Set cascade levels from path (level 1 → primary, level 2 → secondary, etc.)
+    const pick = (cat: any) => ({ id: cat.id, name: cat.name, slug: cat.slug });
+    if (path[0]) setValue('primary_category', pick(path[0]));
+    if (path[1]) setValue('secondary_category', pick(path[1]));
+    if (path[2]) setValue('tertiary_category', pick(path[2]));
+    if (path[3]) setValue('quaternary_category', pick(path[3]));
+
+    // Tell clear effects to skip for 1 second after resolution
+    hierarchyResolvedAt.current = Date.now();
+    hierarchyResolved.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rootCategories]);
 
   // Watch cascading selections
   const primaryCategory = useWatch({
@@ -101,7 +156,9 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
   }) as Category | null;
 
   // Clear deeper levels when an upper level changes. Only set when needed to avoid extra re-renders.
+  // Skip during/after hierarchy resolution to avoid wiping pre-filled deeper levels.
   useEffect(() => {
+    if (Date.now() - hierarchyResolvedAt.current < 1000) return;
     if (getValues('secondary_category') != null || getValues('tertiary_category') != null || getValues('quaternary_category') != null) {
       setValue('secondary_category', null);
       setValue('tertiary_category', null);
@@ -111,6 +168,7 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
   }, [primaryCategory?.id]);
 
   useEffect(() => {
+    if (Date.now() - hierarchyResolvedAt.current < 1000) return;
     if (getValues('tertiary_category') != null || getValues('quaternary_category') != null) {
       setValue('tertiary_category', null);
       setValue('quaternary_category', null);
@@ -119,6 +177,7 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
   }, [secondaryCategory?.id]);
 
   useEffect(() => {
+    if (Date.now() - hierarchyResolvedAt.current < 1000) return;
     if (getValues('quaternary_category') != null) {
       setValue('quaternary_category', null);
     }

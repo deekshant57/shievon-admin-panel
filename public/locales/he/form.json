@@ -360,6 +360,8 @@
   "text-submit-email": "שלח אימייל",
   "text-submit-token": "שלח אסימון",
   "text-reset-password": "לאפס את הסיסמה",
+  "text-reset-password-success-title": "Password has been reset",
+  "text-reset-password-success-description": "Your password was reset successfully. You can now continue in the app.",
   "token-label": "שים את האסימון שקיבלת מהמייל",
   "input-label-autocomplete": "הגדר מיקום מהמפה",
   "input-label-website": "אתר אינטרנט",

@@ -89,6 +89,9 @@ export const API_ENDPOINTS = {
   // EAV product attributes template (GET /api/product-attributes/templates/by-category/:categoryId)
   PRODUCT_ATTRIBUTE_TEMPLATE_BY_CATEGORY:
     'product-attributes/templates/by-category',
+  PRODUCT_AI_IMAGE_GENERATION: 'ai-image-generation',
+  PRODUCT_AI_IMAGE_GENERATION_STATUS: 'ai-image-generation-status',
+  PRODUCT_AI_IMAGE_GENERATION_PREVIEW: 'ai-image-generation-preview',
   CATEGORY_WISE_PRODUCTS: 'category-wise-product',
   CATEGORY_WISE_PRODUCTS_SALE: 'category-wise-product-sale',
   VENDORS_LIST: '/vendors/list',

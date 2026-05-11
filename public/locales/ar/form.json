@@ -359,6 +359,8 @@
   "text-submit-email": "إرسال البريد الإلكتروني",
   "text-submit-token": "إرسال الرمز المميز",
   "text-reset-password": "إعادة تعيين كلمة المرور",
+  "text-reset-password-success-title": "Password has been reset",
+  "text-reset-password-success-description": "Your password was reset successfully. You can now continue in the app.",
   "token-label": "ضع رمزك الذي حصلت عليه من البريد الإلكتروني",
   "input-label-autocomplete": "تحديد الموقع من الخريطة",
   "input-label-website": "موقع إلكتروني",

@@ -359,6 +359,8 @@
   "text-submit-email": "Enviar correo electrónico",
   "text-submit-token": "Enviar ficha",
   "text-reset-password": "Restablecer la contraseña",
+  "text-reset-password-success-title": "Password has been reset",
+  "text-reset-password-success-description": "Your password was reset successfully. You can now continue in the app.",
   "token-label": "Pon tu token que recibiste del correo electrónico",
   "input-label-autocomplete": "Establecer ubicación desde el mapa",
   "input-label-website": "Sitio web",

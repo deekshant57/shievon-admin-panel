@@ -10,10 +10,16 @@ import {
   ProductPaginator,
   Product,
   AttributeTemplateResponse,
+  ProductAiImageGenerationApproveResponse,
+  ProductAiImageGenerationEnqueueResponse,
+  ProductAiImageGenerationPreviewResponse,
+  ProductAiImageGenerationRejectResponse,
+  ProductAiImageGenerationStatus,
 } from '@/types';
 import { mapPaginatorData } from '@/utils/data-mappers';
 import { Routes } from '@/config/routes';
 import { Config } from '@/config';
+import { getApiErrorMessage } from './client/http-client';
 
 export const useCreateProductMutation = () => {
   const queryClient = useQueryClient();
@@ -289,4 +295,111 @@ export const useProductsByFlashSaleQuery = (options: any) => {
     error,
     loading: isLoading,
   };
+};
+
+export const useEnqueueProductAiImageGenerationMutation = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('common');
+
+  return useMutation<
+    ProductAiImageGenerationEnqueueResponse,
+    unknown,
+    string | number
+  >((productId) => productClient.enqueueAiImageGeneration(productId), {
+    onSuccess: (_data, productId) => {
+      toast.success(t('text-ai-image-job-queued'));
+      queryClient.invalidateQueries([
+        API_ENDPOINTS.PRODUCT_AI_IMAGE_GENERATION_STATUS,
+        productId,
+      ]);
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error));
+    },
+  });
+};
+
+export const useProductAiImageGenerationStatusQuery = (
+  productId?: string | number,
+  options: any = {},
+) => {
+  const enabled = Boolean(productId) && (options?.enabled ?? true);
+
+  return useQuery<ProductAiImageGenerationStatus, Error>(
+    [API_ENDPOINTS.PRODUCT_AI_IMAGE_GENERATION_STATUS, productId],
+    () => productClient.getAiImageGenerationStatus(productId as string | number),
+    {
+      enabled,
+      ...options,
+    },
+  );
+};
+
+export const useProductAiImageGenerationPreviewQuery = (
+  productId?: string | number,
+  options: any = {},
+) => {
+  const enabled = Boolean(productId) && (options?.enabled ?? true);
+
+  return useQuery<ProductAiImageGenerationPreviewResponse, Error>(
+    [API_ENDPOINTS.PRODUCT_AI_IMAGE_GENERATION_PREVIEW, productId],
+    () => productClient.getAiImageGenerationPreview(productId as string | number),
+    {
+      enabled,
+      ...options,
+    },
+  );
+};
+
+export const useApproveProductAiImageGenerationMutation = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('common');
+
+  return useMutation<
+    ProductAiImageGenerationApproveResponse,
+    unknown,
+    string | number
+  >((productId) => productClient.approveAiImageGenerationPreview(productId), {
+    onSuccess: (_data, productId) => {
+      toast.success(t('text-ai-image-preview-approved'));
+      queryClient.invalidateQueries(API_ENDPOINTS.PRODUCTS);
+      queryClient.invalidateQueries([
+        API_ENDPOINTS.PRODUCT_AI_IMAGE_GENERATION_STATUS,
+        productId,
+      ]);
+      queryClient.invalidateQueries([
+        API_ENDPOINTS.PRODUCT_AI_IMAGE_GENERATION_PREVIEW,
+        productId,
+      ]);
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error));
+    },
+  });
+};
+
+export const useRejectProductAiImageGenerationMutation = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('common');
+
+  return useMutation<
+    ProductAiImageGenerationRejectResponse,
+    unknown,
+    string | number
+  >((productId) => productClient.rejectAiImageGenerationPreview(productId), {
+    onSuccess: (_data, productId) => {
+      toast.success(t('text-ai-image-preview-rejected'));
+      queryClient.invalidateQueries([
+        API_ENDPOINTS.PRODUCT_AI_IMAGE_GENERATION_STATUS,
+        productId,
+      ]);
+      queryClient.invalidateQueries([
+        API_ENDPOINTS.PRODUCT_AI_IMAGE_GENERATION_PREVIEW,
+        productId,
+      ]);
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error));
+    },
+  });
 };

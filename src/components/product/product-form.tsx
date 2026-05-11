@@ -200,16 +200,18 @@ export default function CreateOrUpdateProductForm({
   const is_digital = watch('is_digital');
   const is_external = watch('is_external');
   const selectedCategories = watch('categories');
+  const watchedPrimaryCategory = watch('primary_category');
   const primaryCategoryId =
     Array.isArray(selectedCategories) && selectedCategories.length > 0
       ? selectedCategories[0]?.id
-      : undefined;
+      : watchedPrimaryCategory?.id ?? undefined;
 
   const {
     template: attributeTemplate,
     loading: attributeTemplateLoading,
     error: attributeTemplateError,
   } = useProductAttributeTemplateByCategoryQuery(primaryCategoryId);
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'video',
@@ -606,6 +608,17 @@ export default function CreateOrUpdateProductForm({
           {/* Variable Type: multi-select variant attributes, cartesian product of options */}
           {product_type?.value === ProductType.Variable &&
             (() => {
+              // Wait for attribute template to load before deciding which variation form to render.
+              // Without this guard, ProductVariableForm mounts while template is loading, then gets
+              // replaced by ProductVariableEavForm causing form state issues.
+              // Also wait when category exists but template hasn't arrived yet (query may be idle/starting).
+              if (primaryCategoryId && (attributeTemplateLoading || !attributeTemplate)) {
+                return (
+                  <div className="flex items-center justify-center py-10 text-sm text-body">
+                    {t('common:text-loading')}...
+                  </div>
+                );
+              }
               const variantAttributes = getVariantAttributesFromTemplate(
                 attributeTemplate,
               );

@@ -2,7 +2,6 @@ import Alert from '@/components/ui/alert'
 import AuthPageLayout from '@/components/layouts/auth-layout'
 import EnterNewPasswordView from '@/components/auth/forget-password/enter-new-password-view'
 import PageLoader from '@/components/ui/page-loader/page-loader'
-import { Routes } from '@/config/routes'
 import {
   useResetPasswordMutation,
   useVerifyForgetPasswordTokenMutation,
@@ -37,6 +36,7 @@ export default function ResetPasswordPage() {
 
   const [isTokenValid, setIsTokenValid] = useState(false)
   const [hasAttemptedVerify, setHasAttemptedVerify] = useState(false)
+  const [isResetSuccess, setIsResetSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const rid = useMemo(() => getQueryValue(router.query.rid), [router.query.rid])
@@ -89,7 +89,7 @@ export default function ResetPasswordPage() {
         onSuccess: (data) => {
           if (data?.success) {
             toast.success(data?.message || 'Password reset successfully')
-            router.replace(Routes.login)
+            setIsResetSuccess(true)
             return
           }
           const message = data?.message || 'Unable to reset password'
@@ -130,8 +130,24 @@ export default function ResetPasswordPage() {
 
       {hasRequiredQuery && !hasAttemptedVerify ? <PageLoader /> : null}
 
-      {hasRequiredQuery && hasAttemptedVerify && isTokenValid ? (
+      {hasRequiredQuery && hasAttemptedVerify && isTokenValid && !isResetSuccess ? (
         <EnterNewPasswordView loading={isResetting || isVerifying} onSubmit={handleReset} />
+      ) : null}
+
+      {hasRequiredQuery && hasAttemptedVerify && isTokenValid && isResetSuccess ? (
+        <div className="rounded border border-green-200 bg-green-50 p-4 text-center text-sm text-green-800">
+          <p className="font-semibold">
+            {t('form:text-reset-password-success-title', {
+              defaultValue: 'Password has been reset',
+            })}
+          </p>
+          <p className="mt-2">
+            {t('form:text-reset-password-success-description', {
+              defaultValue:
+                'Your password was reset successfully. You can now continue in the app.',
+            })}
+          </p>
+        </div>
       ) : null}
     </AuthPageLayout>
   )

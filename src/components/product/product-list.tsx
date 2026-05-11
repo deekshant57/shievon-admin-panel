@@ -19,6 +19,7 @@ import { useState } from 'react';
 import TitleWithSort from '@/components/ui/title-with-sort';
 import { Routes } from '@/config/routes';
 import LanguageSwitcher from '@/components/ui/lang-action/action';
+import ProductAiImageActions from '@/components/product/product-ai-image-actions';
 
 export type IProps = {
   products: Product[] | undefined;
@@ -258,17 +259,23 @@ const ProductList = ({
       dataIndex: 'slug',
       key: 'actions',
       align: 'right',
-      width: 120,
+      width: 280,
       render: (slug: string, record: Product) => (
-        <LanguageSwitcher
-          slug={slug}
-          record={record}
-          deleteModalView="DELETE_PRODUCT"
-          routes={Routes?.product}
-          enablePreviewMode={true}
-          isShop={Boolean(shop)}
-          shopSlug={(shop as string) ?? ''}
-        />
+        <div className="flex flex-col items-end">
+          <LanguageSwitcher
+            slug={slug}
+            record={record}
+            deleteModalView="DELETE_PRODUCT"
+            routes={Routes?.product}
+            enablePreviewMode={true}
+            isShop={Boolean(shop)}
+            shopSlug={(shop as string) ?? ''}
+          />
+          <ProductAiImageActions
+            productId={String(record.id)}
+            productName={record.name}
+          />
+        </div>
       ),
     },
   ];

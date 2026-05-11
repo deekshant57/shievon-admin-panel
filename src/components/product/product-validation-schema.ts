@@ -42,12 +42,21 @@ export const productValidationSchema = yup.object().shape({
         .positive('form:error-price-must-positive')
         .required('form:error-price-required'),
   }),
-  sale_price: yup
-    .number()
-    .transform((value) => (isNaN(value) ? undefined : value))
-    .lessThan(yup.ref('price'), 'Sale Price should be less than ${less}')
-    .positive('form:error-sale-price-must-positive')
-    .nullable(),
+  sale_price: yup.mixed().when(['product_type', 'variation_options'], {
+    is: requireTopLevelWhenSingleWithoutVariants,
+    then: () =>
+      yup
+        .number()
+        .typeError('form:error-sale-price-must-number')
+        .positive('form:error-sale-price-must-positive')
+        .required('form:error-sale-price-required'),
+    otherwise: () =>
+      yup
+        .number()
+        .transform((value) => (isNaN(value) ? undefined : value))
+        .positive('form:error-sale-price-must-positive')
+        .nullable(),
+  }),
   quantity: yup.mixed().when(['product_type', 'variation_options'], {
     is: requireTopLevelWhenSingleWithoutVariants,
     then: () =>
@@ -71,10 +80,9 @@ export const productValidationSchema = yup.object().shape({
         .required('form:error-price-required'),
       sale_price: yup
         .number()
-        .transform((value) => (isNaN(value) ? undefined : value))
-        .lessThan(yup.ref('price'), 'Sale Price should be less than ${less}')
+        .typeError('form:error-sale-price-must-number')
         .positive('form:error-sale-price-must-positive')
-        .nullable(),
+        .required('form:error-sale-price-required'),
       quantity: yup
         .number()
         .typeError('form:error-quantity-must-number')

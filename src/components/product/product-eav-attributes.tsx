@@ -31,7 +31,7 @@ const VARIANT_ATTRIBUTES_DESCRIPTION =
  */
 const ProductEavAttributes = ({ template, productType }: Props) => {
   const { t } = useTranslation('common');
-  const { control, register } = useFormContext<ProductFormValues>();
+  const { control, register, getValues } = useFormContext<ProductFormValues>();
 
   const productAttributes: ProductAttributeDefinition[] =
     template?.product_attributes ?? [];
@@ -39,6 +39,19 @@ const ProductEavAttributes = ({ template, productType }: Props) => {
     productType === 'simple'
       ? getVariantAttributesFromTemplate(template)
       : [];
+
+  // Resolve initial enum values: form stores the full option object { id, label } from
+  // getProductDefaultValues. Pass it as defaultValue on Controller so it's set at
+  // registration time (setValue doesn't work with shouldUnregister before registration).
+  const resolveEnumDefault = (attrCode: string, options: any[]) => {
+    const stored = (getValues('eav_attributes') as any)?.[attrCode]?.enum_value_id;
+    if (!stored) return undefined;
+    // Already a full option object
+    if (typeof stored === 'object' && stored.id != null) return stored;
+    // Numeric ID - find matching option
+    const numId = Number(stored);
+    return options.find((opt: any) => opt.id === numId) ?? undefined;
+  };
 
   const hasProductAttrs = productAttributes.length > 0;
   const hasVariantAttrs = variantAttributes.length > 0;
@@ -48,11 +61,13 @@ const ProductEavAttributes = ({ template, productType }: Props) => {
     const fieldBase = `eav_attributes.${attribute.code}`;
 
     if (attribute.data_type === 'enum') {
+      const defaultVal = resolveEnumDefault(attribute.code, attribute.options ?? []);
       return (
         <SelectInput
           key={attribute.code}
           control={control}
           name={`${fieldBase}.enum_value_id`}
+          defaultValue={defaultVal}
           label={attribute.is_mandatory ? `${attribute.name}*` : attribute.name}
           required={attribute.is_mandatory}
           // @ts-ignore
@@ -101,12 +116,14 @@ const ProductEavAttributes = ({ template, productType }: Props) => {
 
   const renderVariantAttributeField = (attribute: ProductAttributeDefinition) => {
     const fieldBase = `eav_attributes.${attribute.code}`;
+    const defaultVal = resolveEnumDefault(attribute.code, attribute.options ?? []);
     return (
       <div key={attribute.code} className="mb-5">
       <SelectInput
         key={attribute.code}
         control={control}
         name={`${fieldBase}.enum_value_id`}
+        defaultValue={defaultVal}
         label={attribute.is_mandatory ? `${attribute.name}*` : attribute.name}
         required={attribute.is_mandatory}
         options={attribute.options ?? []}

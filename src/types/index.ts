@@ -929,6 +929,54 @@ export interface Product {
   in_flash_sale: boolean;
 }
 
+export type ProductAiImageJobStatus =
+  | 'idle'
+  | 'queued'
+  | 'processing'
+  | 'preview_pending'
+  | 'approved'
+  | 'rejected'
+  | 'expired'
+  | 'failed';
+
+export interface ProductAiImageGenerationStatus {
+  job_id: string | null;
+  status: ProductAiImageJobStatus;
+  progress_percent: number;
+  error_message: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  expires_at: string | null;
+}
+
+export interface ProductAiImageGenerationEnqueueResponse {
+  job_id: string;
+  status: Extract<ProductAiImageJobStatus, 'queued'>;
+  progress_percent: number;
+}
+
+export interface ProductAiImageGenerationPreviewResponse {
+  job_id: string;
+  status: Extract<ProductAiImageJobStatus, 'preview_pending'>;
+  progress_percent: number;
+  expires_at: string | null;
+  source_images: string[];
+  preview_images: string[];
+}
+
+export interface ProductAiImageGenerationApproveResponse {
+  job_id: string;
+  status: Extract<ProductAiImageJobStatus, 'approved'>;
+  affected_images_count: number;
+}
+
+export interface ProductAiImageGenerationRejectResponse {
+  job_id: string;
+  status: Extract<ProductAiImageJobStatus, 'rejected'>;
+}
+
 export interface CreateProduct {
   name: string;
   slug: string;

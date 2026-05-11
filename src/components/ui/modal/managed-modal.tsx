@@ -168,6 +168,9 @@ const DeleteOwnershipTransferRequest = dynamic(
   () =>
     import('@/components/ownership-transfer/ownership-transfer-delete-view'),
 );
+const ProductAiImagePreviewView = dynamic(
+  () => import('@/components/product/product-ai-image-preview-view'),
+);
 
 function renderModal(view: MODAL_VIEWS | undefined, data: any) {
   switch (view) {
@@ -275,6 +278,8 @@ function renderModal(view: MODAL_VIEWS | undefined, data: any) {
       return <TransferShopOwnershipView />;
     case 'DELETE_OWNERSHIP_TRANSFER_REQUEST':
       return <DeleteOwnershipTransferRequest />;
+    case 'PRODUCT_AI_IMAGE_PREVIEW_VIEW':
+      return <ProductAiImagePreviewView />;
     default:
       return null;
   }

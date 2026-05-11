@@ -7,6 +7,11 @@ import {
   ProductQueryOptions,
   GenerateDescriptionInput,
   AttributeTemplateResponse,
+  ProductAiImageGenerationApproveResponse,
+  ProductAiImageGenerationEnqueueResponse,
+  ProductAiImageGenerationPreviewResponse,
+  ProductAiImageGenerationRejectResponse,
+  ProductAiImageGenerationStatus,
 } from '@/types';
 import { API_ENDPOINTS } from './api-endpoints';
 import { crudFactory } from './curd-factory';
@@ -235,6 +240,34 @@ export const productClient = {
   getAttributeTemplateByCategory(categoryId: string | number) {
     return HttpClient.get<AttributeTemplateResponse>(
       `${API_ENDPOINTS.PRODUCT_ATTRIBUTE_TEMPLATE_BY_CATEGORY}/${categoryId}`,
+    );
+  },
+  enqueueAiImageGeneration(productId: string | number) {
+    return HttpClient.post<ProductAiImageGenerationEnqueueResponse>(
+      `${API_ENDPOINTS.PRODUCTS}/${productId}/${API_ENDPOINTS.PRODUCT_AI_IMAGE_GENERATION}`,
+      {},
+    );
+  },
+  getAiImageGenerationStatus(productId: string | number) {
+    return HttpClient.get<ProductAiImageGenerationStatus>(
+      `${API_ENDPOINTS.PRODUCTS}/${productId}/${API_ENDPOINTS.PRODUCT_AI_IMAGE_GENERATION}/status`,
+    );
+  },
+  getAiImageGenerationPreview(productId: string | number) {
+    return HttpClient.get<ProductAiImageGenerationPreviewResponse>(
+      `${API_ENDPOINTS.PRODUCTS}/${productId}/${API_ENDPOINTS.PRODUCT_AI_IMAGE_GENERATION}/preview`,
+    );
+  },
+  approveAiImageGenerationPreview(productId: string | number) {
+    return HttpClient.post<ProductAiImageGenerationApproveResponse>(
+      `${API_ENDPOINTS.PRODUCTS}/${productId}/${API_ENDPOINTS.PRODUCT_AI_IMAGE_GENERATION}/approve`,
+      {},
+    );
+  },
+  rejectAiImageGenerationPreview(productId: string | number) {
+    return HttpClient.post<ProductAiImageGenerationRejectResponse>(
+      `${API_ENDPOINTS.PRODUCTS}/${productId}/${API_ENDPOINTS.PRODUCT_AI_IMAGE_GENERATION}/reject`,
+      {},
     );
   },
 };

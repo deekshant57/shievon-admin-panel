@@ -277,8 +277,12 @@ export function getProductDefaultValues(
           definition_code: code,
         };
 
-        if (dataType === 'enum' && value && value.id != null) {
-          payload.enum_value_id = Number(value.id);
+        if (dataType === 'enum' && value && typeof value === 'object' && value.id != null) {
+          // Store the full option object { id, label } so react-select can display it
+          payload.enum_value_id = value as any;
+        } else if (dataType === 'enum' && value && typeof value !== 'object' && value !== '') {
+          // Fallback: plain numeric ID
+          payload.enum_value_id = Number(value);
         } else if (
           dataType === 'string' &&
           typeof value === 'string' &&
@@ -484,7 +488,13 @@ export function getProductInputValues(
         } = raw as any;
 
         // Skip if no value is set
-        const hasEnum = enum_value_id != null && enum_value_id !== '';
+        // enum_value_id may be a full option object { id, label, value } from react-select
+        // or a plain number from initial form defaults. Normalise to numeric ID.
+        const resolvedEnumId =
+          enum_value_id != null && typeof enum_value_id === 'object'
+            ? (enum_value_id as any)?.id
+            : enum_value_id;
+        const hasEnum = resolvedEnumId != null && resolvedEnumId !== '';
         const hasString =
           typeof value_string === 'string' && value_string.trim() !== '';
         const hasNumber =
@@ -502,7 +512,7 @@ export function getProductInputValues(
         };
 
         if (hasEnum) {
-          payload.enum_value_id = Number(enum_value_id);
+          payload.enum_value_id = Number(resolvedEnumId);
         } else if (hasString) {
           payload.value_string = value_string;
         } else if (hasNumber) {
@@ -549,17 +559,19 @@ export function getProductInputValues(
       })) as ProductAttributeValueInput[];
 
     const variantPrice = toNumber(option?.price);
+    const variantSalePrice = toNumber(option?.sale_price);
     const variantQuantity = toQuantity(option?.quantity);
     const formatted: any = {
       title: option?.title ?? 'Variant',
       sku: option?.sku,
       price: variantPrice ?? 0,
+      ...(variantSalePrice !== undefined && { sale_price: variantSalePrice }),
       quantity: variantQuantity,
       ...(option?.is_disable !== undefined && { is_disable: option.is_disable }),
       ...(eavAttributes.length > 0 && { attributes: eavAttributes }),
     };
-    if (isUpdateVariant && option?.id) {
-      formatted.variant_id = option.id;
+    if (isUpdateVariant && option?.variant_id) {
+      formatted.variant_id = String(option.variant_id);
     }
     const variationImage = formatImage(option?.image);
     if (variationImage) formatted.image = variationImage;
@@ -571,14 +583,17 @@ export function getProductInputValues(
     return formatted;
   };
 
-  const getVariationDeleteIds = (): string[] | number[] =>
+  const getVariationDeleteIds = (): string[] =>
     initialValues?.variation_options
-      ?.map((initialVariationOption: Variation) => {
+      ?.map((initialVariationOption: any) => {
+        const initialVid = initialVariationOption?.variant_id ?? initialVariationOption?.id;
         const find = variation_options?.find(
-          (variationOption: Variation) =>
-            variationOption?.id === initialVariationOption?.id,
+          (variationOption: any) => {
+            const vid = variationOption?.variant_id ?? variationOption?.id;
+            return vid === initialVid;
+          },
         );
-        return find ? undefined : initialVariationOption?.id;
+        return find ? undefined : initialVid;
       })
       .filter((item: any) => item !== undefined && item !== null) ?? [];
 

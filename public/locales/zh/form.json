@@ -359,6 +359,8 @@
   "text-submit-email": "提交邮件",
   "text-submit-token": "提交令牌",
   "text-reset-password": "重设密码",
+  "text-reset-password-success-title": "Password has been reset",
+  "text-reset-password-success-description": "Your password was reset successfully. You can now continue in the app.",
   "token-label": "输入您从电子邮件中获得的令牌",
   "input-label-autocomplete": "从地图设置位置",
   "input-label-website": "网站",

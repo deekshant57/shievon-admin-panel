@@ -4,7 +4,7 @@ import Label from '@/components/ui/label';
 import Title from '@/components/ui/title';
 import Checkbox from '@/components/ui/checkbox/checkbox';
 import SelectInput from '@/components/ui/select-input';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Product, ProductAttributeDefinition } from '@/types';
 import { useTranslation } from 'next-i18next';
 import FileInput from '@/components/ui/file-input';
@@ -53,43 +53,25 @@ export default function ProductVariableEavForm({
     formState: { errors },
   } = useFormContext();
 
-  // Watch EAV variant dimension selections
-  const eavVariantDimensions = useWatch({
-    control,
-    name: 'eav_variant_dimensions',
-  }) as Array<{ selectedOptions?: any[] }> | undefined;
-
-  // When editing: pre-populate eav_variant_dimensions from loaded variation_options so cartesian product matches API data
+  // Compute initial dimension selections from existing variation_options (edit) or empty (create).
+  // Used as defaultValue on each Controller and on useWatch so values are available from first render.
   const initialOptions = initialValues?.variation_options ?? [];
-  useEffect(() => {
-    if (
-      !variantAttributes?.length ||
-      !initialOptions.length ||
-      !initialValues?.id
-    ) {
-      return;
+  const initialDimensions = useMemo(() => {
+    if (!variantAttributes?.length) return [];
+    if (!initialOptions.length || !initialValues?.id) {
+      return variantAttributes.map(() => ({ selectedOptions: [] }));
     }
-    const current = eavVariantDimensions;
-    const alreadyFilled =
-      Array.isArray(current) &&
-      current.length === variantAttributes.length &&
-      current.every((dim) => Array.isArray(dim?.selectedOptions) && dim.selectedOptions.length > 0);
-    if (alreadyFilled) return;
-
-    // For each variant attribute (e.g. size, color), collect unique selected option ids from variation_options[].attributes
-    const dimensionsWithOptions = variantAttributes.map((attr) => {
+    return variantAttributes.map((attr) => {
       const code = attr.code;
       const optionIds = new Set<number>();
       initialOptions.forEach((opt: any) => {
-        const attrs = opt.attributes ?? [];
-        attrs
+        (opt.attributes ?? [])
           .filter((a: any) => a.definition_code === code)
           .forEach((a: any) => {
             const id = a.enum_value_id ?? a.enum_value?.id;
             if (id != null) optionIds.add(Number(id));
           });
       });
-      // Map ids to { id, label } from attribute template options
       const selectedOptions = (attr.options ?? [])
         .filter((opt: any) => optionIds.has(Number(opt.id)))
         .map((opt: any) => ({
@@ -98,39 +80,16 @@ export default function ProductVariableEavForm({
         }));
       return { selectedOptions };
     });
+  }, [variantAttributes, initialValues?.id, initialOptions.length]);
 
-    setValue('eav_variant_dimensions', dimensionsWithOptions, {
-      shouldDirty: false,
-    });
-  }, [
-    initialValues?.id,
-    variantAttributes?.length,
-    initialOptions.length,
-    setValue,
-  ]);
-
-  // Initialise eav_variant_dimensions when variant attributes exist (create mode or not yet pre-filled)
-  useEffect(() => {
-    if (!variantAttributes?.length) return;
-    const current = eavVariantDimensions;
-    const needInit =
-      !Array.isArray(current) ||
-      current.length !== variantAttributes.length;
-    if (needInit) {
-      // When editing with loaded variation_options, prefill effect will set dimensions; skip empty init
-      if (
-        initialValues?.id &&
-        initialOptions.length > 0
-      ) {
-        return;
-      }
-      setValue(
-        'eav_variant_dimensions',
-        variantAttributes.map(() => ({ selectedOptions: [] })),
-        { shouldDirty: false },
-      );
-    }
-  }, [variantAttributes?.length, setValue, eavVariantDimensions, initialValues?.id, initialOptions.length]);
+  // Watch EAV variant dimension selections.
+  // Provide initialDimensions as defaultValue so cartesian product computes on first render
+  // (before Controllers register their fields).
+  const eavVariantDimensions = useWatch({
+    control,
+    name: 'eav_variant_dimensions',
+    defaultValue: initialDimensions,
+  }) as Array<{ selectedOptions?: any[] }> | undefined;
 
   // Build cartesian product of selected options across all variant attributes.
   // Single product: one value per attribute (stored as single object or [one]); variable: array of selections.
@@ -226,6 +185,7 @@ export default function ProductVariableEavForm({
                     <SelectInput
                       name={`eav_variant_dimensions.${index}.selectedOptions`}
                       control={control}
+                      defaultValue={initialDimensions[index]?.selectedOptions ?? []}
                       isMulti={!isSingleProduct}
                       // @ts-ignore
                       options={attr.options}
@@ -297,7 +257,7 @@ export default function ProductVariableEavForm({
                           className="mb-5"
                         />
                         <Input
-                          label={t('form:input-label-sale-price')}
+                          label={`${t('form:input-label-sale-price')}*`}
                           type="number"
                           {...register(`variation_options.${index}.sale_price`)}
                           error={t(

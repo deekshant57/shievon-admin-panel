@@ -54,7 +54,7 @@ export default function ProductSimpleForm({ initialValues, settings }: IProps) {
           className="mb-5"
         />
         <Input
-          label={t('form:input-label-sale-price')}
+          label={`${t('form:input-label-sale-price')}*`}
           type="number"
           {...register('sale_price')}
           error={t(errors.sale_price?.message!)}

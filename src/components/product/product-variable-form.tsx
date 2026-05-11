@@ -219,7 +219,7 @@ export default function ProductVariableForm({
                           className="mb-5"
                         />
                         <Input
-                          label={t('form:input-label-sale-price')}
+                          label={`${t('form:input-label-sale-price')}*`}
                           type="number"
                           {...register(`variation_options.${index}.sale_price`)}
                           error={t(

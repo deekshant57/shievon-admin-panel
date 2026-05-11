@@ -359,6 +359,8 @@
   "text-submit-email": "E-Mail senden",
   "text-submit-token": "Token einreichen",
   "text-reset-password": "Passwort zurücksetzen",
+  "text-reset-password-success-title": "Password has been reset",
+  "text-reset-password-success-description": "Your password was reset successfully. You can now continue in the app.",
   "token-label": "Geben Sie Ihren Token ein, den Sie per E-Mail erhalten haben",
   "input-label-autocomplete": "Standort anhand der Karte festlegen",
   "input-label-website": "Webseite",
