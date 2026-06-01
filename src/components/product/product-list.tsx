@@ -20,6 +20,7 @@ import TitleWithSort from '@/components/ui/title-with-sort';
 import { Routes } from '@/config/routes';
 import LanguageSwitcher from '@/components/ui/lang-action/action';
 import ProductAiImageActions from '@/components/product/product-ai-image-actions';
+import NotificationActionButton from '@/components/notify-logs/notification-action-button';
 
 export type IProps = {
   products: Product[] | undefined;
@@ -259,9 +260,14 @@ const ProductList = ({
       dataIndex: 'slug',
       key: 'actions',
       align: 'right',
-      width: 280,
+      width: 240,
       render: (slug: string, record: Product) => (
-        <div className="flex flex-col items-end">
+        <div className="flex flex-col items-end gap-1.5">
+          <NotificationActionButton
+            notificationAction={record.notification_action}
+            entityName={record.name}
+            className="max-w-[150px]"
+          />
           <LanguageSwitcher
             slug={slug}
             record={record}

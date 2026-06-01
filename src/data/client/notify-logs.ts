@@ -1,5 +1,7 @@
 import {
   CreateNotifyLogsInput,
+  NotificationAction,
+  NotificationTriggerResult,
   NotifyLogsQueryOptions,
   NotifyLogsPaginator,
   QueryOptions,
@@ -38,5 +40,14 @@ export const notifyClient = {
     return HttpClient.post<any>(API_ENDPOINTS.READ_ALL_NOTIFY_LOG, {
       ...params,
     });
+  },
+  trigger(action: NotificationAction) {
+    if (action.method?.toUpperCase() !== 'POST') {
+      throw new Error(
+        `Unsupported notification trigger method: ${action.method}`,
+      );
+    }
+    const url = action.endpoint.replace(/^\//, '');
+    return HttpClient.post<NotificationTriggerResult>(url, {});
   },
 };

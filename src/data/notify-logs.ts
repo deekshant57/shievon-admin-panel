@@ -1,13 +1,35 @@
-import Router, { useRouter } from 'next/router';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'next-i18next';
-import { Routes } from '@/config/routes';
+import axios from 'axios';
 import { API_ENDPOINTS } from './client/api-endpoints';
-import { NotifyLogsPaginator, NotifyLogsQueryOptions } from '@/types';
+import {
+  NotificationAction,
+  NotificationTriggerResult,
+  NotifyLogsPaginator,
+  NotifyLogsQueryOptions,
+} from '@/types';
 import { mapPaginatorData } from '@/utils/data-mappers';
-import { Config } from '@/config';
 import { notifyClient } from '@/data/client/notify-logs';
+import { getApiErrorMessage } from './client/http-client';
+
+export type TriggerNotificationActionResult =
+  | { status: 'triggered'; data: NotificationTriggerResult }
+  | { status: 'already_triggered' };
+
+async function triggerNotificationAction(
+  action: NotificationAction,
+): Promise<TriggerNotificationActionResult> {
+  try {
+    const data = await notifyClient.trigger(action);
+    return { status: 'triggered', data };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 409) {
+      return { status: 'already_triggered' };
+    }
+    throw error;
+  }
+}
 
 // get all by receiver ID
 export const useNotifyLogsQuery = (
@@ -75,6 +97,29 @@ export const useNotifyLogAllReadMutation = () => {
     },
     onError: (error: any) => {
       toast.error(t(`common:${error?.response?.data.message}`));
+    },
+  });
+};
+
+export const useTriggerNotificationActionMutation = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('common');
+
+  return useMutation(triggerNotificationAction, {
+    onSuccess: (result) => {
+      if (result.status === 'triggered') {
+        toast.success(
+          t('text-notification-triggered-success') ||
+            'Customer notification triggered successfully',
+        );
+      }
+      queryClient.invalidateQueries(API_ENDPOINTS.NOTIFY_LOGS);
+      queryClient.invalidateQueries(API_ENDPOINTS.PRODUCTS);
+      queryClient.invalidateQueries(API_ENDPOINTS.SHOPS);
+      queryClient.invalidateQueries(API_ENDPOINTS.SERVICE_OFFERINGS);
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error));
     },
   });
 };

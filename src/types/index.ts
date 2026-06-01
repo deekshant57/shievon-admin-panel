@@ -494,6 +494,7 @@ export interface Shop {
   ownership_history?: {
     status: OwnerShipTransferStatus;
   };
+  notification_action?: NotificationAction;
 }
 
 export interface Balance {
@@ -847,6 +848,22 @@ export interface Order {
   note?: string;
 }
 
+export interface NotificationAction {
+  can_trigger: boolean;
+  triggered_at: string | null;
+  endpoint: string;
+  method: string;
+  label: string;
+}
+
+export interface NotificationTriggerResult {
+  id: string;
+  type?: string;
+  title?: string;
+  body?: string;
+  created_at: string;
+}
+
 export interface NotifyLogs {
   id: string;
   receiver: string;
@@ -927,6 +944,7 @@ export interface Product {
   updated_at: string;
   ratings: number;
   in_flash_sale: boolean;
+  notification_action?: NotificationAction;
 }
 
 export type ProductAiImageJobStatus =
@@ -2221,6 +2239,7 @@ export interface ServiceOffering {
   shop?: Shop
   type?: Type
   serviceCategory?: ServiceCategory
+  notification_action?: NotificationAction
 }
 
 export interface CreateServiceOfferingInput {

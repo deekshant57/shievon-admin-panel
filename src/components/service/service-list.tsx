@@ -14,6 +14,7 @@ import TitleWithSort from '@/components/ui/title-with-sort'
 import { SortOrder } from '@/types'
 import type { MappedPaginatorInfo, ServiceOffering } from '@/types'
 import ActionButtons from '@/components/common/action-buttons'
+import NotificationActionButton from '@/components/notify-logs/notification-action-button'
 
 export type ServiceListProps = {
   serviceOfferings: ServiceOffering[] | undefined
@@ -175,14 +176,21 @@ const ServiceList = ({
       dataIndex: 'id',
       key: 'actions',
       align: alignRight,
-      width: 120,
-      render: (id: string) => (
-        <ActionButtons
-          id={id}
-          editUrl={Routes.serviceOffering.editByIdWithoutLang(id, shop as string)}
-          deleteModalView="DELETE_SERVICE_OFFERING"
-          enablePreviewMode={false}
-        />
+      width: 160,
+      render: (id: string, record: ServiceOffering) => (
+        <div className="flex flex-col items-end gap-1.5">
+          <NotificationActionButton
+            notificationAction={record.notification_action}
+            entityName={record.name}
+            className="max-w-[150px]"
+          />
+          <ActionButtons
+            id={id}
+            editUrl={Routes.serviceOffering.editByIdWithoutLang(id, shop as string)}
+            deleteModalView="DELETE_SERVICE_OFFERING"
+            enablePreviewMode={false}
+          />
+        </div>
       ),
     },
   ]

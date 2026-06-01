@@ -12,6 +12,7 @@ import ShopAvatar from '@/components/shop/shop-avatar';
 import { PhoneOutlineIcon } from '@/components/icons/phone';
 // import { useShopQuery } from '@/data/shop';
 import { useTranslation } from 'next-i18next';
+import NotificationActionButton from '@/components/notify-logs/notification-action-button';
 
 type ShopCardProps = {
   shop: Shop;
@@ -101,6 +102,22 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
           </div>
         </div>
       </div>
+
+      {shop?.notification_action ? (
+        <div
+          className="px-4 pb-3 text-right"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+          }}
+        >
+          <NotificationActionButton
+            notificationAction={shop.notification_action}
+            entityName={shop.name}
+            className="max-w-[150px]"
+          />
+        </div>
+      ) : null}
 
       <ul className="mt-4 grid grid-cols-4 divide-x divide-[#E7E7E7] px-2 pb-7 text-center">
         <li>

@@ -20,6 +20,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { getAuthCredentials } from '@/utils/auth-utils';
 import { SUPER_ADMIN } from '@/utils/constants';
+import NotificationActionButton from '@/components/notify-logs/notification-action-button';
 
 type IProps = {
   shops: Shop[] | undefined;
@@ -214,31 +215,47 @@ const ShopList = ({
       dataIndex: 'id',
       key: 'actions',
       align: alignRight as AlignType,
-      width: 120,
+      width: 160,
       render: (
         id: string,
-        { slug, is_active, owner_id, ownership_history, settings }: Shop,
+        shopRecord: Shop,
       ) => {
+        const {
+          slug,
+          is_active,
+          owner_id,
+          ownership_history,
+          settings,
+          name,
+          notification_action,
+        } = shopRecord;
         return (
-          <ActionButtons
-            id={id}
-            approveButton={true}
-            detailsUrl={`/${slug}`}
-            isShopActive={is_active}
-            transferShopOwnership
-            disabled={
-              !Boolean(is_active) ||
-              OWNERSHIP_TRANSFER_STATUS?.includes(
-                ownership_history?.status as OwnerShipTransferStatus,
-              )
-            }
-            data={{
-              ...settings?.askForAQuote,
-              multiCommission: Boolean(isMultiCommissionRate),
-              id,
-              owner_id: owner_id as number,
-            }}
-          />
+          <div className="flex flex-col items-end gap-1.5">
+            <NotificationActionButton
+              notificationAction={notification_action}
+              entityName={name}
+              className="max-w-[150px]"
+            />
+            <ActionButtons
+              id={id}
+              approveButton={true}
+              detailsUrl={`/${slug}`}
+              isShopActive={is_active}
+              transferShopOwnership
+              disabled={
+                !Boolean(is_active) ||
+                OWNERSHIP_TRANSFER_STATUS?.includes(
+                  ownership_history?.status as OwnerShipTransferStatus,
+                )
+              }
+              data={{
+                ...settings?.askForAQuote,
+                multiCommission: Boolean(isMultiCommissionRate),
+                id,
+                owner_id: owner_id as number,
+              }}
+            />
+          </div>
         );
       },
     },

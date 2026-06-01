@@ -171,6 +171,10 @@ const DeleteOwnershipTransferRequest = dynamic(
 const ProductAiImagePreviewView = dynamic(
   () => import('@/components/product/product-ai-image-preview-view'),
 );
+const NotificationTriggerConfirmationView = dynamic(
+  () =>
+    import('@/components/notify-logs/notification-trigger-confirmation-view'),
+);
 
 function renderModal(view: MODAL_VIEWS | undefined, data: any) {
   switch (view) {
@@ -280,6 +284,8 @@ function renderModal(view: MODAL_VIEWS | undefined, data: any) {
       return <DeleteOwnershipTransferRequest />;
     case 'PRODUCT_AI_IMAGE_PREVIEW_VIEW':
       return <ProductAiImagePreviewView />;
+    case 'TRIGGER_NOTIFICATION_ACTION':
+      return <NotificationTriggerConfirmationView />;
     default:
       return null;
   }
