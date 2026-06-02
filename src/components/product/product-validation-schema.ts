@@ -1,4 +1,4 @@
-import { ProductStatus, ProductType } from '@/types';
+import { getVariantAttributesFromTemplate, ProductType } from '@/types';
 import * as yup from 'yup';
 import { MAXIMUM_WORD_COUNT_FOR_RICH_TEXT_EDITOR } from '@/utils/constants';
 
@@ -24,6 +24,49 @@ function requireTopLevelWhenSingleWithoutVariants(value: unknown, context: any) 
     !Array.isArray(variationOptions) ||
     variationOptions.length === 0;
   return isSingle && noVariants;
+}
+
+function getRequiredAttributeMessage(attribute: any) {
+  return attribute?.name
+    ? `${attribute.name} is required`
+    : 'form:error-field-required';
+}
+
+function hasDynamicAttributeValue(attribute: any, value: any) {
+  if (!value) return false;
+
+  if (attribute.data_type === 'enum') {
+    const enumValue = value.enum_value_id;
+    return enumValue != null && enumValue !== '';
+  }
+
+  if (attribute.data_type === 'number') {
+    return (
+      value.value_number !== undefined &&
+      value.value_number !== null &&
+      `${value.value_number}`.trim() !== ''
+    );
+  }
+
+  if (attribute.data_type === 'boolean') {
+    const booleanValue =
+      value.value_boolean != null && typeof value.value_boolean === 'object'
+        ? value.value_boolean.value
+        : value.value_boolean;
+    return typeof booleanValue === 'boolean';
+  }
+
+  return (
+    typeof value.value_string === 'string' &&
+    value.value_string.trim() !== ''
+  );
+}
+
+function getAttributeValueField(attribute: any) {
+  if (attribute.data_type === 'enum') return 'enum_value_id';
+  if (attribute.data_type === 'number') return 'value_number';
+  if (attribute.data_type === 'boolean') return 'value_boolean';
+  return 'value_string';
 }
 
 export const productValidationSchema = yup.object().shape({
@@ -71,6 +114,65 @@ export const productValidationSchema = yup.object().shape({
   // type_id is optional on the API; type (Group) is optional in the form
   type: yup.object().nullable(),
   status: yup.string().nullable().required('form:error-status-required'),
+  eav_attributes: yup.mixed().test(
+    'required-eav-attributes',
+    'form:error-field-required',
+    function (value) {
+      const template =
+        this.options.context?.attributeTemplateRef?.current ?? null;
+      if (!template) return true;
+
+      const productType = this.parent?.product_type?.value;
+      const attributes = [
+        ...(template.product_attributes ?? []),
+        ...(productType === ProductType.Single
+          ? getVariantAttributesFromTemplate(template)
+          : []),
+      ];
+      const missing = attributes.find(
+        (attribute: any) =>
+          attribute.is_mandatory &&
+          !hasDynamicAttributeValue(attribute, (value as any)?.[attribute.code]),
+      );
+
+      if (!missing) return true;
+
+      return this.createError({
+        path: `eav_attributes.${missing.code}.${getAttributeValueField(
+          missing,
+        )}`,
+        message: getRequiredAttributeMessage(missing),
+      });
+    },
+  ),
+  eav_variant_dimensions: yup.mixed().test(
+    'required-eav-variant-dimensions',
+    'form:error-field-required',
+    function (value) {
+      if (this.parent?.product_type?.value !== ProductType.Variable) {
+        return true;
+      }
+
+      const template =
+        this.options.context?.attributeTemplateRef?.current ?? null;
+      if (!template) return true;
+
+      const variantAttributes = getVariantAttributesFromTemplate(template);
+      const missingIndex = variantAttributes.findIndex((attribute: any, index) => {
+        if (!attribute.is_mandatory) return false;
+        const selectedOptions = (value as any)?.[index]?.selectedOptions;
+        return !Array.isArray(selectedOptions) || selectedOptions.length === 0;
+      });
+
+      if (missingIndex < 0) return true;
+
+      const missing = variantAttributes[missingIndex];
+      return this.createError({
+        path: `eav_variant_dimensions.${missingIndex}.selectedOptions`,
+        message: getRequiredAttributeMessage(missing),
+      });
+    },
+  ),
   variation_options: yup.array().of(
     yup.object().shape({
       price: yup

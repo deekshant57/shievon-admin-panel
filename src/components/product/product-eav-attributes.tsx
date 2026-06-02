@@ -1,7 +1,6 @@
 import { useFormContext, Path } from 'react-hook-form';
 import { useTranslation } from 'next-i18next';
 import Input from '@/components/ui/input';
-import Checkbox from '@/components/ui/checkbox/checkbox';
 import SelectInput from '@/components/ui/select-input';
 import {
   AttributeTemplateResponse,
@@ -24,6 +23,20 @@ const PRODUCT_ATTRIBUTES_DESCRIPTION =
 const VARIANT_ATTRIBUTES_TITLE = 'Size & Color';
 const VARIANT_ATTRIBUTES_DESCRIPTION =
   'Select one value for each option (e.g. size, color). These will be included in the product attributes.';
+const BOOLEAN_OPTIONS = [
+  { label: 'Yes', value: true },
+  { label: 'No', value: false },
+];
+
+const sortBySortOrder = <T extends { sort_order?: number }>(items: T[] = []) =>
+  [...items].sort(
+    (a, b) => (a.sort_order ?? Number.MAX_SAFE_INTEGER) - (b.sort_order ?? Number.MAX_SAFE_INTEGER),
+  );
+
+const sortAttributeOptions = (attribute: ProductAttributeDefinition) => ({
+  ...attribute,
+  options: sortBySortOrder(attribute.options ?? []),
+});
 
 /**
  * Product-level EAV attributes (and for simple product, variant attributes as single-select).
@@ -31,13 +44,20 @@ const VARIANT_ATTRIBUTES_DESCRIPTION =
  */
 const ProductEavAttributes = ({ template, productType }: Props) => {
   const { t } = useTranslation('common');
-  const { control, register, getValues } = useFormContext<ProductFormValues>();
+  const {
+    control,
+    register,
+    getValues,
+    formState: { errors },
+  } = useFormContext<ProductFormValues>();
 
   const productAttributes: ProductAttributeDefinition[] =
-    template?.product_attributes ?? [];
+    sortBySortOrder(template?.product_attributes ?? []).map(sortAttributeOptions);
   const variantAttributes: ProductAttributeDefinition[] =
     productType === 'simple'
-      ? getVariantAttributesFromTemplate(template)
+      ? sortBySortOrder(getVariantAttributesFromTemplate(template)).map(
+          sortAttributeOptions,
+        )
       : [];
 
   // Resolve initial enum values: form stores the full option object { id, label } from
@@ -52,6 +72,21 @@ const ProductEavAttributes = ({ template, productType }: Props) => {
     const numId = Number(stored);
     return options.find((opt: any) => opt.id === numId) ?? undefined;
   };
+
+  const resolveBooleanDefault = (attrCode: string) => {
+    const stored = (getValues('eav_attributes') as any)?.[attrCode]?.value_boolean;
+    if (stored == null || stored === '') return undefined;
+    if (typeof stored === 'object' && typeof stored.value === 'boolean') {
+      return stored;
+    }
+    return BOOLEAN_OPTIONS.find((option) => option.value === stored);
+  };
+
+  const getFieldError = (attrCode: string, field: string) =>
+    t(
+      ((errors.eav_attributes as any)?.[attrCode]?.[field]?.message ??
+        '') as string,
+    );
 
   const hasProductAttrs = productAttributes.length > 0;
   const hasVariantAttrs = variantAttributes.length > 0;
@@ -75,18 +110,26 @@ const ProductEavAttributes = ({ template, productType }: Props) => {
           getOptionLabel={(option: any) => option?.label ?? option?.value ?? ''}
           getOptionValue={(option: any) => option?.id}
           placeholder={t('form:text-select')}
+          error={getFieldError(attribute.code, 'enum_value_id')}
         />
       );
     }
 
     if (attribute.data_type === 'boolean') {
       return (
-        <div key={attribute.code} className="flex items-center gap-3">
-          <Checkbox
-            {...register(`${fieldBase}.value_boolean` as Path<ProductFormValues>)}
-            label={attribute.name}
-          />
-        </div>
+        <SelectInput
+          key={attribute.code}
+          control={control}
+          name={`${fieldBase}.value_boolean`}
+          defaultValue={resolveBooleanDefault(attribute.code)}
+          label={attribute.is_mandatory ? `${attribute.name}*` : attribute.name}
+          required={attribute.is_mandatory}
+          options={BOOLEAN_OPTIONS}
+          getOptionLabel={(option: any) => option?.label ?? ''}
+          getOptionValue={(option: any) => `${option?.value}`}
+          placeholder={t('form:text-select')}
+          error={getFieldError(attribute.code, 'value_boolean')}
+        />
       );
     }
 
@@ -97,6 +140,7 @@ const ProductEavAttributes = ({ template, productType }: Props) => {
           type="number"
           label={attribute.is_mandatory ? `${attribute.name}*` : attribute.name}
           {...register(`${fieldBase}.value_number` as Path<ProductFormValues>)}
+          error={getFieldError(attribute.code, 'value_number')}
           variant="outline"
           className="mb-5"
         />
@@ -108,6 +152,7 @@ const ProductEavAttributes = ({ template, productType }: Props) => {
         key={attribute.code}
         label={attribute.is_mandatory ? `${attribute.name}*` : attribute.name}
         {...register(`${fieldBase}.value_string` as Path<ProductFormValues>)}
+        error={getFieldError(attribute.code, 'value_string')}
         variant="outline"
         className="mb-5"
       />
@@ -130,6 +175,7 @@ const ProductEavAttributes = ({ template, productType }: Props) => {
         getOptionLabel={(option: any) => option?.label ?? option?.value ?? ''}
         getOptionValue={(option: any) => option?.id}
         placeholder={t('form:text-select')}
+        error={getFieldError(attribute.code, 'enum_value_id')}
       />
       </div>
     );

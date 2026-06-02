@@ -28,6 +28,7 @@ import {
   Product,
   ProductStatus,
   getVariantAttributesFromTemplate,
+  AttributeTemplateResponse,
 } from '@/types';
 import { useTranslation } from 'next-i18next';
 import { useShopQuery } from '@/data/shop';
@@ -71,6 +72,50 @@ type ProductFormProps = {
   initialValues?: Product | null;
 };
 
+const sortBySortOrder = <T extends { sort_order?: number }>(items: T[] = []) =>
+  [...items].sort(
+    (a, b) => (a.sort_order ?? Number.MAX_SAFE_INTEGER) - (b.sort_order ?? Number.MAX_SAFE_INTEGER),
+  );
+
+const sortAttributeTemplate = (
+  template?: AttributeTemplateResponse,
+): AttributeTemplateResponse | undefined => {
+  if (!template) return template;
+  const sortAttributes = (attributes?: any[]) =>
+    attributes == null
+      ? undefined
+      :
+    sortBySortOrder(attributes).map((attribute: any) => ({
+      ...attribute,
+      options: sortBySortOrder(attribute.options ?? []),
+    }));
+
+  return {
+    ...template,
+    product_attributes: sortAttributes(template.product_attributes),
+    variant_attributes: sortAttributes(template.variant_attributes),
+    variant_options: sortAttributes(template.variant_options),
+  };
+};
+
+const getAttributeTemplateCodes = (
+  template?: AttributeTemplateResponse | null,
+) => {
+  if (!template) return { allCodes: [], variantCodes: [] };
+  const variantAttributes = getVariantAttributesFromTemplate(template);
+  const productCodes = (template.product_attributes ?? []).map(
+    (attribute) => attribute.code,
+  );
+  const variantCodes = variantAttributes.map((attribute) => attribute.code);
+  return {
+    allCodes: Array.from(new Set([...productCodes, ...variantCodes])),
+    variantCodes,
+  };
+};
+
+const getTemplateErrorStatus = (error: unknown) =>
+  (error as any)?.response?.status;
+
 export default function CreateOrUpdateProductForm({
   initialValues,
 }: ProductFormProps) {
@@ -113,9 +158,11 @@ export default function CreateOrUpdateProductForm({
   const isSlugEditable =
     router?.query?.action === 'edit' &&
     router?.locale === Config.defaultLanguage;
+  const attributeTemplateRef = useRef<AttributeTemplateResponse | null>(null);
   const methods = useForm<ProductFormValues>({
     //@ts-ignore
     resolver: yupResolver(productValidationSchema),
+    context: { attributeTemplateRef },
     shouldUnregister: true,
     // @ts-ignore
     defaultValues: getProductDefaultValues(initialValues!, isNewTranslation),
@@ -201,16 +248,111 @@ export default function CreateOrUpdateProductForm({
   const is_external = watch('is_external');
   const selectedCategories = watch('categories');
   const watchedPrimaryCategory = watch('primary_category');
+  const watchedSecondaryCategory = watch('secondary_category');
+  const watchedTertiaryCategory = watch('tertiary_category');
+  const watchedQuaternaryCategory = watch('quaternary_category');
   const primaryCategoryId =
     Array.isArray(selectedCategories) && selectedCategories.length > 0
       ? selectedCategories[0]?.id
-      : watchedPrimaryCategory?.id ?? undefined;
+      : undefined;
+  const hasPartialCategorySelection =
+    !primaryCategoryId &&
+    Boolean(
+      watchedPrimaryCategory ||
+        watchedSecondaryCategory ||
+        watchedTertiaryCategory ||
+        watchedQuaternaryCategory,
+    );
 
   const {
     template: attributeTemplate,
     loading: attributeTemplateLoading,
     error: attributeTemplateError,
+    refetch: refetchAttributeTemplate,
   } = useProductAttributeTemplateByCategoryQuery(primaryCategoryId);
+  const sortedAttributeTemplate = useMemo(
+    () => sortAttributeTemplate(attributeTemplate),
+    [attributeTemplate],
+  );
+  attributeTemplateRef.current = sortedAttributeTemplate ?? null;
+  const templateErrorStatus = getTemplateErrorStatus(attributeTemplateError);
+  const isMissingAttributeTemplate = templateErrorStatus === 404;
+  const hasAttributeTemplateError =
+    Boolean(attributeTemplateError) && !isMissingAttributeTemplate;
+  const templateCodes = useMemo(
+    () => getAttributeTemplateCodes(sortedAttributeTemplate),
+    [sortedAttributeTemplate],
+  );
+  const hasDynamicAttributes =
+    templateCodes.allCodes.length > 0 || templateCodes.variantCodes.length > 0;
+
+  const previousLeafCategoryIdRef = useRef<string | number | undefined>();
+  const previousVariantCodesRef = useRef<string>('');
+
+  useEffect(() => {
+    if (!primaryCategoryId) {
+      setValue('eav_attribute_template_codes', []);
+      setValue('eav_variant_attribute_codes', []);
+      return;
+    }
+
+    if (!sortedAttributeTemplate) {
+      if (isMissingAttributeTemplate) {
+        setValue('eav_attribute_template_codes', []);
+        setValue('eav_variant_attribute_codes', []);
+        previousLeafCategoryIdRef.current = primaryCategoryId;
+        previousVariantCodesRef.current = '';
+      }
+      return;
+    }
+
+    const previousLeafCategoryId = previousLeafCategoryIdRef.current;
+    const categoryChanged =
+      previousLeafCategoryId != null &&
+      String(previousLeafCategoryId) !== String(primaryCategoryId);
+    const allCodeSet = new Set(templateCodes.allCodes);
+    const currentAttributes = (methods.getValues('eav_attributes') ?? {}) as Record<
+      string,
+      unknown
+    >;
+    const staleAttributeCodes = Object.keys(currentAttributes).filter(
+      (code) => !allCodeSet.has(code),
+    );
+    const nextVariantCodes = templateCodes.variantCodes.join('|');
+    const variantSetChanged =
+      previousVariantCodesRef.current !== '' &&
+      previousVariantCodesRef.current !== nextVariantCodes;
+    const shouldConfirm =
+      Boolean(initialValues?.id) &&
+      categoryChanged &&
+      (staleAttributeCodes.length > 0 || variantSetChanged);
+    const canClear =
+      !shouldConfirm ||
+      window.confirm(
+        'Changing category will remove attribute values that are not available in the selected category. Continue?',
+      );
+
+    setValue('eav_attribute_template_codes', templateCodes.allCodes);
+    setValue('eav_variant_attribute_codes', templateCodes.variantCodes);
+
+    if (canClear && staleAttributeCodes.length > 0) {
+      const filteredAttributes = Object.fromEntries(
+        Object.entries(currentAttributes).filter(([code]) => allCodeSet.has(code)),
+      );
+      setValue('eav_attributes', filteredAttributes as any, {
+        shouldDirty: true,
+      });
+    }
+
+    if (canClear && variantSetChanged) {
+      setValue('eav_variant_dimensions', [], { shouldDirty: true });
+      setValue('variation_options', [], { shouldDirty: true });
+    }
+
+    previousLeafCategoryIdRef.current = primaryCategoryId;
+    previousVariantCodesRef.current = nextVariantCodes;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [primaryCategoryId, sortedAttributeTemplate, isMissingAttributeTemplate]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -589,10 +731,43 @@ export default function CreateOrUpdateProductForm({
             <ProductTypeInput />
           </div>
 
+          {hasPartialCategorySelection && (
+            <div className="mb-5 rounded border border-border-200 bg-light p-5 text-sm text-body md:p-8">
+              Select a sub-category to load product attributes.
+            </div>
+          )}
+
+          {primaryCategoryId && hasAttributeTemplateError && (
+            <Alert
+              message="Unable to load product attributes. Please try again."
+              variant="error"
+              closeable={false}
+              className="mb-5"
+            />
+          )}
+          {primaryCategoryId && hasAttributeTemplateError && (
+            <Button
+              type="button"
+              onClick={() => refetchAttributeTemplate?.()}
+              className="mb-5"
+            >
+              Retry loading attributes
+            </Button>
+          )}
+
+          {primaryCategoryId &&
+            !attributeTemplateLoading &&
+            (isMissingAttributeTemplate ||
+              (sortedAttributeTemplate && !hasDynamicAttributes)) && (
+              <div className="mb-5 rounded border border-border-200 bg-light p-5 text-sm text-body md:p-8">
+                No product attributes are configured for this category.
+              </div>
+            )}
+
           {/* Product-level EAV attributes; for simple product, variant attributes (size, color) as single-select */}
-          {primaryCategoryId && attributeTemplate && (
+          {primaryCategoryId && sortedAttributeTemplate && (
             <ProductEavAttributes
-              template={attributeTemplate}
+              template={sortedAttributeTemplate}
               productType={product_type?.value}
             />
           )}
@@ -608,11 +783,18 @@ export default function CreateOrUpdateProductForm({
           {/* Variable Type: multi-select variant attributes, cartesian product of options */}
           {product_type?.value === ProductType.Variable &&
             (() => {
+              if (hasPartialCategorySelection || hasAttributeTemplateError) {
+                return null;
+              }
               // Wait for attribute template to load before deciding which variation form to render.
               // Without this guard, ProductVariableForm mounts while template is loading, then gets
               // replaced by ProductVariableEavForm causing form state issues.
               // Also wait when category exists but template hasn't arrived yet (query may be idle/starting).
-              if (primaryCategoryId && (attributeTemplateLoading || !attributeTemplate)) {
+              if (
+                primaryCategoryId &&
+                (attributeTemplateLoading ||
+                  (!sortedAttributeTemplate && !isMissingAttributeTemplate))
+              ) {
                 return (
                   <div className="flex items-center justify-center py-10 text-sm text-body">
                     {t('common:text-loading')}...
@@ -620,7 +802,7 @@ export default function CreateOrUpdateProductForm({
                 );
               }
               const variantAttributes = getVariantAttributesFromTemplate(
-                attributeTemplate,
+                sortedAttributeTemplate,
               );
               return variantAttributes.length > 0 ? (
                 <ProductVariableEavForm

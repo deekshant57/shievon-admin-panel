@@ -44,6 +44,9 @@ export type ProductFormValues = Omit<
   variation_options?: Variation[];
   // EAV product-level attributes keyed by definition code
   eav_attributes?: Record<string, ProductAttributeValueInput>;
+  eav_attribute_template_codes?: string[];
+  eav_variant_attribute_codes?: string[];
+  eav_variant_dimensions?: Array<{ selectedOptions?: any[] }>;
   // image: AttachmentInput;
 };
 
@@ -431,6 +434,8 @@ export function getProductInputValues(
     categories,
     tags,
     eav_attributes,
+    eav_attribute_template_codes,
+    eav_variant_attribute_codes,
     digital_file_input,
     variation_options,
     variations,
@@ -473,10 +478,21 @@ export function getProductInputValues(
   };
 
   // Map EAV product-level attributes into API payload
+  const allowedAttributeCodes = Array.isArray(eav_attribute_template_codes)
+    ? new Set(eav_attribute_template_codes)
+    : null;
+  const allowedVariantAttributeCodes = Array.isArray(eav_variant_attribute_codes)
+    ? new Set(eav_variant_attribute_codes)
+    : null;
+
   if (eav_attributes && typeof eav_attributes === 'object') {
     const attributesPayload: ProductAttributeValueInput[] = Object.entries(
       eav_attributes,
     )
+      .filter(
+        ([definition_code]) =>
+          !allowedAttributeCodes || allowedAttributeCodes.has(definition_code),
+      )
       .map(([definition_code, raw]) => {
         if (!raw) return null;
 
@@ -501,7 +517,11 @@ export function getProductInputValues(
           value_number !== undefined &&
           value_number !== null &&
           `${value_number}`.trim() !== '';
-        const hasBoolean = typeof value_boolean === 'boolean';
+        const resolvedBoolean =
+          value_boolean != null && typeof value_boolean === 'object'
+            ? (value_boolean as any)?.value
+            : value_boolean;
+        const hasBoolean = typeof resolvedBoolean === 'boolean';
 
         if (!hasEnum && !hasString && !hasNumber && !hasBoolean) {
           return null;
@@ -523,7 +543,7 @@ export function getProductInputValues(
             return null;
           }
         } else if (hasBoolean) {
-          payload.value_boolean = value_boolean;
+          payload.value_boolean = resolvedBoolean;
         }
 
         return payload;
@@ -551,7 +571,9 @@ export function getProductInputValues(
           typeof opt.code === 'string' &&
           opt.code &&
           opt.id !== undefined &&
-          opt.id !== null,
+          opt.id !== null &&
+          (!allowedVariantAttributeCodes ||
+            allowedVariantAttributeCodes.has(opt.code)),
       )
       .map((opt: any) => ({
         definition_code: opt.code as string,

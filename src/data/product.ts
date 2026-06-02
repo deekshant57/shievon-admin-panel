@@ -132,7 +132,7 @@ export const useProductAttributeTemplateByCategoryQuery = (
 ) => {
   const enabled = Boolean(categoryId) && (options?.enabled ?? true);
 
-  const { data, error, isLoading } = useQuery<AttributeTemplateResponse, Error>(
+  const { data, error, isLoading, refetch } = useQuery<AttributeTemplateResponse, Error>(
     [API_ENDPOINTS.PRODUCT_ATTRIBUTE_TEMPLATE_BY_CATEGORY, categoryId],
     () =>
       productClient.getAttributeTemplateByCategory(
@@ -148,6 +148,7 @@ export const useProductAttributeTemplateByCategoryQuery = (
     template: data,
     error,
     loading: isLoading,
+    refetch,
   };
 };
 

@@ -27,6 +27,11 @@ type IProps = {
   isSingleProduct?: boolean;
 };
 
+const sortBySortOrder = <T extends { sort_order?: number }>(items: T[] = []) =>
+  [...items].sort(
+    (a, b) => (a.sort_order ?? Number.MAX_SAFE_INTEGER) - (b.sort_order ?? Number.MAX_SAFE_INTEGER),
+  );
+
 export default function ProductVariableEavForm({
   shopId,
   initialValues,
@@ -52,16 +57,24 @@ export default function ProductVariableEavForm({
     getValues,
     formState: { errors },
   } = useFormContext();
+  const sortedVariantAttributes = useMemo(
+    () =>
+      sortBySortOrder(variantAttributes).map((attribute) => ({
+        ...attribute,
+        options: sortBySortOrder(attribute.options ?? []),
+      })),
+    [variantAttributes],
+  );
 
   // Compute initial dimension selections from existing variation_options (edit) or empty (create).
   // Used as defaultValue on each Controller and on useWatch so values are available from first render.
   const initialOptions = initialValues?.variation_options ?? [];
   const initialDimensions = useMemo(() => {
-    if (!variantAttributes?.length) return [];
+    if (!sortedVariantAttributes?.length) return [];
     if (!initialOptions.length || !initialValues?.id) {
-      return variantAttributes.map(() => ({ selectedOptions: [] }));
+      return sortedVariantAttributes.map(() => ({ selectedOptions: [] }));
     }
-    return variantAttributes.map((attr) => {
+    return sortedVariantAttributes.map((attr) => {
       const code = attr.code;
       const optionIds = new Set<number>();
       initialOptions.forEach((opt: any) => {
@@ -80,7 +93,7 @@ export default function ProductVariableEavForm({
         }));
       return { selectedOptions };
     });
-  }, [variantAttributes, initialValues?.id, initialOptions.length]);
+  }, [sortedVariantAttributes, initialValues?.id, initialOptions.length]);
 
   // Watch EAV variant dimension selections.
   // Provide initialDimensions as defaultValue so cartesian product computes on first render
@@ -94,9 +107,9 @@ export default function ProductVariableEavForm({
   // Build cartesian product of selected options across all variant attributes.
   // Single product: one value per attribute (stored as single object or [one]); variable: array of selections.
   const cartesianProduct = (() => {
-    if (!variantAttributes?.length) return [];
+    if (!sortedVariantAttributes?.length) return [];
 
-    const lists = variantAttributes
+    const lists = sortedVariantAttributes
       .map((attr, index) => {
         const dim = eavVariantDimensions?.[index];
         const raw = dim?.selectedOptions;
@@ -168,7 +181,7 @@ export default function ProductVariableEavForm({
 
           {/* Select values for each EAV variant attribute (e.g. Size, Color) */}
           <div>
-            {variantAttributes.map((attr, index) => (
+            {sortedVariantAttributes.map((attr, index) => (
               <div
                 key={attr.code}
                 className="border-b border-dashed border-border-200 p-5 last:border-0 md:p-8"
@@ -192,6 +205,10 @@ export default function ProductVariableEavForm({
                       getOptionLabel={(option: any) => option.label}
                       getOptionValue={(option: any) => option.id}
                       placeholder={t('form:text-select')}
+                      error={t(
+                        (errors.eav_variant_dimensions as any)?.[index]
+                          ?.selectedOptions?.message,
+                      )}
                     />
                   </div>
                 </div>
