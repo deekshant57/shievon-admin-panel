@@ -1,4 +1,13 @@
 import { HttpClient } from './http-client';
+import { API_ENDPOINTS } from '@/data/client/api-endpoints';
+import {
+  ClothingImportCommitInput,
+  ClothingImportJob,
+  ClothingImportJobsInput,
+  ClothingImportJobsResponse,
+  ClothingImportPreviewInput,
+  ClothingImportTemplateInput,
+} from '@/types';
 
 export const importClient = {
   importCsv: async (url: string, variables: any) => {
@@ -12,5 +21,65 @@ export const importClient = {
     };
     const response = await HttpClient.post<any>(url, formData, options);
     return response.data;
+  },
+  downloadClothingTemplate: async (input: ClothingImportTemplateInput) => {
+    return HttpClient.getBlob(API_ENDPOINTS.CLOTHING_IMPORT_TEMPLATE, {
+      shopId: input.shopId,
+      shop_id: input.shopId,
+      ...(input.segment ? { segment: input.segment } : {}),
+      ...(input.categoryId
+        ? { categoryId: input.categoryId, category_id: input.categoryId }
+        : {}),
+    });
+  },
+  previewClothingImport: async (input: ClothingImportPreviewInput) => {
+    const formData = new FormData();
+    formData.append('xlsx', input.xlsx);
+    formData.append('zip', input.zip);
+    formData.append('shopId', String(input.shopId));
+    if (input.categoryId) {
+      formData.append('categoryId', String(input.categoryId));
+    }
+    if (input.segment) {
+      formData.append('segment', input.segment);
+    }
+    if (input.templateVersion) {
+      formData.append('templateVersion', input.templateVersion);
+    }
+
+    return HttpClient.post<ClothingImportJob>(
+      API_ENDPOINTS.CLOTHING_IMPORT_PREVIEW,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+  },
+  getClothingImportJob: async (jobId: string | number) => {
+    return HttpClient.get<ClothingImportJob>(
+      `${API_ENDPOINTS.CLOTHING_IMPORT_JOBS}/${jobId}`
+    );
+  },
+  getClothingImportJobs: async (input: ClothingImportJobsInput) => {
+    return HttpClient.get<ClothingImportJobsResponse>(
+      API_ENDPOINTS.CLOTHING_IMPORT_JOBS,
+      input
+    );
+  },
+  commitClothingImport: async ({
+    jobId,
+    idempotencyKey,
+  }: ClothingImportCommitInput) => {
+    return HttpClient.post<ClothingImportJob>(
+      `${API_ENDPOINTS.CLOTHING_IMPORT_JOBS}/${jobId}/commit`,
+      { idempotencyKey }
+    );
+  },
+  downloadClothingImportReport: async (jobId: string | number) => {
+    return HttpClient.getBlob(
+      `${API_ENDPOINTS.CLOTHING_IMPORT_JOBS}/${jobId}/report`
+    );
   },
 };

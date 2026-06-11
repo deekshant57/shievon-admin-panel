@@ -105,6 +105,21 @@ export class HttpClient {
     return response.data.data;
   }
 
+  static async getBlob(url: string, params?: unknown): Promise<Blob> {
+    const cleanedParams = params
+      ? Object.fromEntries(
+          Object.entries(params as Record<string, unknown>).filter(
+            ([, value]) => value !== '' && value !== null && value !== undefined
+          )
+        )
+      : params;
+    const response = await Axios.get<Blob>(url, {
+      params: cleanedParams,
+      responseType: 'blob',
+    });
+    return response.data;
+  }
+
   static async post<T>(url: string, data: unknown, options?: any): Promise<T> {
     // Log request body for create shop requests
     if (url === 'shops') {

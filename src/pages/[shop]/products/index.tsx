@@ -13,16 +13,18 @@ import Loader from '@/components/ui/loader/loader';
 import { useModalAction } from '@/components/ui/modal/modal.context';
 import { Config } from '@/config';
 import { Routes } from '@/config/routes';
+import ClothingImportAnnouncement from '@/components/product/clothing-import-announcement';
 import { useProductsQuery } from '@/data/product';
 import { useShopQuery } from '@/data/shop';
 import { useMeQuery } from '@/data/user';
 import { Category, SortOrder, Type } from '@/types';
 import {
-  adminOnly,
+  adminAndOwnerOnly,
   adminOwnerAndStaffOnly,
   getAuthCredentials,
   hasAccess,
 } from '@/utils/auth-utils';
+import { STORE_OWNER, SUPER_ADMIN } from '@/utils/constants';
 import cn from 'classnames';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -38,7 +40,7 @@ interface ProductTypeOptions {
 
 export default function ProductsPage() {
   const router = useRouter();
-  const { permissions } = getAuthCredentials();
+  const { permissions, role } = getAuthCredentials();
   const { data: me, isLoading: fetchingMe } = useMeQuery();
   const {
     query: { shop },
@@ -63,6 +65,12 @@ export default function ProductsPage() {
   const { openModal } = useModalAction();
   const { locale } = useRouter();
   const hasRedirectedRef = useRef(false);
+  const isShopOwner = me?.shops?.some((shop) => shop.id === shopId) ?? false;
+  const canImportClothing =
+    hasAccess(adminAndOwnerOnly, permissions) ||
+    role === SUPER_ADMIN ||
+    role === STORE_OWNER ||
+    isShopOwner;
 
   const toggleVisible = () => {
     setVisible((v) => !v);
@@ -107,12 +115,12 @@ export default function ProductsPage() {
     // Check if user has required permission (SUPER_ADMIN, STORE_OWNER, or STAFF)
     const hasRequiredPermission = hasAccess(adminOwnerAndStaffOnly, permissions);
     // Check if user owns this shop
-    const isShopOwner = me?.shops?.some((shop) => shop.id === shopId) ?? false;
+    const ownsShop = me?.shops?.some((shop) => shop.id === shopId) ?? false;
     // Check if user manages this shop
     const isManagedShop = me?.managed_shop?.id === shopId;
 
     // Only redirect if user doesn't have any of the required access
-    if (!hasRequiredPermission && !isShopOwner && !isManagedShop) {
+    if (!hasRequiredPermission && !ownsShop && !isManagedShop) {
       hasRedirectedRef.current = true;
       // Use window.location.href instead of router.replace to avoid interfering
       // with Next.js router's initial props loading lifecycle
@@ -163,20 +171,39 @@ export default function ProductsPage() {
                 placeholderText={t('form:input-placeholder-search-name')}
               />
 
-              {locale === Config.defaultLanguage && (
-                <LinkButton
-                  href={`/${shop}/products/create`}
-                  className="h-12 ms-4 md:ms-6"
-                >
-                  <span className="hidden md:block">
-                    + {t('form:button-label-add-product')}
-                  </span>
-                  <span className="md:hidden">
-                    + {t('form:button-label-add')}
-                  </span>
-                </LinkButton>
-              )}
+              <>
+                {canImportClothing && (
+                  <LinkButton
+                    href={Routes.product.clothingImport(shop as string)}
+                    className="hidden h-12 whitespace-nowrap ms-4 md:flex md:ms-6"
+                  >
+                    {t('common:clothing-import-short-title')}
+                  </LinkButton>
+                )}
+                {locale === Config.defaultLanguage && (
+                  <LinkButton
+                    href={`/${shop}/products/create`}
+                    className="h-12 ms-4 md:ms-6"
+                  >
+                    <span className="hidden md:block">
+                      + {t('form:button-label-add-product')}
+                    </span>
+                    <span className="md:hidden">
+                      + {t('form:button-label-add')}
+                    </span>
+                  </LinkButton>
+                )}
+              </>
             </div>
+
+            {canImportClothing && (
+              <LinkButton
+                href={Routes.product.clothingImport(shop as string)}
+                className="mt-5 w-full md:hidden"
+              >
+                {t('common:clothing-import-short-title')}
+              </LinkButton>
+            )}
 
             <Button
               onClick={handleImportModal}
@@ -236,6 +263,10 @@ export default function ProductsPage() {
           </div>
         </div>
       </Card>
+      <ClothingImportAnnouncement
+        shop={shop as string}
+        canShow={canImportClothing}
+      />
       <ProductList
         products={filteredProducts}
         paginatorInfo={paginatorInfo}

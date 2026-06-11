@@ -1136,6 +1136,92 @@ export interface TaxonomyByTypeResponse {
   attribute_definitions?: ProductAttributeDefinition[];
 }
 
+export interface ClothingImportTemplateInput {
+  shopId: string | number;
+  categoryId?: string | number;
+  segment?: string;
+}
+
+export interface ClothingImportPreviewInput {
+  shopId: string | number;
+  categoryId?: string | number;
+  xlsx: File;
+  zip: File;
+  segment?: string;
+  templateVersion?: string;
+}
+
+export interface ClothingImportCommitInput {
+  jobId: string | number;
+  idempotencyKey: string;
+}
+
+export interface ClothingImportError {
+  field?: string;
+  column?: string;
+  message: string;
+}
+
+export interface ClothingImportRow {
+  row?: number;
+  row_number?: number;
+  parent_sku?: string;
+  sku?: string;
+  action?: 'create' | 'update' | string;
+  status?: 'valid' | 'invalid' | string;
+  errors?: ClothingImportError[];
+}
+
+export interface ClothingImportGroupError {
+  parent_sku?: string;
+  message: string;
+  errors?: ClothingImportError[];
+}
+
+export interface ClothingImportCounts {
+  total_rows?: number;
+  valid_rows?: number;
+  invalid_rows?: number;
+  products_to_create?: number;
+  products_to_update?: number;
+  variants_to_create?: number;
+  variants_to_update?: number;
+  images_to_upload?: number;
+  blocked_groups?: number;
+}
+
+export interface ClothingImportJob {
+  id?: string | number;
+  job_id?: string | number;
+  shop_id?: string | number;
+  category_id?: string | number;
+  segment?: string;
+  status?: string;
+  preview_token?: string;
+  template_version?: string;
+  counts?: ClothingImportCounts;
+  summary?: ClothingImportCounts;
+  rows?: ClothingImportRow[];
+  row_errors?: ClothingImportRow[];
+  group_errors?: ClothingImportGroupError[];
+  error_report_url?: string;
+  report_url?: string;
+  message?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ClothingImportJobsInput {
+  shopId: string | number;
+}
+
+export type ClothingImportJobsResponse =
+  | ClothingImportJob[]
+  | {
+      data?: ClothingImportJob[];
+      jobs?: ClothingImportJob[];
+    };
+
 export interface ProductAttributeValueInput {
   definition_code: string;
   enum_value_id?: number;

@@ -34,11 +34,16 @@ import ShortDescription from '@/components/shop-single/short-description';
 import ShopAvatar from '@/components/shop/shop-avatar';
 import Alert from '@/components/ui/alert';
 import Link from '@/components/ui/link';
+import ClothingImportAnnouncement from '@/components/product/clothing-import-announcement';
 import { OwnerShipTransferStatus, PaymentInfo } from '@/types';
 import { useFormatPhoneNumber } from '@/utils/format-phone-number';
 import { useSettingsQuery } from '@/data/settings';
 import { IosArrowDown } from '@/components/icons/ios-arrow-down';
-import { OWNERSHIP_TRANSFER_STATUS } from '@/utils/constants';
+import {
+  OWNERSHIP_TRANSFER_STATUS,
+  STORE_OWNER,
+  SUPER_ADMIN,
+} from '@/utils/constants';
 
 export default function ShopPage() {
   const router = useRouter();
@@ -94,9 +99,17 @@ export default function ShopPage() {
     ownership_history,
   } = data ?? {};
   const timings = shopSettings?.timings;
+  const canImportClothing =
+    hasAccess(adminAndOwnerOnly, permissions) ||
+    role === SUPER_ADMIN ||
+    role === STORE_OWNER;
 
   return (
     <div className="-m-5 md:-m-8">
+      <ClothingImportAnnouncement
+        shop={shop as string}
+        canShow={canImportClothing}
+      />
       {!is_active && (
         <Alert
           className="mb-4"
@@ -192,8 +205,14 @@ export default function ShopPage() {
                 )}
               </div>
             </div>
-            {hasAccess(adminAndOwnerOnly, permissions) && (
+            {canImportClothing && (
               <div className="self-end pt-4 xl:pt-0 space-x-4">
+                <Link
+                  className="inline-flex items-center gap-1 rounded-full bg-accent px-[0.625rem] py-[0.5625rem] text-xs font-medium text-white hover:bg-accent-hover"
+                  href={Routes.product.clothingImport(shop as string)}
+                >
+                  {t('common:clothing-import-short-title')}
+                </Link>
                 <Link
                   className="inline-flex items-center gap-1 rounded-full bg-accent px-[0.625rem] py-[0.5625rem] text-xs font-medium text-white hover:bg-accent-hover"
                   href={`/${shop}/edit`}

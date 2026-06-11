@@ -73,6 +73,7 @@ export const Routes = {
   },
   product: {
     ...routesFactory('/products'),
+    clothingImport: (shop: string) => `/${shop}/products/import/clothing`,
   },
   serviceOffering: {
     ...routesFactory('/services'),
