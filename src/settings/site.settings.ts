@@ -776,29 +776,25 @@ export const siteSettings = {
       //   ],
       // },
 
-      /*
-       * Hidden in vendor portal:
-       * - Order management (and its sections)
-       */
-      // order: {
-      //   href: '',
-      //   label: 'text-order-management',
-      //   icon: 'OrdersIcon',
-      //   childMenu: [
-      //     {
-      //       href: (shop: string) => `/${shop}${Routes.order.list}`,
-      //       label: 'sidebar-nav-item-orders',
-      //       icon: 'OrdersIcon',
-      //       permissions: adminOwnerAndStaffOnly,
-      //     },
-      //     {
-      //       href: (shop: string) => `/${shop}${Routes.transaction}`,
-      //       label: 'text-transactions',
-      //       icon: 'CalendarScheduleIcon',
-      //       permissions: adminAndOwnerOnly,
-      //     },
-      //   ],
-      // },
+      order: {
+        href: '',
+        label: 'text-order-management',
+        icon: 'OrdersIcon',
+        childMenu: [
+          {
+            href: (shop: string) => `/${shop}${Routes.order.list}`,
+            label: 'sidebar-nav-item-orders',
+            icon: 'OrdersIcon',
+            permissions: adminOwnerAndStaffOnly,
+          },
+          {
+            href: (shop: string) => `/${shop}${Routes.transaction}`,
+            label: 'text-transactions',
+            icon: 'CalendarScheduleIcon',
+            permissions: adminAndOwnerOnly,
+          },
+        ],
+      },
 
       /*
        * Hidden in vendor portal:

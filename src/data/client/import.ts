@@ -7,6 +7,12 @@ import {
   ClothingImportJobsResponse,
   ClothingImportPreviewInput,
   ClothingImportTemplateInput,
+  FootwearImportCommitInput,
+  FootwearImportJob,
+  FootwearImportJobsInput,
+  FootwearImportJobsResponse,
+  FootwearImportPreviewInput,
+  FootwearImportTemplateInput,
 } from '@/types';
 
 export const importClient = {
@@ -80,6 +86,53 @@ export const importClient = {
   downloadClothingImportReport: async (jobId: string | number) => {
     return HttpClient.getBlob(
       `${API_ENDPOINTS.CLOTHING_IMPORT_JOBS}/${jobId}/report`
+    );
+  },
+  downloadFootwearTemplate: async (input: FootwearImportTemplateInput) => {
+    return HttpClient.getBlob(API_ENDPOINTS.FOOTWEAR_IMPORT_TEMPLATE, {
+      shopId: input.shopId,
+      shop_id: input.shopId,
+    });
+  },
+  previewFootwearImport: async (input: FootwearImportPreviewInput) => {
+    const formData = new FormData();
+    formData.append('xlsx', input.xlsx);
+    formData.append('zip', input.zip);
+    formData.append('shopId', String(input.shopId));
+
+    return HttpClient.post<FootwearImportJob>(
+      API_ENDPOINTS.FOOTWEAR_IMPORT_PREVIEW,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+  },
+  getFootwearImportJob: async (jobId: string | number) => {
+    return HttpClient.get<FootwearImportJob>(
+      `${API_ENDPOINTS.FOOTWEAR_IMPORT_JOBS}/${jobId}`
+    );
+  },
+  getFootwearImportJobs: async (input: FootwearImportJobsInput) => {
+    return HttpClient.get<FootwearImportJobsResponse>(
+      API_ENDPOINTS.FOOTWEAR_IMPORT_JOBS,
+      input
+    );
+  },
+  commitFootwearImport: async ({
+    jobId,
+    idempotencyKey,
+  }: FootwearImportCommitInput) => {
+    return HttpClient.post<FootwearImportJob>(
+      `${API_ENDPOINTS.FOOTWEAR_IMPORT_JOBS}/${jobId}/commit`,
+      { idempotencyKey }
+    );
+  },
+  downloadFootwearImportReport: async (jobId: string | number) => {
+    return HttpClient.getBlob(
+      `${API_ENDPOINTS.FOOTWEAR_IMPORT_JOBS}/${jobId}/report`
     );
   },
 };

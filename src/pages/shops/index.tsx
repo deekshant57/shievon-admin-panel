@@ -37,6 +37,7 @@ export default function AllShopPage() {
 
   function handleSearch({ searchText }: { searchText: string }) {
     setSearchTerm(searchText);
+    setPage(1);
   }
 
   function handlePagination(current: any) {
@@ -53,6 +54,7 @@ export default function AllShopPage() {
           <Search
             onSearch={handleSearch}
             placeholderText={t('form:input-placeholder-search-name')}
+            debounceMs={400}
           />
         </div>
       </Card>

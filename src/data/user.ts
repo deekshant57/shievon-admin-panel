@@ -14,6 +14,7 @@ import {
   UserQueryOptions,
   LicensedDomainPaginator,
   LicenseAdditionalData,
+  SortOrder,
 } from '@/types';
 import { mapPaginatorData } from '@/utils/data-mappers';
 import axios from 'axios';
@@ -328,6 +329,40 @@ function toInitialData(value: UserPaginator | null | undefined): UserPaginator |
   return value ?? undefined
 }
 
+const USER_LIST_SSR_DEFAULTS = {
+  page: 1,
+  limit: 20,
+  orderBy: 'created_at',
+  sortedBy: SortOrder.Desc,
+} as const
+
+/** SSR initialData only matches page 1 with default sort/limit and no search. */
+function shouldUseUserListInitialData(
+  params: Partial<UserQueryOptions & QueryOptionsType>
+): boolean {
+  const page = params.page ?? USER_LIST_SSR_DEFAULTS.page
+  const limit = params.limit ?? USER_LIST_SSR_DEFAULTS.limit
+  const orderBy = params.orderBy ?? USER_LIST_SSR_DEFAULTS.orderBy
+  const sortedBy = params.sortedBy ?? USER_LIST_SSR_DEFAULTS.sortedBy
+  const hasSearch = Boolean(params.name || params.search)
+
+  return (
+    page === USER_LIST_SSR_DEFAULTS.page &&
+    limit === USER_LIST_SSR_DEFAULTS.limit &&
+    orderBy === USER_LIST_SSR_DEFAULTS.orderBy &&
+    sortedBy === USER_LIST_SSR_DEFAULTS.sortedBy &&
+    !hasSearch
+  )
+}
+
+function resolveUserListInitialData(
+  params: Partial<UserQueryOptions & QueryOptionsType>,
+  options?: UserListQueryOptions
+): UserPaginator | undefined {
+  if (!shouldUseUserListInitialData(params)) return undefined
+  return toInitialData(options?.initialData)
+}
+
 export const useUsersQuery = (
   params: Partial<QueryOptionsType>,
   options?: UserListQueryOptions
@@ -337,7 +372,7 @@ export const useUsersQuery = (
     () => userClient.fetchUsers(params),
     {
       keepPreviousData: true,
-      initialData: toInitialData(options?.initialData),
+      initialData: resolveUserListInitialData(params, options),
     }
   );
 
@@ -358,7 +393,7 @@ export const useAdminsQuery = (
     () => userClient.fetchAdmins(params),
     {
       keepPreviousData: true,
-      initialData: toInitialData(options?.initialData),
+      initialData: resolveUserListInitialData(params, options),
     }
   );
 
@@ -379,7 +414,7 @@ export const useVendorsQuery = (
     () => userClient.fetchVendors(params),
     {
       keepPreviousData: true,
-      initialData: toInitialData(options?.initialData),
+      initialData: resolveUserListInitialData(params, options),
     }
   );
 
@@ -400,7 +435,7 @@ export const useCustomersQuery = (
     () => userClient.fetchCustomers(params),
     {
       keepPreviousData: true,
-      initialData: toInitialData(options?.initialData),
+      initialData: resolveUserListInitialData(params, options),
     }
   );
 
@@ -421,7 +456,7 @@ export const useMyStaffsQuery = (
     () => userClient.getMyStaffs(params),
     {
       keepPreviousData: true,
-      initialData: toInitialData(options?.initialData),
+      initialData: resolveUserListInitialData(params, options),
     }
   );
 
@@ -442,7 +477,7 @@ export const useAllStaffsQuery = (
     () => userClient.getAllStaffs(params),
     {
       keepPreviousData: true,
-      initialData: toInitialData(options?.initialData),
+      initialData: resolveUserListInitialData(params, options),
     }
   );
 

@@ -1,7 +1,8 @@
 import { CloseIcon } from '@/components/icons/close-icon';
 import { SearchIcon } from '@/components/icons/search-icon';
 import cn from 'classnames';
-import { useEffect } from 'react';
+import debounce from 'lodash/debounce';
+import { useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'next-i18next';
 import { twMerge } from 'tailwind-merge';
@@ -23,6 +24,8 @@ type SearchProps = {
   inputClassName?: string;
   onSearch: (data: SearchValue) => void;
   placeholderText?: string;
+  /** When set, fires onSearch as the user types (debounced). Enter still searches immediately. */
+  debounceMs?: number;
 };
 
 type SearchValue = {
@@ -36,6 +39,7 @@ const Search: React.FC<SearchProps> = ({
   shadow = false,
   inputClassName,
   placeholderText,
+  debounceMs,
   ...rest
 }) => {
   const {
@@ -52,12 +56,37 @@ const Search: React.FC<SearchProps> = ({
   });
   const searchText = watch('searchText');
   const { t } = useTranslation();
+  const onSearchRef = useRef(onSearch);
+  onSearchRef.current = onSearch;
+
+  const debouncedSearch = useMemo(() => {
+    if (!debounceMs) return null;
+    return debounce((value: string) => {
+      onSearchRef.current({ searchText: value });
+    }, debounceMs);
+  }, [debounceMs]);
 
   useEffect(() => {
-    if (!searchText) {
-      onSearch({ searchText: '' });
+    return () => {
+      debouncedSearch?.cancel();
+    };
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    if (debouncedSearch) {
+      if (!searchText) {
+        debouncedSearch.cancel();
+        onSearchRef.current({ searchText: '' });
+        return;
+      }
+      debouncedSearch(searchText);
+      return;
     }
-  }, [searchText]);
+
+    if (!searchText) {
+      onSearchRef.current({ searchText: '' });
+    }
+  }, [searchText, debouncedSearch]);
 
   const rootClassName = cn(
     classes.root,
@@ -73,20 +102,30 @@ const Search: React.FC<SearchProps> = ({
   );
 
   function clear() {
+    debouncedSearch?.cancel();
     reset();
-    onSearch({ searchText: '' });
+    onSearchRef.current({ searchText: '' });
   }
+
+  function submitSearch({ searchText: value }: SearchValue) {
+    debouncedSearch?.cancel();
+    onSearchRef.current({ searchText: value });
+  }
+
   return (
     <form
       noValidate
       role="search"
       className={twMerge(cn('relative flex w-full items-center', className))}
-      onSubmit={handleSubmit(onSearch)}
+      onSubmit={handleSubmit(submitSearch)}
     >
       <label htmlFor="search" className="sr-only">
         {t('form:input-label-search')}
       </label>
-      <button className="absolute top-1/2 -translate-y-1/2 p-2 text-body outline-none start-1 focus:outline-none active:outline-none">
+      <button
+        type="submit"
+        className="absolute top-1/2 -translate-y-1/2 p-2 text-body outline-none start-1 focus:outline-none active:outline-none"
+      >
         <SearchIcon className="h-5 w-5" />
       </button>
       <input

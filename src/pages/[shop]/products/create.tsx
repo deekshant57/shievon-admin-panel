@@ -1,8 +1,7 @@
 import ShopLayout from '@/components/layouts/shop';
 import CreateOrUpdateProductForm from '@/components/product/product-form';
+import ProductBulkImportMenu from '@/components/product/product-bulk-import-menu';
 import Alert from '@/components/ui/alert';
-import Link from '@/components/ui/link';
-import { Routes } from '@/config/routes';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import {
@@ -36,14 +35,13 @@ export default function CreateProductPage() {
         <Alert
           className="my-5"
           variant="info"
-          message={t('common:clothing-import-create-page-hint')}
+          message={t('common:product-bulk-import-create-page-hint')}
         >
-          <Link
-            href={Routes.product.clothingImport(shop as string)}
-            className="mt-2 inline-block text-sm font-semibold text-accent hover:text-accent-hover"
-          >
-            {t('common:clothing-import-create-page-link')}
-          </Link>
+          <ProductBulkImportMenu
+            shop={shop as string}
+            variant="inline"
+            className="mt-2"
+          />
         </Alert>
       )}
       <CreateOrUpdateProductForm />

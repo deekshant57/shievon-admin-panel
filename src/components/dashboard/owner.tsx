@@ -56,8 +56,7 @@ const OwnerShopLayout = () => {
   const router = useRouter();
   const { permissions } = getAuthCredentials();
   const isSuperAdmin = permissions?.includes(SUPER_ADMIN);
-  // For vendors/store owners, avoid calling super_admin-only analytics endpoint
-  const { data, isLoading: loading } = useAnalyticsQuery(isSuperAdmin);
+  const { data, isLoading: loading } = useAnalyticsQuery(true);
   const [activeTimeFrame, setActiveTimeFrame] = useState(1);
   const [orderDataRange, setOrderDataRange] = useState(
     data?.todayTotalOrderByStatus,
@@ -127,7 +126,7 @@ const OwnerShopLayout = () => {
         setOrderDataRange(data?.weeklyTotalOrderByStatus);
         break;
       case 30:
-        setOrderDataRange(data?.todayTotalOrderByStatus);
+        setOrderDataRange(data?.monthlyTotalOrderByStatus);
         break;
       case 365:
         setOrderDataRange(data?.yearlyTotalOrderByStatus);

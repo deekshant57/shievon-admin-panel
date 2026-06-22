@@ -16,26 +16,30 @@ export const shopClient = {
   get({ slug }: { slug: String }) {
     return HttpClient.get<Shop>(`${API_ENDPOINTS.SHOPS}/${slug}`);
   },
+  // GET /api/shops – supports orderBy, sortedBy, text, search, limit, page
   paginated: ({ name, ...params }: Partial<ShopQueryOptions>) => {
-    const searchParams = HttpClient.formatSearchParams({ name });
     return HttpClient.get<ShopPaginator>(API_ENDPOINTS.SHOPS, {
       searchJoin: 'and',
+      text: name ?? undefined,
+      search: name ? HttpClient.formatSearchParams({ name }) : undefined,
       ...params,
-      ...(searchParams ? { search: searchParams } : {}),
     });
   },
+  // GET /api/new-shops – supports orderBy, sortedBy, text, search, limit, page, is_active
   newOrInActiveShops: ({
     is_active,
     name,
     ...params
   }: Partial<ShopQueryOptions>) => {
-    const searchParams = HttpClient.formatSearchParams({ is_active, name });
     return HttpClient.get<ShopPaginator>(API_ENDPOINTS.NEW_OR_INACTIVE_SHOPS, {
       searchJoin: 'and',
-      is_active,
-      name,
+      text: name ?? undefined,
+      search:
+        name || is_active !== undefined
+          ? HttpClient.formatSearchParams({ is_active, name })
+          : undefined,
+      ...(is_active !== undefined && { is_active }),
       ...params,
-      ...(searchParams ? { search: searchParams } : {}),
     });
   },
   approve: (variables: ApproveShopInput) => {

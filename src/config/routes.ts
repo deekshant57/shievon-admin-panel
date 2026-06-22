@@ -74,6 +74,7 @@ export const Routes = {
   product: {
     ...routesFactory('/products'),
     clothingImport: (shop: string) => `/${shop}/products/import/clothing`,
+    footwearImport: (shop: string) => `/${shop}/products/import/footwear`,
   },
   serviceOffering: {
     ...routesFactory('/services'),

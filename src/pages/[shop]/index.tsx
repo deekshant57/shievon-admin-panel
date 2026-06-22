@@ -35,6 +35,7 @@ import ShopAvatar from '@/components/shop/shop-avatar';
 import Alert from '@/components/ui/alert';
 import Link from '@/components/ui/link';
 import ClothingImportAnnouncement from '@/components/product/clothing-import-announcement';
+import ProductBulkImportMenu from '@/components/product/product-bulk-import-menu';
 import { OwnerShipTransferStatus, PaymentInfo } from '@/types';
 import { useFormatPhoneNumber } from '@/utils/format-phone-number';
 import { useSettingsQuery } from '@/data/settings';
@@ -206,13 +207,11 @@ export default function ShopPage() {
               </div>
             </div>
             {canImportClothing && (
-              <div className="self-end pt-4 xl:pt-0 space-x-4">
-                <Link
-                  className="inline-flex items-center gap-1 rounded-full bg-accent px-[0.625rem] py-[0.5625rem] text-xs font-medium text-white hover:bg-accent-hover"
-                  href={Routes.product.clothingImport(shop as string)}
-                >
-                  {t('common:clothing-import-short-title')}
-                </Link>
+              <div className="flex items-center gap-4 self-end pt-4 xl:pt-0">
+                <ProductBulkImportMenu
+                  shop={shop as string}
+                  variant="pill"
+                />
                 <Link
                   className="inline-flex items-center gap-1 rounded-full bg-accent px-[0.625rem] py-[0.5625rem] text-xs font-medium text-white hover:bg-accent-hover"
                   href={`/${shop}/edit`}

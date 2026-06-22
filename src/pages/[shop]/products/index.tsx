@@ -14,6 +14,7 @@ import { useModalAction } from '@/components/ui/modal/modal.context';
 import { Config } from '@/config';
 import { Routes } from '@/config/routes';
 import ClothingImportAnnouncement from '@/components/product/clothing-import-announcement';
+import ProductBulkImportMenu from '@/components/product/product-bulk-import-menu';
 import { useProductsQuery } from '@/data/product';
 import { useShopQuery } from '@/data/shop';
 import { useMeQuery } from '@/data/user';
@@ -173,12 +174,10 @@ export default function ProductsPage() {
 
               <>
                 {canImportClothing && (
-                  <LinkButton
-                    href={Routes.product.clothingImport(shop as string)}
-                    className="hidden h-12 whitespace-nowrap ms-4 md:flex md:ms-6"
-                  >
-                    {t('common:clothing-import-short-title')}
-                  </LinkButton>
+                  <ProductBulkImportMenu
+                    shop={shop as string}
+                    className="hidden whitespace-nowrap ms-4 md:flex md:ms-6"
+                  />
                 )}
                 {locale === Config.defaultLanguage && (
                   <LinkButton
@@ -197,12 +196,11 @@ export default function ProductsPage() {
             </div>
 
             {canImportClothing && (
-              <LinkButton
-                href={Routes.product.clothingImport(shop as string)}
-                className="mt-5 w-full md:hidden"
-              >
-                {t('common:clothing-import-short-title')}
-              </LinkButton>
+              <ProductBulkImportMenu
+                shop={shop as string}
+                fullWidth
+                className="mt-5 md:hidden"
+              />
             )}
 
             <Button

@@ -32,6 +32,7 @@ export default function NewShopPage() {
 
   function handleSearch({ searchText }: { searchText: string }) {
     setSearchTerm(searchText);
+    setPage(1);
   }
 
   function handlePagination(current: any) {
@@ -45,7 +46,7 @@ export default function NewShopPage() {
         </div>
 
         <div className="flex w-full flex-col items-center ms-auto md:w-1/2 md:flex-row">
-          <Search onSearch={handleSearch} />
+          <Search onSearch={handleSearch} debounceMs={400} />
         </div>
       </Card>
       <ShopList

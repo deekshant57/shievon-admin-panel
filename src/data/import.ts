@@ -11,6 +11,12 @@ import {
   ClothingImportJobsResponse,
   ClothingImportPreviewInput,
   ClothingImportTemplateInput,
+  FootwearImportCommitInput,
+  FootwearImportJob,
+  FootwearImportJobsInput,
+  FootwearImportJobsResponse,
+  FootwearImportPreviewInput,
+  FootwearImportTemplateInput,
 } from '@/types';
 
 type Input = {
@@ -30,6 +36,11 @@ function downloadBlob(blob: Blob, fileName: string) {
 }
 
 function normalizeClothingImportJobs(response?: ClothingImportJobsResponse) {
+  if (Array.isArray(response)) return response;
+  return response?.data ?? response?.jobs ?? [];
+}
+
+function normalizeFootwearImportJobs(response?: FootwearImportJobsResponse) {
   if (Array.isArray(response)) return response;
   return response?.data ?? response?.jobs ?? [];
 }
@@ -236,6 +247,141 @@ export const useDownloadClothingImportReportMutation = () => {
         toast.error(
           error?.response?.data?.message ??
             t('common:clothing-import-report-download-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useDownloadFootwearTemplateMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: FootwearImportTemplateInput) =>
+      importClient.downloadFootwearTemplate(input),
+    {
+      onSuccess: (blob) => {
+        downloadBlob(blob, 'footwear-import-template.xlsx');
+      },
+      onError: (error: unknown) => {
+        const status = (error as { response?: { status?: number } })?.response
+          ?.status;
+        if (status === 404) {
+          toast.error(
+            t('common:footwear-import-template-not-available') ||
+              'Bulk import template API is not available yet. Please ask backend to enable GET /api/imports/footwear/template.'
+          );
+          return;
+        }
+        toast.error(
+          getApiErrorMessage(
+            error,
+            t('common:footwear-import-template-download-failed')
+          )
+        );
+      },
+    }
+  );
+};
+
+export const usePreviewFootwearImportMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: FootwearImportPreviewInput) =>
+      importClient.previewFootwearImport(input),
+    {
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:footwear-import-preview-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useFootwearImportJobQuery = (
+  jobId?: string | number,
+  options: { enabled?: boolean; refetchInterval?: number | false } = {}
+) => {
+  const { data, error, isLoading, refetch } = useQuery<FootwearImportJob, Error>(
+    [API_ENDPOINTS.FOOTWEAR_IMPORT_JOBS, jobId],
+    () => importClient.getFootwearImportJob(jobId as string | number),
+    {
+      enabled: Boolean(jobId) && (options.enabled ?? true),
+      refetchInterval: options.refetchInterval,
+    }
+  );
+
+  return {
+    job: data,
+    error,
+    loading: isLoading,
+    refetch,
+  };
+};
+
+export const useFootwearImportJobsQuery = (
+  input?: FootwearImportJobsInput,
+  options: { enabled?: boolean } = {}
+) => {
+  const { data, error, isLoading, refetch } = useQuery<
+    FootwearImportJobsResponse,
+    Error
+  >(
+    [API_ENDPOINTS.FOOTWEAR_IMPORT_JOBS, input],
+    () => importClient.getFootwearImportJobs(input as FootwearImportJobsInput),
+    {
+      enabled: Boolean(input?.shopId) && (options.enabled ?? true),
+      retry: false,
+    }
+  );
+
+  return {
+    jobs: normalizeFootwearImportJobs(data),
+    error,
+    loading: isLoading,
+    refetch,
+  };
+};
+
+export const useCommitFootwearImportMutation = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: FootwearImportCommitInput) =>
+      importClient.commitFootwearImport(input),
+    {
+      onSuccess: () => {
+        toast.success(t('common:footwear-import-commit-started'));
+        queryClient.invalidateQueries(API_ENDPOINTS.PRODUCTS);
+        queryClient.invalidateQueries(API_ENDPOINTS.FOOTWEAR_IMPORT_JOBS);
+      },
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:footwear-import-commit-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useDownloadFootwearImportReportMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (jobId: string | number) => importClient.downloadFootwearImportReport(jobId),
+    {
+      onSuccess: (blob, jobId) => {
+        downloadBlob(blob, `footwear-import-report-${jobId}.xlsx`);
+      },
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:footwear-import-report-download-failed')
         );
       },
     }

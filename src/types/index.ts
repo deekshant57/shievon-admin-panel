@@ -1222,6 +1222,74 @@ export type ClothingImportJobsResponse =
       jobs?: ClothingImportJob[];
     };
 
+export interface FootwearImportTemplateInput {
+  shopId: string | number;
+}
+
+export interface FootwearImportPreviewInput {
+  shopId: string | number;
+  xlsx: File;
+  zip: File;
+}
+
+export interface FootwearImportCommitInput {
+  jobId: string | number;
+  idempotencyKey: string;
+}
+
+export interface FootwearImportError {
+  row?: number;
+  sheet?: string;
+  parent_sku?: string;
+  sku?: string;
+  category?: string;
+  field?: string;
+  code: string;
+  message: string;
+}
+
+export interface FootwearImportCounts {
+  total_rows?: number;
+  valid_rows?: number;
+  invalid_rows?: number;
+  products_to_create?: number;
+  products_to_update?: number;
+  variants_to_create?: number;
+  variants_to_update?: number;
+  images_to_upload?: number;
+  blocked_groups?: number;
+}
+
+export interface FootwearImportJob {
+  id?: string | number;
+  job_id?: string | number;
+  shop_id?: string | number;
+  status?: string;
+  preview_token?: string;
+  template_version?: string;
+  counts?: FootwearImportCounts;
+  summary?: FootwearImportCounts;
+  errors?: FootwearImportError[];
+  row_errors?: FootwearImportError[];
+  error_report_url?: string;
+  report_url?: string;
+  report_link?: string;
+  message?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface FootwearImportJobsInput {
+  shopId: string | number;
+}
+
+export type FootwearImportJobsResponse =
+  | FootwearImportJob[]
+  | {
+      data?: FootwearImportJob[];
+      jobs?: FootwearImportJob[];
+    };
+
 export interface ProductAttributeValueInput {
   definition_code: string;
   enum_value_id?: number;
