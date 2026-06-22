@@ -14,13 +14,13 @@ const DrawerWrapper: React.FunctionComponent<DrawerWrapperProps> = ({
   onClose,
 }) => {
   return (
-    <div className="relative flex h-full flex-col bg-white">
+    <div className="relative flex h-full flex-col bg-card">
       {!hideTopBar && (
-        <div className="absolute top-0 z-30 mb-4 flex h-16 w-full items-center justify-between border-b border-border-200 border-opacity-75 px-5 start-0 md:mb-6 md:py-5 md:px-8">
+        <div className="absolute start-0 top-0 z-30 mb-4 flex h-16 w-full items-center justify-between border-b border-border/60 px-5 md:mb-6 md:px-8 md:py-5">
           <Logo />
           <button
             onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-200 text-body transition-all duration-200 hover:bg-accent hover:text-light focus:bg-accent focus:text-light focus:outline-none"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-body transition-colors duration-200 hover:bg-accent hover:text-light focus:bg-accent focus:text-light focus:outline-none"
           >
             <CloseIcon className="h-2.5 w-2.5" />
           </button>

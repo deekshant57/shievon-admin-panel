@@ -168,7 +168,7 @@ const Navbar = () => {
     (role === SUPER_ADMIN && pathname === Routes.dashboard);
 
   return (
-    <header className="fixed top-0 z-40 w-full bg-white shadow">
+    <header className="fixed top-0 z-40 w-full border-b border-border/60 bg-card">
       {width >= RESPONSIVE_WIDTH && isMaintenanceMode ? (
         <Alert
           message={
@@ -222,7 +222,7 @@ const Navbar = () => {
             </motion.button>
             <div
               className={cn(
-                'flex h-16 shrink-0 transition-[width] duration-300 me-4 lg:h-[76px] lg:border-solid lg:border-gray-200/80 lg:me-8 lg:border-e',
+                'me-4 flex h-16 shrink-0 transition-[width] duration-200 lg:me-8 lg:h-[76px] lg:border-e lg:border-border/60',
                 miniSidebar ? 'lg:w-[65px]' : 'lg:w-[257px]',
               )}
             >
@@ -248,7 +248,7 @@ const Navbar = () => {
             </button>
           </div>
           <div
-            className="relative ml-auto mr-1.5 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-gray-50 py-4 text-gray-600 hover:border-transparent hover:border-gray-200 hover:bg-white hover:text-accent sm:mr-6 lg:hidden xl:hidden"
+            className="relative ms-1.5 me-1.5 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-muted/50 py-4 text-body transition-colors duration-200 hover:border-border hover:bg-card hover:text-accent sm:me-6 lg:hidden xl:hidden"
             onClick={handleClick}
           >
             <SearchIcon className="h-4 w-4" />
@@ -261,7 +261,7 @@ const Navbar = () => {
             {hasAccess(adminAndOwnerOnly, permissions) && (
               <>
                 {showCreateShopButton ? (
-                  <div className="border-gray-200/80 px-6 py-5 border-e">
+                  <div className="border-e border-border/60 px-6 py-5">
                     <LinkButton
                       href={Routes.shop.create}
                       size="small"
@@ -275,7 +275,7 @@ const Navbar = () => {
                 {options?.pushNotification?.all?.order ||
                 options?.pushNotification?.all?.message ||
                 options?.pushNotification?.all?.storeNotice ? (
-                  <div className="flex items-center gap-3 px-0.5 py-3 sm:relative sm:border-gray-200/80 sm:py-3.5 sm:px-6 sm:border-s lg:py-5">
+                  <div className="flex items-center gap-3 px-0.5 py-3 sm:relative sm:border-s sm:border-border/60 sm:px-6 sm:py-3.5 lg:py-5">
                     {options?.pushNotification?.all?.order ? (
                       <RecentOrderBar user={data} />
                     ) : (

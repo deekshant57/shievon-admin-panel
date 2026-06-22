@@ -1,24 +1,22 @@
-import { useRouter } from 'next/router';
 import Logo from '@/components/ui/logo';
-import React from 'react';
+import {
+  Card,
+  CardContent,
+} from '@/components/ui/shadcn/card';
 
 export default function AuthPageLayout({
   children,
 }: React.PropsWithChildren<{}>) {
-  // const { locale } = useRouter();
-  // const dir = locale === 'ar' || locale === 'he' ? 'rtl' : 'ltr';
-
   return (
-    <div
-      className="flex h-screen items-center justify-center bg-light sm:bg-gray-100"
-      // dir={dir}
-    >
-      <div className="m-auto w-full max-w-[420px] rounded bg-light p-5 sm:p-8 sm:shadow">
-        <div className="mb-2 flex justify-center">
-          <Logo />
-        </div>
-        {children}
-      </div>
+    <div className="flex h-screen items-center justify-center bg-background sm:bg-muted/30">
+      <Card className="m-auto w-full max-w-[420px] border-border/60 shadow-sm sm:shadow-md">
+        <CardContent className="p-5 sm:p-8">
+          <div className="mb-4 flex justify-center">
+            <Logo />
+          </div>
+          {children}
+        </CardContent>
+      </Card>
     </div>
   );
 }
