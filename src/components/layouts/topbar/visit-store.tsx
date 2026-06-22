@@ -19,7 +19,7 @@ const VisitStore = () => {
       <Link
         href={Routes.visitStore(slug as string)}
         target="_blank"
-        className="inline-flex h-9 flex-shrink-0 items-center justify-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3.5 py-0 text-sm font-medium leading-none text-accent outline-none transition duration-300 ease-in-out hover:border-transparent hover:bg-accent-hover hover:text-white focus:shadow focus:outline-none"
+        className="inline-flex h-9 flex-shrink-0 items-center justify-center gap-2 rounded-md border border-border-base bg-gray-50 px-3.5 py-0 text-sm font-semibold leading-none text-accent outline-none transition-colors duration-200 hover:border-accent hover:bg-accent hover:text-light focus-visible:ring-2 focus-visible:ring-accent-300 focus:outline-none"
         rel="noreferrer"
       >
         <HomeIcon />

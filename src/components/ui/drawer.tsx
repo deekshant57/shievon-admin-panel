@@ -66,7 +66,7 @@ const Drawer: FC<SidebarProps> = ({
           ref={ref}
           dir={dir}
           className={cn(
-            'fixed inset-y-0 z-50 flex h-full w-screen max-w-md flex-col border-0 bg-card p-0 text-body shadow-xl outline-none transition ease-in-out data-[state=closed]:duration-200 data-[state=open]:duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out',
+            'fixed inset-y-0 z-50 flex h-full w-screen max-w-md flex-col border-0 bg-card p-0 text-body shadow-xl outline-none transition ease-in-out data-[state=closed]:duration-200 data-[state=open]:duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out',
             variant === 'right'
               ? 'ltr:right-0 rtl:left-auto data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right'
               : 'ltr:left-0 rtl:right-auto data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',

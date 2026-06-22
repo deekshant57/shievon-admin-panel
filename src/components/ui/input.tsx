@@ -73,8 +73,8 @@ const Input = React.forwardRef<HTMLInputElement, Props>(
             variant === 'outline' && 'bg-background',
             (variant === 'normal' || variant === 'solid') && 'bg-background',
             shadow && 'focus-visible:shadow-sm',
-            disabled &&
-              `cursor-not-allowed border-[#D4D8DD] bg-[#EEF1F4] ${numberDisable} select-none`,
+            disabled && 'ui-field-disabled',
+            numberDisable,
             inputClassName,
           )}
           autoComplete="off"

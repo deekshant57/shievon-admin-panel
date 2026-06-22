@@ -49,7 +49,7 @@ const SwitchInput = ({
               className={`${
                 value ? 'bg-accent' : 'bg-gray-300'
               } relative inline-flex h-6 w-11 items-center rounded-full focus:outline-none ${
-                disabled ? 'cursor-not-allowed bg-[#EEF1F4]' : ''
+                disabled ? 'cursor-not-allowed bg-gray-100 opacity-60' : ''
               }`}
               dir="ltr"
               id={name}

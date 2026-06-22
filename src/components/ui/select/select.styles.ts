@@ -1,3 +1,7 @@
+const DISABLED_BG = 'rgb(var(--color-gray-100))';
+const DISABLED_BORDER = 'rgb(var(--color-border-base))';
+const CONTROL_RADIUS = '0.5rem';
+
 export const selectStyles = {
   option: (provided: any, state: any) => ({
     ...provided,
@@ -19,10 +23,14 @@ export const selectStyles = {
     display: 'flex',
     alignItems: 'center',
     minHeight: 50,
-    backgroundColor: state?.isDisabled ? '#EEF1F4' : '#ffffff',
-    borderRadius: 5,
+    backgroundColor: state?.isDisabled ? DISABLED_BG : '#ffffff',
+    borderRadius: CONTROL_RADIUS,
     border: '1px solid #D1D5DB',
-    borderColor: state?.isDisabled ? '#D4D8DD' : state.isFocused ? 'rgb(var(--color-accent-500))' : '#D1D5DB',
+    borderColor: state?.isDisabled
+      ? DISABLED_BORDER
+      : state.isFocused
+        ? 'rgb(var(--color-accent-500))'
+        : '#D1D5DB',
     boxShadow:
       state.menuIsOpen &&
       '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
@@ -49,7 +57,7 @@ export const selectStyles = {
   }),
   menu: (provided: any) => ({
     ...provided,
-    borderRadius: 5,
+    borderRadius: CONTROL_RADIUS,
     border: '1px solid #E5E7EB',
     boxShadow:
       '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
@@ -119,23 +127,23 @@ export const selectStylesModern = {
     borderRadius: 6,
     position: 'relative',
     backgroundColor: state.isSelected
-      ? '#EEF1F4'
+      ? 'rgb(var(--color-gray-100))'
       : state.isFocused
-      ? '#EEF1F4'
-      : '#ffffff',
+        ? 'rgb(var(--color-gray-50))'
+        : '#ffffff',
   }),
   control: (_: any, state: any) => ({
     display: 'flex',
     alignItems: 'center',
     minHeight: 50,
-    backgroundColor: state?.isDisabled ? '#EEF1F4' : '#ffffff',
-    borderRadius: 5,
+    backgroundColor: state?.isDisabled ? DISABLED_BG : '#ffffff',
+    borderRadius: CONTROL_RADIUS,
     border: '1px solid #D1D5DB',
     borderColor: state?.isDisabled
-      ? '#D4D8DD'
+      ? DISABLED_BORDER
       : state.isFocused
-      ? 'rgb(var(--color-accent-500))'
-      : '#D1D5DB',
+        ? 'rgb(var(--color-accent-500))'
+        : '#D1D5DB',
     boxShadow: state.menuIsOpen && '0px 2px 6px rgba(59, 74, 92, 0.1)',
   }),
   indicatorSeparator: () => ({
@@ -160,7 +168,7 @@ export const selectStylesModern = {
   }),
   menu: (provided: any) => ({
     ...provided,
-    borderRadius: 5,
+    borderRadius: CONTROL_RADIUS,
     border: '1px solid #D1D5DB',
     paddingLeft: 16,
     paddingRight: 16,

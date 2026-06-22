@@ -505,6 +505,14 @@ group
   @apply !h-1 !opacity-80;
 }
 
+[dir='rtl'] .Toastify__toast-container--top-right {
+  @apply !left-4 !right-auto;
+}
+
+[dir='rtl'] .Toastify__toast-container--top-left {
+  @apply !right-4 !left-auto;
+}
+
 /*
 Overlay Scrollbar - os-theme-thin-dark
 */

@@ -22,7 +22,7 @@ export default function AuthorizedMenu() {
   return (
     <Menu
       as="div"
-      className="relative inline-block shrink-0 grow-0 basis-auto py-2 text-left ps-1.5 sm:border-solid sm:border-gray-200 sm:py-3 sm:ps-6 sm:border-s lg:py-4 xl:py-2"
+      className="relative inline-block shrink-0 grow-0 basis-auto py-2 text-left ps-1.5 sm:border-s sm:border-border/60 sm:py-3 sm:ps-6 lg:py-4 xl:py-2"
     >
       <Menu.Button className="flex max-w-[150px] items-center gap-2 focus:outline-none lg:py-0.5 xl:py-2.5">
         <Avatar
@@ -55,7 +55,7 @@ export default function AuthorizedMenu() {
       >
         <Menu.Items
           as="ul"
-          className="authorized-menu absolute mt-3 w-56 rounded-lg border border-gray-200 bg-white shadow-box end-0 origin-top-end focus:outline-none lg:mt-4 xl:mt-2"
+          className="authorized-menu absolute end-0 mt-3 w-56 origin-top-end rounded-lg border border-border/60 bg-card shadow-box focus:outline-none lg:mt-4 xl:mt-2"
         >
           <Menu.Item>
             <li className="border-b border-dashed border-gray-200 p-2 focus:outline-none">

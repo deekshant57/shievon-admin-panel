@@ -196,7 +196,7 @@ const SidebarItem = ({
 
             <ChevronRight
               className={cn(
-                'h-3.5 w-3.5 shrink-0 opacity-75 transition-transform duration-300 ltr:ml-auto ltr:mr-0 rtl:mr-auto rtl:ml-0',
+                'h-3.5 w-3.5 shrink-0 opacity-75 transition-transform duration-200 ltr:ml-auto ltr:mr-0 rtl:mr-auto rtl:ml-0',
                 isOpen ? 'rotate-90 transform' : '',
                 width >= RESPONSIVE_WIDTH && miniSidebar ? 'hidden' : '',
               )}
@@ -280,7 +280,7 @@ const SidebarItem = ({
           ? cn(
               'font-semibold text-accent-hover',
               !miniSidebar &&
-                'border-l-2 border-primary bg-primary/10 hover:bg-primary/10 ltr:border-l-2 rtl:border-r-2 rtl:border-l-0',
+                'border-s-2 border-accent bg-primary/10 hover:bg-primary/10',
             )
           : '',
       )}
