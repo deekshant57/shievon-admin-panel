@@ -1,16 +1,17 @@
-import { FC, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import * as SheetPrimitive from '@radix-ui/react-dialog';
 import {
+  Sheet,
+  SheetOverlay,
+  SheetPortal,
+} from '@/components/ui/shadcn/sheet';
+import { cn } from '@/lib/utils';
+import {
+  clearAllBodyScrollLocks,
   disableBodyScroll,
   enableBodyScroll,
-  clearAllBodyScrollLocks,
 } from 'body-scroll-lock';
-import cn from 'classnames';
-import { fadeInRight } from '@/utils/motion/fade-in-right';
-import { fadeInLeft } from '@/utils/motion/fade-in-left';
-import { fadeInOut } from '@/utils/motion/fade-in-out';
 import { useRouter } from 'next/router';
-import { Dialog } from '@headlessui/react';
+import { FC, useEffect, useRef } from 'react';
 
 interface SidebarProps {
   children: any;
@@ -19,6 +20,7 @@ interface SidebarProps {
   useBlurBackdrop?: boolean;
   onClose: () => void;
 }
+
 type DivElementRef = React.MutableRefObject<HTMLDivElement>;
 
 const Drawer: FC<SidebarProps> = ({
@@ -31,6 +33,7 @@ const Drawer: FC<SidebarProps> = ({
   const { locale } = useRouter();
   const dir = locale === 'ar' || locale === 'he' ? 'rtl' : 'ltr';
   const ref = useRef() as DivElementRef;
+
   useEffect(() => {
     if (ref.current) {
       if (open) {
@@ -39,56 +42,40 @@ const Drawer: FC<SidebarProps> = ({
         enableBodyScroll(ref.current);
       }
     }
+
     return () => {
       clearAllBodyScrollLocks();
     };
   }, [open]);
 
   return (
-    <AnimatePresence>
-      {open && (
-        <Dialog static as={motion.div} open={open} onClose={onClose}>
-          <motion.aside
-            ref={ref}
-            key="drawer"
-            initial="from"
-            animate="to"
-            exit="from"
-            variants={variant === 'right' ? fadeInRight() : fadeInLeft()}
-            className="fixed inset-0 z-50 h-full overflow-hidden"
-            dir={dir}
-          >
-            <div className="absolute inset-0 overflow-hidden">
-              <motion.div
-                initial="from"
-                animate="to"
-                exit="from"
-                variants={fadeInOut(0.35)}
-                onClick={onClose}
-                className={cn(
-                  'absolute inset-0 bg-dark bg-opacity-40',
-                  useBlurBackdrop && 'use-blur-backdrop',
-                )}
-              />
-              <div
-                className={cn(
-                  'absolute inset-y-0 flex max-w-full outline-none',
-                  variant === 'right'
-                    ? 'ltr:right-0 rtl:left-auto'
-                    : 'ltr:left-0 rtl:right-auto',
-                )}
-              >
-                <div className="w-screen h-full max-w-md">
-                  <div className="flex flex-col h-full shadow-xl bg-light text-body">
-                    {children}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.aside>
-        </Dialog>
-      )}
-    </AnimatePresence>
+    <Sheet
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
+    >
+      <SheetPortal>
+        <SheetOverlay
+          className={cn(
+            'bg-dark/40',
+            useBlurBackdrop && 'backdrop-blur-sm',
+          )}
+        />
+        <SheetPrimitive.Content
+          ref={ref}
+          dir={dir}
+          className={cn(
+            'fixed inset-y-0 z-50 flex h-full w-screen max-w-md flex-col border-0 bg-card p-0 text-body shadow-xl outline-none transition ease-in-out data-[state=closed]:duration-200 data-[state=open]:duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out',
+            variant === 'right'
+              ? 'ltr:right-0 rtl:left-auto data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right'
+              : 'ltr:left-0 rtl:right-auto data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
+          )}
+        >
+          {children}
+        </SheetPrimitive.Content>
+      </SheetPortal>
+    </Sheet>
   );
 };
 

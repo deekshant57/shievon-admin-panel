@@ -348,4 +348,5 @@
   }
 }
 @import './custom-plugins.css';
+@import './rc-table-theme.css';
 @import './rich-text-editor.css';
