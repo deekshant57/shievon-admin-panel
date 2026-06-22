@@ -1,4 +1,5 @@
 import type { AppProps } from 'next/app';
+import { Inter } from 'next/font/google';
 import 'react-toastify/dist/ReactToastify.css';
 import '@/assets/css/main.css';
 import { UIProvider } from '@/contexts/ui.context';
@@ -21,6 +22,13 @@ import { useRouter } from 'next/router';
 import PrivateRoute from '@/utils/private-route';
 import { Config } from '@/config';
 import axios from 'axios';
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+
 const Noop: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
   <>{children}</>
 );
@@ -69,7 +77,7 @@ const CustomApp = ({ Component, pageProps }: AppPropsWithLayout) => {
   const { locale } = useRouter();
   const dir = Config.getDirection(locale);
   return (
-    <div dir={dir}>
+    <div dir={dir} className={inter.className}>
       <QueryClientProvider client={queryClient}>
         <Hydrate state={pageProps?.dehydratedState}>
           <AppSettings>
