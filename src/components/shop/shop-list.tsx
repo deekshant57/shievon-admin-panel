@@ -1,6 +1,7 @@
 import ActionButtons from '@/components/common/action-buttons';
 import Avatar from '@/components/common/avatar';
 import { NoDataFound } from '@/components/icons/no-data-found';
+import EmptyState from '@/components/page/empty-state';
 import Badge from '@/components/ui/badge/badge';
 import Link from '@/components/ui/link';
 import Pagination from '@/components/ui/pagination';
@@ -271,17 +272,15 @@ const ShopList = ({
 
   return (
     <>
-      <div className="mb-6 overflow-hidden rounded shadow">
+      <div className="overflow-hidden rounded-lg border border-border/60">
         <Table
           columns={columns}
           emptyText={() => (
-            <div className="flex flex-col items-center py-7">
-              <NoDataFound className="w-52" />
-              <div className="mb-1 pt-6 text-base font-semibold text-heading">
-                {t('table:empty-table-data')}
-              </div>
-              <p className="text-[13px]">{t('table:empty-table-sorry-text')}</p>
-            </div>
+            <EmptyState
+              icon={<NoDataFound className="w-40" />}
+              title={t('table:empty-table-data')}
+              description={t('table:empty-table-sorry-text')}
+            />
           )}
           data={shops}
           rowKey="id"
@@ -290,7 +289,7 @@ const ShopList = ({
       </div>
 
       {!!paginatorInfo?.total && (
-        <div className="flex items-center justify-end">
+        <div className="mt-6 flex items-center justify-end">
           <Pagination
             total={paginatorInfo.total}
             current={paginatorInfo.currentPage}

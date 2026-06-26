@@ -37,13 +37,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       loading = false,
       spinnerColor,
       disabled = false,
+      type,
       ...rest
     } = props;
 
     return (
       <ShadButton
         ref={ref}
-        type={rest.type ?? 'button'}
+        type={type}
         aria-pressed={active}
         data-variant={variant}
         disabled={disabled || loading}

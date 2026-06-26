@@ -4,6 +4,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useEffect, useState } from 'react'
 import * as yup from 'yup'
 import AuthPageLayout from '@/components/layouts/auth-layout'
+import { AuthHeader } from '@/components/auth/layout'
 import Alert from '@/components/ui/alert'
 import Button from '@/components/ui/button'
 import Form from '@/components/ui/forms/form'
@@ -114,10 +115,14 @@ export default function DeleteAccountPage() {
   }
 
   return (
-    <AuthPageLayout>
-      <h3 className="mt-4 mb-6 text-center text-base italic text-body">
-        {t('Delete your account') || 'Delete your account'}
-      </h3>
+    <AuthPageLayout variant="admin">
+      <AuthHeader
+        title={t('Delete your account') || 'Delete your account'}
+        subtitle={
+          t('auth-delete-account-subtitle') ||
+          'Confirm your identity to permanently delete your account.'
+        }
+      />
 
       {step === 'send' ? (
         <Form<{ email: string }>

@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import PageHeader from '@/components/page/page-header';
 
 const PageHeading = ({
   title,
@@ -8,17 +8,7 @@ const PageHeading = ({
   title: string;
   className?: string;
 }) => {
-  return (
-    <h1
-      className={cn(
-        'text-xl font-bold tracking-tight text-foreground',
-        className,
-      )}
-      {...props}
-    >
-      {title}
-    </h1>
-  );
+  return <PageHeader title={title} className={className} {...props} />;
 };
 
 export default PageHeading;

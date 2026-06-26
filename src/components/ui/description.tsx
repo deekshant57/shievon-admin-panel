@@ -1,3 +1,5 @@
+import { cn } from '@/lib/utils';
+
 type Props = {
   className?: string;
   title?: string;
@@ -12,11 +14,11 @@ const Description: React.FC<Props> = ({
   ...props
 }) => {
   return (
-    <div className={className} {...props}>
-      {title && (
-        <h4 className="text-base font-semibold text-body-dark mb-2">{title}</h4>
-      )}
-      {details && <p className="text-sm text-body">{details}</p>}
+    <div className={cn(className)} {...props}>
+      {title ? (
+        <h4 className="mb-2 text-base font-bold text-heading">{title}</h4>
+      ) : null}
+      {details ? <p className="text-sm text-body">{details}</p> : null}
     </div>
   );
 };

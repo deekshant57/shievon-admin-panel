@@ -24,7 +24,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { EmailAtIcon } from '@/components/icons/email';
 import { ExternalLinkIcon } from '@/components/icons/external-link';
-import { IconCard } from '@/components/icons/shop-single/icon-card';
+import { StatMetric, StatStrip, Section } from '@/components/page';
 import {
   ContentListHorizontal,
   ContentListVertical,
@@ -125,10 +125,9 @@ export default function ShopPage() {
           variant="info"
         />
       )} */}
-      <div className="relative h-[20rem] bg-white lg:h-[37.5rem]">
+      <div className="relative h-28 overflow-hidden bg-card lg:h-32">
         <Image
           src={cover_image?.original ?? '/shop-fallback-cover-photo.png'}
-          // fill
           height={600}
           width={1200}
           sizes="(max-width: 768px) 100vw"
@@ -136,35 +135,31 @@ export default function ShopPage() {
           className="h-full w-full object-cover"
         />
       </div>
-      <div className="relative z-10 px-4 lg:px-6 xl:px-10">
-        <div className="-mt-16 flex flex-wrap gap-6 lg:-mt-[6.0625rem] 2xl:flex-nowrap">
-          <div className="shrink-0">
-            <ShopAvatar
-              is_active={is_active}
-              name={name}
-              logo={logo as any}
-              size="medium"
-            />
-          </div>
-          <div className="flex w-full flex-wrap justify-between self-end 2xl:flex-1">
-            <div className="flex-auto pr-5 xl:flex-1">
-              <div className="mb-3 flex items-center gap-2 text-2xl">
+      <div className="border-b border-border/60 bg-card px-4 py-5 lg:px-8 xl:px-10">
+        <div className="flex flex-wrap items-start gap-4 lg:items-center lg:gap-6">
+          <ShopAvatar
+            is_active={is_active}
+            name={name}
+            logo={logo as any}
+            size="medium"
+          />
+          <div className="flex min-w-0 flex-1 flex-wrap items-end justify-between gap-4">
+            <div className="min-w-0 flex-auto">
+              <div className="mb-3 flex items-center gap-2">
                 {name ? (
-                  <h1 className="font-semibold leading-none text-muted-black">
+                  <h1 className="text-xl font-bold leading-none text-heading md:text-2xl">
                     {name}
                   </h1>
-                ) : (
-                  ''
-                )}
+                ) : null}
                 <Link
                   href={Routes.visitStore(`shops/${slug as string}`)}
                   target="_blank"
-                  className="text-[#666666] transition-colors duration-300 hover:text-opacity-60"
+                  className="text-body transition-colors duration-200 hover:text-accent"
                 >
                   <ExternalLinkIcon />
                 </Link>
               </div>
-              <div className="flex flex-col space-y-3 divide-[#E7E7E7] leading-none xl:flex-row xl:space-y-0 xl:space-x-5 xl:divide-x">
+              <div className="flex flex-col space-y-3 divide-border/60 leading-none xl:flex-row xl:space-y-0 xl:space-x-5 xl:divide-x">
                 {owner?.email ? (
                   <ContentListHorizontal
                     content={owner?.email}
@@ -213,7 +208,7 @@ export default function ShopPage() {
                   variant="pill"
                 />
                 <Link
-                  className="inline-flex items-center gap-1 rounded-full bg-accent px-[0.625rem] py-[0.5625rem] text-xs font-medium text-white hover:bg-accent-hover"
+                  className="inline-flex items-center gap-1 rounded-md bg-accent px-3 py-2 text-xs font-semibold text-light hover:bg-accent-hover"
                   href={`/${shop}/edit`}
                 >
                   <EditFillIcon />
@@ -242,87 +237,70 @@ export default function ShopPage() {
             )}
           </div>
         </div>
+      </div>
 
-        {/* shop payment info and description */}
-        <div className="my-10 flex flex-wrap items-stretch gap-4 lg:gap-6 xl:gap-10">
-          <div className="relative w-full shrink-0 overflow-hidden rounded-lg bg-white p-4 lg:w-[18rem] lg:p-6 xl:w-[22.375rem] xl:p-8">
+      <div className="space-y-6 px-4 py-8 lg:px-8 xl:px-10">
+        <StatStrip columns={role !== 'staff' ? 5 : 2}>
+          <StatMetric
+            label={t('common:text-total-products')}
+            value={products_count?.toString() as string}
+          />
+          <StatMetric
+            label={t('common:text-total-orders')}
+            value={orders_count?.toString() as string}
+          />
+          {role !== 'staff' ? (
+            <>
+              <StatMetric
+                label={t('common:text-commission-rate')}
+                value={`${balance?.admin_commission_rate ?? 0}%`}
+              />
+              <StatMetric
+                label={t('common:text-gross-sales')}
+                value={totalEarnings as string}
+              />
+              <StatMetric
+                label={t('common:text-current-balance')}
+                value={currentBalance as string}
+              />
+            </>
+          ) : null}
+        </StatStrip>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Section className="lg:col-span-1" contentClassName="space-y-5">
             <ContentListVertical
               title={t('common:text-registered-since')}
               content={dayjs(created_at).format('MMMM D, YYYY')}
             />
 
             {description ? (
-              <div className="relative mt-5 pt-5 xl:mt-7 xl:pt-7">
-                <h2 className="mb-4 text-lg font-semibold text-muted-black xl:text-xl">
+              <div>
+                <h2 className="mb-3 text-base font-bold text-heading">
                   {t('common:text-bio')}
                 </h2>
-
                 <ShortDescription content={description} character={90} />
-                <div className="absolute top-0 -left-8 w-[calc(100%+64px)] border-b border-dashed border-b-[#F0F0F0]" />
               </div>
-            ) : (
-              ''
-            )}
+            ) : null}
 
             {timings?.open && timings?.close ? (
-              <div className="relative mt-5 pt-5 xl:mt-7 xl:pt-7">
-                <h2 className="mb-4 text-lg font-semibold text-muted-black xl:text-xl">
+              <div>
+                <h2 className="mb-3 text-base font-bold text-heading">
                   {t('common:text-opening-hours')}
                 </h2>
-                <p className="text-muted-black">
+                <p className="text-body">
                   {timings.open} – {timings.close}
                 </p>
-                <div className="absolute top-0 -left-8 w-[calc(100%+64px)] border-b border-dashed border-b-[#F0F0F0]" />
               </div>
-            ) : (
-              ''
-            )}
+            ) : null}
+          </Section>
 
+          <Section
+            title={t('common:text-payment-info')}
+            className="lg:col-span-2"
+          >
             <PaymentInfoList payment={balance?.payment_info as PaymentInfo} />
-          </div>
-
-          {/* Dashboard */}
-          <div className="w-full flex-1 rounded-lg bg-white p-4 lg:p-6 xl:p-7 2xl:p-10">
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 xl:gap-5 2xl:grid-cols-3 2xl:gap-7">
-              <IconCard
-                content={products_count?.toString() as string}
-                title={t('common:text-total-products')}
-                icon="ProductsIcon"
-              />
-              <IconCard
-                content={orders_count?.toString() as string}
-                title={t('common:text-total-orders')}
-                icon="OrdersIcon"
-                iconClassName="text-[#FF8D29]"
-                iconInnerClassName="bg-[#FFF0E2]"
-              />
-              {role !== 'staff' ? (
-                <>
-                  <IconCard
-                    content={`${balance?.admin_commission_rate ?? 0}%`}
-                    title={t('common:text-commission-rate')}
-                    icon="CommissionIcon"
-                    iconClassName="text-[#DF0D00]"
-                    iconInnerClassName="bg-[#FFF7F6]"
-                  />
-                  <IconCard
-                    content={totalEarnings as string}
-                    title={t('common:text-gross-sales')}
-                    icon="GrossSaleIcon"
-                    iconClassName="text-[#00AAFF]"
-                    iconInnerClassName="bg-[#EFFAFF]"
-                  />
-                  <IconCard
-                    content={currentBalance as string}
-                    title={t('common:text-current-balance')}
-                    icon="CurrentBalanceIcon"
-                    iconClassName="text-[#0017E1]"
-                    iconInnerClassName="bg-[#F0F2FF]"
-                  />
-                </>
-              ) : null}
-            </div>
-          </div>
+          </Section>
         </div>
       </div>
     </div>

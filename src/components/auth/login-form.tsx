@@ -39,8 +39,9 @@ const LoginForm = () => {
 
   const { mutate: login, isLoading: isLoggingIn } = useLogin();
 
-  const loginText = t('form:button-label-login')
-  const loginLabel = loginText === 'form:button-label-login' ? 'Login' : loginText
+  const loginText = t('form:button-label-login');
+  const loginLabel =
+    loginText === 'form:button-label-login' ? 'Login' : loginText;
 
   function onSubmit(variables: LoginInput) {
     setErrorMessage(null);
@@ -48,11 +49,15 @@ const LoginForm = () => {
       onSuccess: (data) => {
         const permissionGranted = hasAccess(allowedRoles, data.permissions);
         if (!data?.token) {
-          setErrorMessage(t('form:error-credential-wrong') || 'Invalid credentials');
+          setErrorMessage(
+            t('form:error-credential-wrong') || 'Invalid credentials',
+          );
           return;
         }
         if (!permissionGranted) {
-          setErrorMessage(t('form:error-enough-permission') || 'Insufficient permission');
+          setErrorMessage(
+            t('form:error-enough-permission') || 'Insufficient permission',
+          );
           return;
         }
         setAuthCredentials(data.token, data.permissions, data.role);
@@ -64,7 +69,8 @@ const LoginForm = () => {
           });
           return;
         }
-        const queryNext = typeof router.query?.next === 'string' ? router.query.next : '';
+        const queryNext =
+          typeof router.query?.next === 'string' ? router.query.next : '';
         const nextPath =
           queryNext.startsWith('/') && !queryNext.startsWith('//')
             ? queryNext
@@ -73,76 +79,73 @@ const LoginForm = () => {
       },
       onError: (error: unknown) => {
         const msg = getFormErrors(error) || (error as Error)?.message;
-        setErrorMessage(typeof msg === 'string' ? msg : t('form:error-credential-wrong') || 'Login failed');
+        setErrorMessage(
+          typeof msg === 'string'
+            ? msg
+            : t('form:error-credential-wrong') || 'Login failed',
+        );
       },
     });
   }
 
   return (
-    <>
-      <Form<LoginInput>
-        validationSchema={loginFormSchema}
-        onSubmit={onSubmit}
-        useFormProps={{ defaultValues: defaultLoginValues }}
-      >
-        {({ register, formState: { errors } }) => (
-          <>
-            <Input
-              label={t('form:input-label-email')}
-              {...register('email')}
-              type="email"
-              variant="outline"
-              className="mb-4"
-              error={t(errors?.email?.message ?? '')}
-            />
+    <Form<LoginInput>
+      validationSchema={loginFormSchema}
+      onSubmit={onSubmit}
+      useFormProps={{ defaultValues: defaultLoginValues }}
+    >
+      {({ register, formState: { errors } }) => (
+        <div className="space-y-4">
+          <Input
+            label={t('form:input-label-email')}
+            {...register('email')}
+            type="email"
+            variant="outline"
+            error={t(errors?.email?.message ?? '')}
+          />
+          <div>
             <PasswordInput
               label={t('form:input-label-password')}
               {...register('password')}
               variant="outline"
-              className="mb-4"
               required={true}
               error={
-                errors?.password?.message ? t(errors.password.message) : undefined
+                errors?.password?.message
+                  ? t(errors.password.message)
+                  : undefined
               }
             />
-            <Button
-              className="w-full"
-              loading={isLoggingIn}
-              spinnerColor="rgb(var(--color-accent))"
-              disabled={isLoggingIn}
-            >
-              {loginLabel}
-            </Button>
-
-            <div className="relative mt-8 mb-6 flex flex-col items-center justify-center text-sm text-heading sm:mt-11 sm:mb-8">
-              <hr className="w-full" />
-              <span className="absolute -top-2.5 bg-light px-2 -ms-4 start-2/4">
-                {t('common:text-or')}
-              </span>
-            </div>
-
-            <div className="text-center text-sm text-body sm:text-base">
-              {t('form:text-no-account')}{' '}
+            <div className="mt-2 text-end">
               <Link
-                href={Routes.register}
-                className="font-semibold text-accent underline transition-colors duration-200 ms-1 hover:text-accent-hover hover:no-underline focus:text-accent-700 focus:no-underline focus:outline-none"
+                href={Routes.forgotPassword}
+                className="text-sm font-medium text-accent transition-colors duration-200 hover:text-accent-hover focus:text-accent-700 focus:outline-none"
               >
-                {t('form:link-register-shop-owner')}
+                {t('form:input-forgot-password-label')}
               </Link>
             </div>
-          </>
-        )}
-      </Form>
-      {errorMessage ? (
-        <Alert
-          message={errorMessage}
-          variant="error"
-          closeable={true}
-          className="mt-5"
-          onClose={() => setErrorMessage(null)}
-        />
-      ) : null}
-    </>
+          </div>
+
+          {errorMessage ? (
+            <Alert
+              message={errorMessage}
+              variant="error"
+              closeable={true}
+              onClose={() => setErrorMessage(null)}
+            />
+          ) : null}
+
+          <Button
+            type="submit"
+            className="h-11 w-full"
+            loading={isLoggingIn}
+            spinnerColor="rgb(var(--color-accent))"
+            disabled={isLoggingIn}
+          >
+            {loginLabel}
+          </Button>
+        </div>
+      )}
+    </Form>
   );
 };
 

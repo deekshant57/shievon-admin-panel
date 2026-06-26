@@ -1,0 +1,46 @@
+---
+description: UI design system — Hybrid (Bento + Classic), primitives, when to use what
+alwaysApply: true
+---
+
+# Design system — Hybrid (Design D)
+
+**Full doc:** `docs/DESIGN-DECISIONS.md`  
+**Reference UI:** `src/components/dashboard/layout/dashboard-kpi-bento.tsx` + `src/components/dashboard/admin.tsx` / `owner.tsx`
+
+## Chosen direction
+
+- **Hybrid:** Bento for KPI/summary **top**; Classic for charts, tables, forms, lists **below**.
+- **Not for daily ops:** Editorial dark-rail (Design C).
+
+## When to use Bento
+
+Hero KPI + sparkline, compact metric tiles, order-status strip with progress bars.  
+Use `Card border-border/60 shadow-sm`, 12-col grid, `bg-accent/10` icon wells.
+
+**Never** bento-wrap full data tables, settings, or long forms.
+
+## When to use Classic
+
+`DashboardSection` / `DataPanel`, `TimeRangeToggle`, chart+panel splits, full-width tables, `Section` form blocks, `EmptyState`.  
+No accent-bar titles (`before:bg-accent`).
+
+## Primitives (reuse — don’t duplicate)
+
+- Dashboard: `src/components/dashboard/layout/` (`DashboardShell`, `DashboardHeader`, `DashboardKpiBento`, `DashboardSection`, `WidgetGrid`, `TimeRangeToggle`, `OrderStatusSection`)
+- Pages/lists: `src/components/page/` (`PageHeader`, `Section`, `DataPanel`, `StatStrip`, `StatMetric`)
+- Auth: `src/components/auth/layout/` (`AuthShell`, `AuthHeader`, …)
+- UI: shadcn via `src/components/ui/*` adapters
+- Toolbar actions: `ActionButton` / `LinkActionButton` (`action-button-variants.ts`) — **Design B · Soft** (`primary` tinted, `secondary` muted). `LinkButton` is an alias.
+
+## Visual-only default
+
+UI tasks: preserve hooks, routes, validation, and API contracts unless explicitly changing behavior.
+
+## Buttons in forms
+
+Use `type="submit"` on primary form actions; do not default all buttons to `type="button"`.
+
+## CSS build note
+
+In standalone `.css` files use legacy tokens (`text-body`, `border-border-base`); semantic `text-muted-foreground` only in TSX / `main.css` `@layer`.

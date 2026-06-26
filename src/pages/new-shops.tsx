@@ -1,16 +1,18 @@
-import Card from '@/components/common/card';
+import DataPanel from '@/components/page/data-panel';
 import Layout from '@/components/layouts/admin';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
+import LinkActionButton from '@/components/ui/link-action-button';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import ShopList from '@/components/shop/shop-list';
+import ShopsSummaryStrip from '@/components/shop/shops-summary-strip';
 import { useState } from 'react';
 import Search from '@/components/common/search';
 import { adminOnly } from '@/utils/auth-utils';
-import { useInActiveShopsQuery } from '@/data/shop';
+import { useInActiveShopsQuery, useShopsQuery } from '@/data/shop';
 import { SortOrder } from '@/types';
-import PageHeading from '@/components/common/page-heading';
+import { Routes } from '@/config/routes';
 
 export default function NewShopPage() {
   const { t } = useTranslation();
@@ -26,9 +28,21 @@ export default function NewShopPage() {
     sortedBy,
     is_active: false,
   });
+  const {
+    paginatorInfo: allShopsPaginatorInfo,
+    loading: allShopsLoading,
+    error: allShopsError,
+  } = useShopsQuery({
+    limit: 1,
+    page: 1,
+  });
 
-  if (loading) return <Loader text={t('common:text-loading')} />;
-  if (error) return <ErrorMessage message={error.message} />;
+  if (loading || allShopsLoading) {
+    return <Loader text={t('common:text-loading')} />;
+  }
+  if (error || allShopsError) {
+    return <ErrorMessage message={error?.message || allShopsError?.message} />;
+  }
 
   function handleSearch({ searchText }: { searchText: string }) {
     setSearchTerm(searchText);
@@ -38,25 +52,39 @@ export default function NewShopPage() {
   function handlePagination(current: any) {
     setPage(current);
   }
-  return (
-    <>
-      <Card className="mb-8 flex flex-col items-center justify-between md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('common:sidebar-nav-item-shops')} />
-        </div>
 
-        <div className="flex w-full flex-col items-center ms-auto md:w-1/2 md:flex-row">
-          <Search onSearch={handleSearch} debounceMs={400} />
-        </div>
-      </Card>
-      <ShopList
-        shops={shops}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+  return (
+    <div className="space-y-6">
+      <ShopsSummaryStrip
+        totalShops={allShopsPaginatorInfo?.total}
+        inactiveShops={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        title={t('common:text-inactive-shops')}
+        toolbar={
+          <div className="flex w-full flex-col gap-4 md:flex-row md:items-center">
+            <Search onSearch={handleSearch} debounceMs={400} />
+            <div className="flex flex-wrap items-center gap-3 md:ms-auto">
+              <LinkActionButton href={Routes.shop.list} variant="secondary">
+                {t('common:text-all-shops')}
+              </LinkActionButton>
+              <LinkActionButton href={Routes.shop.create} variant="primary">
+                + {t('common:text-add-all-shops')}
+              </LinkActionButton>
+            </div>
+          </div>
+        }
+      >
+        <ShopList
+          shops={shops}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 NewShopPage.authenticate = {

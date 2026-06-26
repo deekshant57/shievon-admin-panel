@@ -1,4 +1,10 @@
 import LoginForm from '@/components/auth/login-form';
+import {
+  AuthDivider,
+  AuthFooter,
+  AuthHeader,
+} from '@/components/auth/layout';
+import Link from '@/components/ui/link';
 import { useTranslation } from 'next-i18next';
 import type { GetStaticProps } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -25,7 +31,8 @@ export default function LoginPage() {
     }
     if (isAuthenticated({ token, permissions })) {
       hasRedirectedRef.current = true;
-      const queryNext = typeof router.query?.next === 'string' ? router.query.next : '';
+      const queryNext =
+        typeof router.query?.next === 'string' ? router.query.next : '';
       const nextPath =
         queryNext.startsWith('/') && !queryNext.startsWith('//')
           ? queryNext
@@ -37,11 +44,22 @@ export default function LoginPage() {
   const { t } = useTranslation('common');
 
   return (
-    <AuthPageLayout>
-      <h3 className="mb-6 mt-4 text-center text-base italic text-body">
-        {t('admin-login-title')}
-      </h3>
+    <AuthPageLayout variant="admin">
+      <AuthHeader
+        title={t('admin-login-title')}
+        subtitle={t('auth-login-subtitle')}
+      />
       <LoginForm />
+      <AuthDivider />
+      <AuthFooter>
+        {t('form:text-no-account')}{' '}
+        <Link
+          href={Routes.register}
+          className="font-semibold text-accent underline transition-colors duration-200 ms-1 hover:text-accent-hover hover:no-underline focus:text-accent-700 focus:no-underline focus:outline-none"
+        >
+          {t('form:link-register-shop-owner')}
+        </Link>
+      </AuthFooter>
     </AuthPageLayout>
   );
 }

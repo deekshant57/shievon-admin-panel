@@ -1,22 +1,20 @@
-import Logo from '@/components/ui/logo';
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/shadcn/card';
+import { AuthShell } from '@/components/auth/layout';
+import type { AuthBrandVariant } from '@/components/auth/layout';
+
+type AuthPageLayoutProps = {
+  children: React.ReactNode;
+  variant?: AuthBrandVariant;
+  formWidth?: 'md' | 'lg';
+};
 
 export default function AuthPageLayout({
   children,
-}: React.PropsWithChildren<{}>) {
+  variant = 'admin',
+  formWidth = 'md',
+}: AuthPageLayoutProps) {
   return (
-    <div className="flex h-screen items-center justify-center bg-background sm:bg-muted/30">
-      <Card className="m-auto w-full max-w-[420px] border-border/60 shadow-sm sm:shadow-md">
-        <CardContent className="p-5 sm:p-8">
-          <div className="mb-4 flex justify-center">
-            <Logo />
-          </div>
-          {children}
-        </CardContent>
-      </Card>
-    </div>
+    <AuthShell variant={variant} formWidth={formWidth}>
+      {children}
+    </AuthShell>
   );
 }
