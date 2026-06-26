@@ -17,7 +17,6 @@ import ShopLayout from '@/components/layouts/shop';
 import { NoDataFound } from '@/components/icons/no-data-found';
 import { useIsRTL } from '@/utils/locals';
 import {
-  adminOnly,
   adminOwnerAndStaffOnly,
   getAuthCredentials,
   hasAccess,
@@ -136,15 +135,17 @@ export default function OrderDetailsPage() {
       return;
     }
 
-    // Check if user has required permission
-    const hasRequiredPermission = hasAccess(adminOnly, permissions);
-    // Check if user owns this shop
-    const isShopOwner = me?.shops?.map((shop) => shop.id).includes(shopId) ?? false;
-    // Check if user manages this shop
-    const isManagedShop = me?.managed_shop?.id === shopId;
+    const hasRequiredPermission = hasAccess(
+      adminOwnerAndStaffOnly,
+      permissions,
+    );
+    const ownsShop =
+      me?.shops?.some((shop) => String(shop.id) === String(shopId)) ?? false;
+    const isManagedShop =
+      me?.managed_shop?.id != null &&
+      String(me.managed_shop.id) === String(shopId);
 
-    // Only redirect if user doesn't have any of the required access
-    if (!hasRequiredPermission && !isShopOwner && !isManagedShop) {
+    if (!hasRequiredPermission && !ownsShop && !isManagedShop) {
       hasRedirectedRef.current = true;
       router.replace(Routes.dashboard);
     }
