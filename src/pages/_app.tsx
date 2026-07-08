@@ -1,5 +1,5 @@
 import type { AppProps } from 'next/app';
-import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import 'react-toastify/dist/ReactToastify.css';
 import '@/assets/css/main.css';
 import { UIProvider } from '@/contexts/ui.context';
@@ -23,9 +23,29 @@ import PrivateRoute from '@/utils/private-route';
 import { Config } from '@/config';
 import axios from 'axios';
 
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+const inter = localFont({
+  src: [
+    {
+      path: '../assets/fonts/inter/inter-latin-400-normal.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/inter/inter-latin-500-normal.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/inter/inter-latin-600-normal.woff2',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/inter/inter-latin-700-normal.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
   display: 'swap',
 });
 

@@ -18,7 +18,7 @@ export default class CustomDocument extends Document {
     return (
       <Html>
         <Head>
-          {/* Inter loaded via next/font in _app.tsx */}
+          {/* Inter loaded locally via next/font in _app.tsx */}
         </Head>
         <body>
           <Main />

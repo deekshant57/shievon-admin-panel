@@ -13,8 +13,13 @@ const initialState = {
   },
   logo: {
     id: 1,
-    thumbnail: '/logo.svg',
-    original: '/logo.svg',
+    thumbnail: '/icons/Shievon_Logo/Rosso_Corsa/Full_Side_Rosso_Corsa.svg',
+    original: '/icons/Shievon_Logo/Rosso_Corsa/Full_Side_Rosso_Corsa.svg',
+  },
+  collapseLogo: {
+    id: 2,
+    thumbnail: '/icons/Shievon_Logo/Rosso_Corsa/Only_Logo_Rosso_Corsa.svg',
+    original: '/icons/Shievon_Logo/Rosso_Corsa/Only_Logo_Rosso_Corsa.svg',
   },
 };
 
