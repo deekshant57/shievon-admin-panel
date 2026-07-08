@@ -34,4 +34,48 @@ export const orderClient = {
   orderSeen({ id }: { id: string }) {
     return HttpClient.post<any>(`${API_ENDPOINTS.ORDER_SEEN}/${id}`, id);
   },
+  markProductLinesReady(
+    id: string,
+    data?: { order_item_ids?: string[] },
+  ) {
+    return HttpClient.post<Order>(
+      `${API_ENDPOINTS.ORDERS}/${id}/product-lines/mark-ready`,
+      data ?? {},
+    );
+  },
+  confirmProductPickup(
+    id: string,
+    itemId: string,
+    data?: { quantity?: number },
+  ) {
+    return HttpClient.post<Order>(
+      `${API_ENDPOINTS.ORDERS}/${id}/product-lines/${itemId}/confirm-pickup`,
+      data ?? {},
+    );
+  },
+  unableToFulfillProductLine(
+    id: string,
+    itemId: string,
+    data: { reason: string },
+  ) {
+    return HttpClient.post<Order>(
+      `${API_ENDPOINTS.ORDERS}/${id}/product-lines/${itemId}/unable-to-fulfill`,
+      data,
+    );
+  },
+  completeServiceBooking(id: string) {
+    return HttpClient.post<Order>(
+      `${API_ENDPOINTS.ORDERS}/${id}/service-booking/complete`,
+      {},
+    );
+  },
+  unableToFulfillServiceBooking(id: string, data: { reason: string }) {
+    return HttpClient.post<Order>(
+      `${API_ENDPOINTS.ORDERS}/${id}/service-booking/unable-to-fulfill`,
+      data,
+    );
+  },
+  closeOrder(id: string) {
+    return HttpClient.post<Order>(`${API_ENDPOINTS.ORDERS}/${id}/close`, {});
+  },
 };

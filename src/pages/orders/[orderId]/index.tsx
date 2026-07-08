@@ -3,6 +3,7 @@ import { DownloadIcon } from '@/components/icons/download-icon';
 import Layout from '@/components/layouts/admin';
 import OrderStatusProgressBox from '@/components/order/order-status-progress-box';
 import OrderViewHeader from '@/components/order/order-view-header';
+import OrderFulfillmentSection from '@/components/order/order-fulfillment-section';
 import Button from '@/components/ui/button';
 import ErrorMessage from '@/components/ui/error-message';
 import ValidationError from '@/components/ui/form-validation-error';
@@ -23,13 +24,17 @@ import { formatAddress } from '@/utils/format-address';
 import { formatString } from '@/utils/format-string';
 import { useIsRTL } from '@/utils/locals';
 import { ORDER_STATUS } from '@/utils/order-status';
+import {
+  getFulfillmentAdminStatusOptions,
+  hasFulfillmentFlow,
+} from '@/utils/order-fulfillment';
 import usePrice from '@/utils/use-price';
 import { useAtom } from 'jotai';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useFormatPhoneNumber } from '@/utils/format-phone-number';
 
@@ -129,9 +134,18 @@ export default function OrderDetailsPage() {
   const phoneNumber = useFormatPhoneNumber({
     customer_contact: order?.customer_contact as string,
   });
+  const showFulfillmentUi = hasFulfillmentFlow(order);
+  const legacyStatusOptions = useMemo(() => {
+    if (!showFulfillmentUi) {
+      return ORDER_STATUS.slice(0, 6);
+    }
+    const allowed = getFulfillmentAdminStatusOptions();
+    return ORDER_STATUS.filter((entry) => allowed.includes(entry.status));
+  }, [showFulfillmentUi]);
 
   if (loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
+  if (!order) return <ErrorMessage message={t('common:no-order-found')} />;
 
   async function handleDownloadInvoice() {
     const { data } = await refetch();
@@ -226,7 +240,7 @@ export default function OrderDetailsPage() {
                   control={control}
                   getOptionLabel={(option: any) => t(option.name)}
                   getOptionValue={(option: any) => option.status}
-                  options={ORDER_STATUS.slice(0, 6)}
+                  options={legacyStatusOptions}
                   placeholder={t('form:input-placeholder-order-status')}
                 />
 
@@ -244,12 +258,16 @@ export default function OrderDetailsPage() {
           )}
         </div>
 
-        <div className="my-5 flex items-center justify-center lg:my-10">
-          <OrderStatusProgressBox
-            orderStatus={order?.order_status as OrderStatus}
-            paymentStatus={order?.payment_status as PaymentStatus}
-          />
-        </div>
+        {showFulfillmentUi ? (
+          <OrderFulfillmentSection order={order} />
+        ) : (
+          <div className="my-5 flex items-center justify-center lg:my-10">
+            <OrderStatusProgressBox
+              orderStatus={order?.order_status as OrderStatus}
+              paymentStatus={order?.payment_status as PaymentStatus}
+            />
+          </div>
+        )}
 
         <div className="mb-10">
           {order ? (

@@ -29,13 +29,19 @@ import { useOrderQuery } from '@/data/order';
 import { Attachment, OrderStatus, PaymentStatus } from '@/types';
 import { DownloadIcon } from '@/components/icons/download-icon';
 import OrderViewHeader from '@/components/order/order-view-header';
+import OrderFulfillmentSection from '@/components/order/order-fulfillment-section';
 import { ORDER_STATUS } from '@/utils/order-status';
+import {
+  getFulfillmentAdminStatusOptions,
+  hasFulfillmentFlow,
+} from '@/utils/order-fulfillment';
 import OrderStatusProgressBox from '@/components/order/order-status-progress-box';
 import { Routes } from '@/config/routes';
 import { useShopQuery } from '@/data/shop';
 import { useMeQuery } from '@/data/user';
 import { useFormatPhoneNumber } from '@/utils/format-phone-number';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { adminOnly } from '@/utils/auth-utils';
 
 type FormValues = {
   order_status: any;
@@ -122,6 +128,17 @@ export default function OrderDetailsPage() {
   const phoneNumber = useFormatPhoneNumber({
     customer_contact: order?.customer_contact as string,
   });
+  const showFulfillmentUi = hasFulfillmentFlow(order);
+  const isSuperAdmin = hasAccess(adminOnly, permissions);
+  const showLegacyStatusDropdown =
+    !showFulfillmentUi || isSuperAdmin;
+  const legacyStatusOptions = useMemo(() => {
+    if (!showFulfillmentUi || !isSuperAdmin) {
+      return ORDER_STATUS.slice(0, 6);
+    }
+    const allowed = getFulfillmentAdminStatusOptions();
+    return ORDER_STATUS.filter((entry) => allowed.includes(entry.status));
+  }, [showFulfillmentUi, isSuperAdmin]);
 
   // Check permissions and redirect if user doesn't have access
   useEffect(() => {
@@ -153,6 +170,7 @@ export default function OrderDetailsPage() {
 
   if (loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
+  if (!order) return <ErrorMessage message={t('common:no-order-found')} />;
 
   const columns = [
     {
@@ -218,7 +236,12 @@ export default function OrderDetailsPage() {
             {t('form:input-label-order-id')} - {order?.tracking_number}
           </h3>
 
-          {![OrderStatus.FAILED, OrderStatus.CANCELLED, OrderStatus.REFUNDED].includes(order?.order_status! as OrderStatus) && (
+          {showLegacyStatusDropdown &&
+          ![
+            OrderStatus.FAILED,
+            OrderStatus.CANCELLED,
+            OrderStatus.REFUNDED,
+          ].includes(order?.order_status! as OrderStatus) ? (
             <form
               onSubmit={handleSubmit(ChangeStatus)}
               className="flex w-full items-start ms-auto lg:w-2/4"
@@ -229,7 +252,7 @@ export default function OrderDetailsPage() {
                   control={control}
                   getOptionLabel={(option: any) => t(option.name)}
                   getOptionValue={(option: any) => option.status}
-                  options={ORDER_STATUS.slice(0, 6)}
+                  options={legacyStatusOptions}
                   placeholder={t('form:input-placeholder-order-status')}
                 />
 
@@ -244,15 +267,19 @@ export default function OrderDetailsPage() {
                 </span>
               </Button>
             </form>
-          )}
+          ) : null}
         </div>
 
-        <div className="my-5 flex items-center justify-center lg:my-10">
-          <OrderStatusProgressBox
-            orderStatus={order?.order_status as OrderStatus}
-            paymentStatus={order?.payment_status as PaymentStatus}
-          />
-        </div>
+        {showFulfillmentUi ? (
+          <OrderFulfillmentSection order={order} />
+        ) : (
+          <div className="my-5 flex items-center justify-center lg:my-10">
+            <OrderStatusProgressBox
+              orderStatus={order?.order_status as OrderStatus}
+              paymentStatus={order?.payment_status as PaymentStatus}
+            />
+          </div>
+        )}
 
         <div className="mb-10">
           {order ? (

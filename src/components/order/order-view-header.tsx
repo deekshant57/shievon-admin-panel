@@ -1,39 +1,60 @@
 import { useTranslation } from 'next-i18next';
-import { useModalAction } from '@/components/ui/modal/modal.context';
-import { OrderStatus, PaymentGateway, PaymentStatus } from '@/types';
-import Button from '@/components/ui/button';
+import { format } from 'date-fns';
+import { Order } from '@/types';
 import cn from 'classnames';
 import StatusColor from '@/components/order/status-color';
 import Badge from '@/components/ui/badge/badge';
+import { hasFulfillmentFlow } from '@/utils/order-fulfillment';
 
 interface OrderViewHeaderProps {
-  order: any;
+  order: Order;
   wrapperClassName?: string;
   buttonSize?: 'big' | 'medium' | 'small';
+}
+
+function formatPickupDate(value?: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return format(new Date(value), 'MMMM d, yyyy h:mm a');
+  } catch {
+    return value;
+  }
 }
 
 export default function OrderViewHeader({
   order,
   wrapperClassName = 'px-11 py-5',
-  buttonSize = 'medium',
 }: OrderViewHeaderProps) {
   const { t } = useTranslation('common');
-  const isPaymentCOD = [PaymentGateway.COD, PaymentGateway.CASH].includes(order?.payment_gateway);
-  const isOrderPending = ![OrderStatus.CANCELLED, OrderStatus.FAILED].includes(order?.order_status);
-  const isPaymentActionPending = !isPaymentCOD && isOrderPending && order?.payment_status !== PaymentStatus.SUCCESS;
+  const showFulfillmentMeta = hasFulfillmentFlow(order);
+  const pickupAvailableAt = formatPickupDate(order.pickup_available_at);
+  const preferredPickupTime = formatPickupDate(order.preferred_pickup_time);
 
   return (
-    <div className={cn(`bg-[#F7F8FA] ${wrapperClassName}`)}>
-      <div className="mb-0 flex flex-col flex-wrap items-center justify-between gap-x-8 text-base font-bold text-heading sm:flex-row lg:flex-nowrap">
+    <div className={cn('rounded-t-xl bg-gray-50', wrapperClassName)}>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        {showFulfillmentMeta ? (
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-body">
+              {t('text-invoice-no')}
+            </div>
+            <div className="text-2xl font-bold tracking-tight text-heading">
+              {order.tracking_number}
+            </div>
+          </div>
+        ) : null}
+
         <div
-          className={`order-2 flex  w-full gap-6 sm:order-1 ${
-            !isPaymentActionPending
-              ? 'max-w-full basis-full justify-between'
-              : 'max-w-full basis-full justify-between lg:ltr:mr-auto'
-          }`}
+          className={cn(
+            'flex w-full flex-wrap gap-4 lg:gap-6',
+            showFulfillmentMeta ? 'lg:justify-end' : 'justify-between',
+          )}
         >
           <div>
-            <span className="mb-2 block lg:mb-0 lg:inline-block lg:ltr:mr-4 lg:rtl:ml-4">
+            <span className="mb-2 block text-sm font-semibold text-body lg:mb-0 lg:inline-block lg:ltr:mr-4 lg:rtl:ml-4">
               {t('text-order-status')} :
             </span>
             <Badge
@@ -42,7 +63,7 @@ export default function OrderViewHeader({
             />
           </div>
           <div>
-            <span className="mb-2 block lg:mb-0 lg:inline-block lg:ltr:mr-4 lg:rtl:ml-4">
+            <span className="mb-2 block text-sm font-semibold text-body lg:mb-0 lg:inline-block lg:ltr:mr-4 lg:rtl:ml-4">
               {t('text-payment-status')} :
             </span>
             <Badge
@@ -50,8 +71,42 @@ export default function OrderViewHeader({
               color={StatusColor(order?.payment_status)}
             />
           </div>
+          {order.customer_status_label ? (
+            <div>
+              <span className="mb-2 block text-sm font-semibold text-body lg:mb-0 lg:inline-block lg:ltr:mr-4 lg:rtl:ml-4">
+                {t('text-customer-status')} :
+              </span>
+              <Badge text={order.customer_status_label} />
+            </div>
+          ) : null}
         </div>
       </div>
+
+      {showFulfillmentMeta ? (
+        <div className="mt-4 grid gap-2 border-t border-border-200 pt-4 text-sm text-body sm:grid-cols-2">
+          {pickupAvailableAt ? (
+            <p>
+              <span className="font-semibold text-heading">
+                {t('text-pickup-available-after')}:{' '}
+              </span>
+              {pickupAvailableAt}
+              {order.can_show_ready_for_pickup === false ? (
+                <span className="ms-2 text-xs text-body">
+                  ({t('text-preparing')})
+                </span>
+              ) : null}
+            </p>
+          ) : null}
+          {preferredPickupTime ? (
+            <p>
+              <span className="font-semibold text-heading">
+                {t('text-preferred-pickup-time')}:{' '}
+              </span>
+              {preferredPickupTime}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

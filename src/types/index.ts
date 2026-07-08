@@ -114,12 +114,67 @@ export type QueryOptionsType = {
 export enum OrderStatus {
   PENDING = 'order-pending',
   PROCESSING = 'order-processing',
+  READY_FOR_PICKUP = 'order-ready-for-pickup',
   COMPLETED = 'order-completed',
   CANCELLED = 'order-cancelled',
   REFUNDED = 'order-refunded',
   FAILED = 'order-failed',
   AT_LOCAL_FACILITY = 'order-at-local-facility',
   OUT_FOR_DELIVERY = 'order-out-for-delivery',
+}
+
+export type ProductFulfillmentStatus =
+  | 'preparing'
+  | 'ready_for_pickup'
+  | 'picked_up'
+  | 'unable_to_fulfill';
+
+export type ServiceBookingStatus =
+  | 'pending'
+  | 'completed'
+  | 'unable_to_fulfill'
+  | 'cancelled';
+
+export interface ProductFulfillmentLine {
+  id: string;
+  fulfillment_status?: string | null;
+  quantity?: number;
+  picked_up_quantity?: number;
+  ready_for_pickup_at?: string | null;
+  picked_up_at?: string | null;
+  unable_to_fulfill_reason?: string | null;
+  line_status?: string;
+  item_kind?: string;
+}
+
+export interface ProductFulfillment {
+  lines: ProductFulfillmentLine[];
+}
+
+export interface ServiceFulfillmentItem {
+  id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  service_offering?: { id: string; name: string; slug: string } | null;
+}
+
+export interface ServiceFulfillment {
+  booking_id: string | null;
+  booking_number?: string;
+  status?: string;
+  payment_status?: string;
+  items: ServiceFulfillmentItem[];
+}
+
+export interface OrderItem {
+  id: string;
+  quantity?: number;
+  picked_up_quantity?: number;
+  fulfillment_status?: string | null;
+  item_kind?: 'product' | 'service';
+  name?: string;
+  unit_price?: number;
 }
 
 export enum FlashSaleType {
@@ -846,6 +901,15 @@ export interface Order {
   shop_id?: string;
   shop?: Shop;
   note?: string;
+  paid_at?: string | null;
+  pickup_available_at?: string | null;
+  preferred_pickup_time?: string | null;
+  closed_at?: string | null;
+  can_show_ready_for_pickup?: boolean;
+  customer_status_label?: string;
+  product_fulfillment?: ProductFulfillment;
+  service_fulfillment?: ServiceFulfillment | null;
+  items?: OrderItem[];
 }
 
 export interface NotificationAction {
@@ -872,6 +936,40 @@ export interface NotifyLogs {
   notify_receiver_type: string;
   is_read: boolean;
   notify_text: string;
+}
+
+export interface VendorNotification {
+  id: string;
+  type: string;
+  order_id: string;
+  order_number: string;
+  notify_tracker?: string;
+  shop_id: number;
+  title: string;
+  body: string;
+  is_read: boolean;
+  read_at?: string | null;
+  created_at: string;
+}
+
+export interface VendorNotificationsListResponse {
+  data: VendorNotification[];
+  paginator: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+/** Alias used by vendor-notifications client */
+export type VendorNotificationListPayload = VendorNotificationsListResponse;
+
+export interface VendorNotificationQueryOptions {
+  shop_id?: string;
+  limit?: number;
+  page?: number;
+  unread_only?: boolean;
 }
 
 export interface ReadAllNotifyLogs {

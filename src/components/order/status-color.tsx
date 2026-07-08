@@ -36,6 +36,11 @@ const StatusColor = (status: string) => {
     bg_class =
       'bg-status-out-for-delivery bg-opacity-10 text-status-out-for-delivery';
   } else if (
+    status?.toLowerCase() === 'ready-for-pickup' ||
+    status?.toLowerCase() === 'order-ready-for-pickup'
+  ) {
+    bg_class = 'bg-accent bg-opacity-10 !text-accent';
+  } else if (
     status?.toLowerCase() === 'refunded' ||
     status?.toLowerCase() === 'refunded' ||
     status?.toLowerCase() === 'payment-refunded'

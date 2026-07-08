@@ -173,3 +173,101 @@ export function useOrderSeen() {
 
   return { readOrderNotice, isLoading, isSuccess };
 }
+
+export const useMarkProductLinesReadyMutation = () => {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({
+      id,
+      order_item_ids,
+    }: {
+      id: string;
+      order_item_ids?: string[];
+    }) => orderClient.markProductLinesReady(id, { order_item_ids }),
+    {
+      onSuccess: () => toast.success(t('common:successfully-updated')),
+      onError: (error) => toast.error(getApiErrorMessage(error)),
+      onSettled: () => queryClient.invalidateQueries(API_ENDPOINTS.ORDERS),
+    },
+  );
+};
+
+export const useConfirmProductPickupMutation = () => {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({
+      id,
+      itemId,
+      quantity,
+    }: {
+      id: string;
+      itemId: string;
+      quantity?: number;
+    }) => orderClient.confirmProductPickup(id, itemId, { quantity }),
+    {
+      onSuccess: () => toast.success(t('common:successfully-updated')),
+      onError: (error) => toast.error(getApiErrorMessage(error)),
+      onSettled: () => queryClient.invalidateQueries(API_ENDPOINTS.ORDERS),
+    },
+  );
+};
+
+export const useUnableToFulfillProductLineMutation = () => {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({
+      id,
+      itemId,
+      reason,
+    }: {
+      id: string;
+      itemId: string;
+      reason: string;
+    }) => orderClient.unableToFulfillProductLine(id, itemId, { reason }),
+    {
+      onSuccess: () => toast.success(t('common:successfully-updated')),
+      onError: (error) => toast.error(getApiErrorMessage(error)),
+      onSettled: () => queryClient.invalidateQueries(API_ENDPOINTS.ORDERS),
+    },
+  );
+};
+
+export const useCompleteServiceBookingMutation = () => {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ id }: { id: string }) => orderClient.completeServiceBooking(id),
+    {
+      onSuccess: () => toast.success(t('common:successfully-updated')),
+      onError: (error) => toast.error(getApiErrorMessage(error)),
+      onSettled: () => queryClient.invalidateQueries(API_ENDPOINTS.ORDERS),
+    },
+  );
+};
+
+export const useUnableToFulfillServiceBookingMutation = () => {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ id, reason }: { id: string; reason: string }) =>
+      orderClient.unableToFulfillServiceBooking(id, { reason }),
+    {
+      onSuccess: () => toast.success(t('common:successfully-updated')),
+      onError: (error) => toast.error(getApiErrorMessage(error)),
+      onSettled: () => queryClient.invalidateQueries(API_ENDPOINTS.ORDERS),
+    },
+  );
+};
+
+export const useCloseOrderMutation = () => {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  return useMutation(({ id }: { id: string }) => orderClient.closeOrder(id), {
+    onSuccess: () => toast.success(t('common:successfully-updated')),
+    onError: (error) => toast.error(getApiErrorMessage(error)),
+    onSettled: () => queryClient.invalidateQueries(API_ENDPOINTS.ORDERS),
+  });
+};

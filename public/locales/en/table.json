@@ -97,5 +97,7 @@
   "table-item-url": "Domains",
   "table-item-target": "Applied on",
   "table-item-coupon-amount": "Coupon Amount",
-  "table-item-minimum-cart-amount": "Minimum Cart Amount"
+  "table-item-minimum-cart-amount": "Minimum Cart Amount",
+  "table-item-fulfillment": "Fulfillment",
+  "table-item-picked-quantity": "Picked / Ordered"
 }

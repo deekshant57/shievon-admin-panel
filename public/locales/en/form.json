@@ -791,5 +791,14 @@
   "error-external-product-button-text-required": "External product button text is required",
   "error-opening-time-required": "Opening time is required",
   "error-closing-time-required": "Closing time is required",
-  "error-closing-time-before-opening": "Closing time cannot be before opening time"
+  "error-closing-time-before-opening": "Closing time cannot be before opening time",
+  "button-mark-ready": "Mark ready for pickup",
+  "button-mark-all-ready": "Mark all ready",
+  "button-confirm-pickup": "Confirm picked up",
+  "button-mark-service-complete": "Mark service completed",
+  "button-close-order": "Close order",
+  "button-unable-to-fulfill": "Unable to fulfill",
+  "input-label-unable-reason": "Reason",
+  "input-label-pickup-quantity": "Quantity picking up now",
+  "placeholder-unable-reason": "Explain why this cannot be fulfilled"
 }
