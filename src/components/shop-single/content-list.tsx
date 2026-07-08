@@ -25,11 +25,13 @@ export const ContentListVertical: React.FC<ContentListVerticalProps> = ({
   return content ? (
     <div className={twMerge(classNames(className))} {...rest}>
       {title ? (
-        <h4 className="mb-1 text-sm font-normal text-[#666]">{title}</h4>
+        <h4 className="mb-1 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          {title}
+        </h4>
       ) : (
         ''
       )}
-      {content ? <p className="text-muted-black">{content}</p> : ''}
+      {content ? <p className="text-body">{content}</p> : ''}
     </div>
   ) : (
     <span className="sr-only">No item found</span>
@@ -47,13 +49,13 @@ export const ContentListHorizontal: React.FC<ContentListHorizontalProps> = ({
   return (
     <div
       className={twMerge(
-        classNames('flex items-center gap-2 text-base', className)
+        classNames('flex items-center gap-2 text-sm', className)
       )}
       {...rest}
     >
-      <span className="text-base-dark">{children}</span>
+      <span className="text-muted-foreground">{children}</span>
       {content ? (
-        <div className="text-muted-black">
+        <div className="text-body">
           {isLink ? (
             <Link href={link as string}>{content}</Link>
           ) : (

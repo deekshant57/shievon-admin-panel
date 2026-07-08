@@ -5,6 +5,8 @@ type PageHeaderProps = {
   subtitle?: string;
   className?: string;
   children?: React.ReactNode;
+  /** `stacked` places toolbar on its own full-width row below the title (better for search + filters). */
+  toolbarLayout?: 'inline' | 'stacked';
 };
 
 const PageHeader = ({
@@ -12,7 +14,24 @@ const PageHeader = ({
   subtitle,
   className,
   children,
+  toolbarLayout = 'inline',
 }: PageHeaderProps) => {
+  if (toolbarLayout === 'stacked') {
+    return (
+      <div className={cn('flex flex-col gap-4', className)}>
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
+            {title}
+          </h1>
+          {subtitle ? (
+            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+          ) : null}
+        </div>
+        {children ? <div className="w-full min-w-0">{children}</div> : null}
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -29,7 +48,7 @@ const PageHeader = ({
         ) : null}
       </div>
       {children ? (
-        <div className="flex flex-wrap items-center gap-3">{children}</div>
+        <div className="w-full min-w-0 sm:max-w-none sm:flex-1">{children}</div>
       ) : null}
     </div>
   );

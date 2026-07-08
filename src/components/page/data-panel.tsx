@@ -10,6 +10,7 @@ type DataPanelProps = {
   title?: string;
   subtitle?: string;
   toolbar?: React.ReactNode;
+  toolbarLayout?: 'inline' | 'stacked';
   filters?: React.ReactNode;
   footer?: React.ReactNode;
   children: React.ReactNode;
@@ -20,6 +21,7 @@ const DataPanel = ({
   title,
   subtitle,
   toolbar,
+  toolbarLayout = 'inline',
   filters,
   footer,
   children,
@@ -29,7 +31,11 @@ const DataPanel = ({
     <Card className={cn('mb-8 border-border/60 shadow-sm', className)}>
       {title || toolbar ? (
         <div className="border-b border-border/60 px-5 py-5 md:px-8 md:py-6">
-          <PageHeader title={title ?? ''} subtitle={subtitle}>
+          <PageHeader
+            title={title ?? ''}
+            subtitle={subtitle}
+            toolbarLayout={toolbarLayout}
+          >
             {toolbar}
           </PageHeader>
           {filters ? <div className="mt-5 border-t border-border/60 pt-5">{filters}</div> : null}

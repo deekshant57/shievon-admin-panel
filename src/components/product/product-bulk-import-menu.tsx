@@ -1,5 +1,6 @@
 import { ChevronDown } from '@/components/icons/chevronDownIcon';
 import Link from '@/components/ui/link';
+import { actionButtonVariants } from '@/components/ui/action-button-variants';
 import { PRODUCT_IMPORTS } from '@/config/product-imports';
 import { Menu, Transition } from '@headlessui/react';
 import cn from 'classnames';
@@ -8,7 +9,7 @@ import { Fragment } from 'react';
 
 type ProductBulkImportMenuProps = {
   shop: string;
-  variant?: 'button' | 'pill' | 'inline';
+  variant?: 'button' | 'pill' | 'inline' | 'soft';
   className?: string;
   fullWidth?: boolean;
 };
@@ -22,7 +23,7 @@ export default function ProductBulkImportMenu({
   const { t } = useTranslation('common');
 
   const menuButtonClassName = cn(
-    'inline-flex items-center gap-2 font-medium transition duration-300 ease-in-out focus:outline-none',
+    'inline-flex items-center gap-2 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30',
     {
       'h-12 flex-shrink-0 justify-center rounded-full border border-solid border-accent bg-accent px-5 text-[15px] leading-none text-white hover:border-transparent hover:bg-accent-hover lg:text-base':
         variant === 'button',
@@ -30,21 +31,23 @@ export default function ProductBulkImportMenu({
         variant === 'pill',
       'text-sm font-semibold text-accent hover:text-accent-hover':
         variant === 'inline',
+      [actionButtonVariants({ variant: 'secondary', size: 'sm' })]:
+        variant === 'soft',
     },
     fullWidth && 'w-full justify-center',
-    className
+    variant === 'soft' && 'w-full justify-center sm:w-auto',
   );
 
   const menuItemsClassName = cn(
-    'absolute z-20 mt-2 min-w-[14rem] origin-top rounded-lg border border-gray-200 bg-white py-1 shadow-box focus:outline-none',
+    'absolute z-20 mt-2 min-w-[14rem] origin-top rounded-lg border border-border/60 bg-card py-1 shadow-md focus:outline-none',
     fullWidth ? 'start-0 end-0 w-full' : 'end-0 w-56',
-    variant === 'pill' && 'start-0 end-auto'
+    variant === 'pill' && 'start-0 end-auto',
   );
 
   return (
     <Menu
       as="div"
-      className={cn('relative inline-block', fullWidth && 'w-full')}
+      className={cn('relative inline-block', className)}
     >
       {({ open }) => (
         <>
@@ -62,7 +65,7 @@ export default function ProductBulkImportMenu({
                 open && 'rotate-180',
                 variant === 'button' || variant === 'pill'
                   ? 'text-white'
-                  : 'text-accent'
+                  : 'text-muted-foreground',
               )}
             />
           </Menu.Button>
@@ -83,8 +86,8 @@ export default function ProductBulkImportMenu({
                     <Link
                       href={importType.href(shop)}
                       className={cn(
-                        'block px-4 py-2.5 text-sm text-heading transition duration-200 hover:text-accent',
-                        active && 'bg-gray-100 text-accent'
+                        'block px-4 py-2.5 text-sm text-heading transition-colors hover:bg-muted/60 hover:text-accent',
+                        active && 'bg-muted/60 text-accent',
                       )}
                     >
                       {t(importType.labelKey)}

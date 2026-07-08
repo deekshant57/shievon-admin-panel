@@ -1,12 +1,12 @@
-import Label from '@/components/ui/label';
 import Select from '@/components/ui/select/select';
 import { useAuthorsQuery } from '@/data/author';
 import { useCategoriesQuery } from '@/data/category';
 import { useTypesQuery } from '@/data/type';
 import { ProductType } from '@/types';
-import cn from 'classnames';
+import { cn } from '@/lib/utils';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
+import { useMemo } from 'react';
 import { ActionMeta } from 'react-select';
 
 type Props = {
@@ -25,7 +25,27 @@ type Props = {
   enableProductType?: boolean;
   typeNameAllowList?: string[];
   typeNameDenyList?: string[];
+  /** Use hybrid design-system select styling (default: true). */
+  variant?: 'default' | 'hybrid';
 };
+
+type FilterFieldProps = {
+  label: string;
+  htmlFor: string;
+  children: React.ReactNode;
+};
+
+const FilterField = ({ label, htmlFor, children }: FilterFieldProps) => (
+  <div className="flex w-full flex-col gap-2">
+    <label
+      htmlFor={htmlFor}
+      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+    >
+      {label}
+    </label>
+    {children}
+  </div>
+);
 
 export default function CategoryTypeFilter({
   onTypeFilter,
@@ -40,9 +60,10 @@ export default function CategoryTypeFilter({
   enableProductType,
   typeNameAllowList,
   typeNameDenyList,
+  variant = 'hybrid',
 }: Props) {
   const { locale } = useRouter();
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
 
   const { types: rawTypes, loading } = useTypesQuery({ language: locale });
   const normalizedAllow = (typeNameAllowList ?? []).map((v) =>
@@ -51,8 +72,8 @@ export default function CategoryTypeFilter({
   const normalizedDeny = (typeNameDenyList ?? []).map((v) =>
     String(v).trim().toLowerCase(),
   );
-  const types = (rawTypes ?? []).filter((t: any) => {
-    const name = String(t?.name ?? '').trim().toLowerCase();
+  const types = (rawTypes ?? []).filter((item: any) => {
+    const name = String(item?.name ?? '').trim().toLowerCase();
     if (normalizedAllow.length) return normalizedAllow.includes(name);
     if (normalizedDeny.length) return !normalizedDeny.includes(name);
     return true;
@@ -68,85 +89,88 @@ export default function CategoryTypeFilter({
     language: locale,
   });
 
-  const productType = [
-    { name: 'Single product', slug: ProductType.Single },
-    { name: 'Variable product', slug: ProductType.Variable },
-  ];
+  const productTypeOptions = useMemo(
+    () => [
+      { name: t('text-single-product'), slug: ProductType.Single },
+      { name: t('text-variable-product'), slug: ProductType.Variable },
+    ],
+    [t],
+  );
+
+  const selectVariant = variant === 'hybrid' ? 'hybrid' : 'default';
 
   return (
     <div
       className={cn(
-        'flex w-full flex-col space-y-5 rtl:space-x-reverse md:flex-row md:items-end md:space-x-5 md:space-y-0',
+        'grid w-full grid-cols-1 gap-4 rounded-lg border border-border/60 bg-muted/20 p-4 sm:grid-cols-2 lg:grid-cols-3 lg:p-5',
         className,
       )}
     >
       {enableType ? (
-        <div className="w-full">
-          <Label>{t('common:filter-by-type')}</Label>
+        <FilterField label={t('filter-by-type')} htmlFor="filter-type">
           <Select
+            inputId="filter-type"
+            variant={selectVariant}
             options={types}
             isLoading={loading}
             getOptionLabel={(option: any) => option.name}
             getOptionValue={(option: any) => option.slug}
-            placeholder={t('common:filter-by-type-placeholder')}
+            placeholder={t('filter-by-type-placeholder')}
             onChange={onTypeFilter}
-            isClearable={true}
+            isClearable
           />
-        </div>
-      ) : (
-        ''
-      )}
+        </FilterField>
+      ) : null}
 
       {enableCategory ? (
-        <div className="w-full">
-          <Label>{t('common:filter-by-category')}</Label>
+        <FilterField label={t('filter-by-category')} htmlFor="filter-category">
           <Select
+            inputId="filter-category"
+            variant={selectVariant}
             options={categories}
             getOptionLabel={(option: any) => option.name}
             getOptionValue={(option: any) => option.slug}
-            placeholder={t('common:filter-by-category-placeholder')}
+            placeholder={t('filter-by-category-placeholder')}
             isLoading={categoryLoading}
             onChange={onCategoryFilter}
-            isClearable={true}
+            isClearable
           />
-        </div>
-      ) : (
-        ''
-      )}
+        </FilterField>
+      ) : null}
 
       {enableAuthor ? (
-        <div className="w-full">
-          <Label>{t('common:filter-by-author')}</Label>
+        <FilterField label={t('filter-by-author')} htmlFor="filter-author">
           <Select
+            inputId="filter-author"
+            variant={selectVariant}
             options={authors}
             getOptionLabel={(option: any) => option.name}
             getOptionValue={(option: any) => option.slug}
-            placeholder={t('common:filter-by-author-placeholder')}
+            placeholder={t('filter-by-author-placeholder')}
             isLoading={authorLoading}
             onChange={onAuthorFilter}
-            isClearable={true}
+            isClearable
           />
-        </div>
-      ) : (
-        ''
-      )}
+        </FilterField>
+      ) : null}
 
       {enableProductType ? (
-        <div className="w-full">
-          <Label>Filter by Product Type</Label>
+        <FilterField
+          label={t('filter-by-product-type')}
+          htmlFor="filter-product-type"
+        >
           <Select
-            options={productType}
+            inputId="filter-product-type"
+            variant={selectVariant}
+            options={productTypeOptions}
             getOptionLabel={(option: any) => option.name}
             getOptionValue={(option: any) => option.slug}
-            placeholder="Filter by product type"
-            // isLoading={authorLoading}
+            placeholder={t('filter-by-product-type-placeholder')}
             onChange={onProductTypeFilter}
-            isClearable={true}
+            isClearable
           />
-        </div>
-      ) : (
-        ''
-      )}
+        </FilterField>
+      ) : null}
     </div>
   );
 }

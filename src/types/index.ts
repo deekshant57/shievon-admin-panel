@@ -874,6 +874,38 @@ export interface NotifyLogs {
   notify_text: string;
 }
 
+/** Vendor panel bell — paid order alerts from GET /vendor-notifications */
+export interface VendorNotification {
+  id: string;
+  type: string;
+  order_id: string;
+  order_number: string;
+  notify_tracker: string;
+  shop_id: number;
+  title: string;
+  body: string;
+  is_read: boolean;
+  read_at: string | null;
+  created_at: string;
+}
+
+export interface VendorNotificationQueryOptions {
+  shop_id?: string;
+  unread_only?: boolean;
+  page?: number;
+  limit?: number;
+}
+
+export interface VendorNotificationListPayload {
+  data: VendorNotification[];
+  paginator: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
 export interface ReadAllNotifyLogs {
   set_all_read: boolean;
 }

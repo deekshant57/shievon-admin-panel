@@ -8,19 +8,24 @@ import { useTranslation } from 'next-i18next';
 import { twMerge } from 'tailwind-merge';
 
 const classes = {
-  root: 'ps-10 pe-4 h-12 flex items-center w-full rounded-md appearance-none transition duration-300 ease-in-out text-heading text-sm focus:outline-none focus:ring-0',
+  root: 'flex w-full items-center rounded-lg text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/30',
+  md: 'ps-10 pe-10 h-12',
+  sm: 'ps-9 pe-9 h-9',
   normal:
     'bg-gray-100 border border-border-base focus:shadow focus:bg-light focus:border-accent',
   solid:
     'bg-gray-100 border border-border-100 focus:bg-light focus:border-accent',
   outline: 'border border-border-base focus:border-accent',
+  hybrid:
+    'border border-border/60 bg-background shadow-sm text-foreground placeholder:text-muted-foreground focus:border-accent',
   shadow: 'focus:shadow',
 };
 
 type SearchProps = {
   className?: string;
   shadow?: boolean;
-  variant?: 'normal' | 'solid' | 'outline';
+  variant?: 'normal' | 'solid' | 'outline' | 'hybrid';
+  size?: 'sm' | 'md';
   inputClassName?: string;
   onSearch: (data: SearchValue) => void;
   placeholderText?: string;
@@ -36,6 +41,7 @@ const Search: React.FC<SearchProps> = ({
   className,
   onSearch,
   variant = 'outline',
+  size = 'md',
   shadow = false,
   inputClassName,
   placeholderText,
@@ -90,10 +96,12 @@ const Search: React.FC<SearchProps> = ({
 
   const rootClassName = cn(
     classes.root,
+    classes[size],
     {
       [classes.normal]: variant === 'normal',
       [classes.solid]: variant === 'solid',
       [classes.outline]: variant === 'outline',
+      [classes.hybrid]: variant === 'hybrid',
     },
     {
       [classes.shadow]: shadow,
@@ -124,9 +132,12 @@ const Search: React.FC<SearchProps> = ({
       </label>
       <button
         type="submit"
-        className="absolute top-1/2 -translate-y-1/2 p-2 text-body outline-none start-1 focus:outline-none active:outline-none"
+        className={cn(
+          'absolute top-1/2 -translate-y-1/2 p-2 text-muted-foreground outline-none start-1 focus:outline-none active:outline-none',
+          size === 'sm' && 'p-1.5',
+        )}
       >
-        <SearchIcon className="h-5 w-5" />
+        <SearchIcon className={cn('h-5 w-5', size === 'sm' && 'h-4 w-4')} />
       </button>
       <input
         type="text"
@@ -143,7 +154,7 @@ const Search: React.FC<SearchProps> = ({
         <button
           type="button"
           onClick={clear}
-          className="absolute top-1/2 -translate-y-1/2 p-2 text-body outline-none end-1 focus:outline-none active:outline-none"
+          className="absolute top-1/2 -translate-y-1/2 p-2 text-muted-foreground outline-none end-1 focus:outline-none active:outline-none"
         >
           <CloseIcon className="h-5 w-5" />
         </button>
