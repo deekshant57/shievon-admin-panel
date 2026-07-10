@@ -298,14 +298,42 @@
     16px base 16px
     */
     --h6: 1rem;
+
+    /*
+    * shadcn/ui semantic tokens (HSL values, brand primary #d42027)
+    */
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 357 73% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent-ui: 210 40% 96%;
+    --accent-ui-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 357 73% 48%;
+    --radius: 0.5rem;
   }
 
   a {
     @apply no-underline;
   }
 
+  * {
+    @apply border-border;
+  }
+
   body {
-    @apply font-body;
+    @apply bg-background font-body text-foreground antialiased;
   }
 
   input::-webkit-outer-spin-button,
@@ -319,5 +347,25 @@
     -moz-appearance: textfield;
   }
 }
+
+@layer components {
+  .ui-field-disabled {
+    @apply cursor-not-allowed border-border-base bg-gray-100 text-body opacity-60 select-none;
+  }
+
+  .ui-control {
+    @apply rounded-md border border-border-base bg-light text-sm text-heading transition-colors duration-200 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-300;
+  }
+
+  .auth-brand-panel {
+    @apply bg-muted/40;
+    background-image: radial-gradient(
+      ellipse 80% 60% at 20% 40%,
+      rgba(var(--color-accent), 0.08),
+      transparent 70%
+    );
+  }
+}
 @import './custom-plugins.css';
+@import './rc-table-theme.css';
 @import './rich-text-editor.css';

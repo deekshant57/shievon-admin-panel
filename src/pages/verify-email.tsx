@@ -1,5 +1,6 @@
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
+import { AuthHeader } from '@/components/auth/layout';
 import {
   useSendVerifyEmailOtp,
   useVerifyEmailOtp,
@@ -139,10 +140,11 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <AuthPageLayout>
-      <h3 className="mt-4 mb-6 text-center text-base italic text-body">
-        {t('common:email-not-verified') || 'Verify your email'}
-      </h3>
+    <AuthPageLayout variant="admin">
+      <AuthHeader
+        title={t('email-not-verified') || 'Verify your email'}
+        subtitle={t('auth-verify-subtitle')}
+      />
 
       {step === 'send' ? (
         <>
@@ -153,6 +155,7 @@ export default function VerifyEmailPage() {
                 <strong>{queryEmail}</strong>
               </p>
               <Button
+                type="button"
                 onClick={() => handleSendCode(queryEmail)}
                 disabled={isSendingOtp}
                 className="w-full"

@@ -1,4 +1,5 @@
 import AuthPageLayout from '@/components/layouts/auth-layout';
+import { AuthHeader } from '@/components/auth/layout';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
 import { licenseKeyValidationSchema } from '@/components/user/license-key-validation-schema';
@@ -72,10 +73,8 @@ export default function VerifyLicenseKeyActions() {
 
   return (
     <>
-      <AuthPageLayout>
-        <h3 className="mt-4 mb-6 text-center text-base italic text-red-500 text-body">
-          {t('common:license-not-verified')}
-        </h3>
+      <AuthPageLayout variant="admin">
+        <AuthHeader title={t('license-not-verified')} />
         <div className="w-full space-y-3">
           <form onSubmit={handleSubmit(onSubmit)}>
             <label

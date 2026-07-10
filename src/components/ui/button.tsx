@@ -1,6 +1,6 @@
-import cn from 'classnames';
 import React, { ButtonHTMLAttributes } from 'react';
-import { twMerge } from 'tailwind-merge';
+import { Button as ShadButton } from '@/components/ui/shadcn/button';
+import { cn } from '@/lib/utils';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   className?: string;
@@ -13,21 +13,17 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: React.ReactNode;
 }
 
-const classes = {
-  root: 'inline-flex items-center justify-center flex-shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-none focus:shadow focus:ring-1 focus:ring-accent-700',
-  normal:
-    'bg-accent text-light border border-transparent hover:bg-accent-hover',
-  custom: 'border border-transparent',
+const sizeClasses = {
+  small: 'h-10 px-3 text-sm',
+  medium: 'h-12 px-5 text-sm font-semibold',
+  big: 'h-14 px-10 font-semibold',
+};
+
+const variantClasses = {
+  normal: 'bg-accent text-light shadow hover:bg-accent-hover',
   outline:
-    'border border-border-400 bg-transparent text-body hover:text-light hover:bg-accent hover:border-accent',
-  loading:
-    'h-4 w-4 ms-2 rounded-full border-2 border-transparent border-t-2 animate-spin',
-  disabled:
-    'border border-border-base bg-[#EEF1F4] border-[#D4D8DD] text-body cursor-not-allowed',
-  disabledOutline: 'border border-border-base text-muted cursor-not-allowed',
-  small: 'px-3 py-0 h-9 text-sm h-10',
-  medium: 'px-5 py-0 h-12',
-  big: 'px-10 py-0 h-14',
+    'border-border-400 bg-background text-body shadow-sm hover:border-accent hover:bg-accent hover:text-light',
+  custom: 'border-transparent bg-transparent shadow-none',
 };
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -41,35 +37,30 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       loading = false,
       spinnerColor,
       disabled = false,
+      type,
       ...rest
     } = props;
-    const classesName = cn(
-      classes.root,
-      {
-        [classes.normal]: !disabled && variant === 'normal',
-        [classes.disabled]: disabled && variant === 'normal',
-        [classes.outline]: !disabled && variant === 'outline',
-        [classes.disabledOutline]: disabled && variant === 'outline',
-        [classes.small]: size === 'small',
-        [classes.medium]: size === 'medium',
-        [classes.big]: size === 'big',
-      },
-      className,
-    );
 
     return (
-      <button
+      <ShadButton
+        ref={ref}
+        type={type}
         aria-pressed={active}
         data-variant={variant}
-        ref={ref}
-        className={twMerge(classesName)}
-        disabled={disabled}
+        disabled={disabled || loading}
+        className={cn(
+          'rounded-md font-semibold leading-none transition-colors duration-200',
+          sizeClasses[size],
+          variantClasses[variant],
+          disabled && 'cursor-not-allowed opacity-60',
+          className,
+        )}
         {...rest}
       >
         {children}
         {loading && (
           <span
-            className={classes.loading}
+            className="ms-2 h-4 w-4 animate-spin rounded-full border-2 border-transparent border-t-2"
             style={{
               borderTopColor:
                 spinnerColor ??
@@ -77,7 +68,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             }}
           />
         )}
-      </button>
+      </ShadButton>
     );
   },
 );

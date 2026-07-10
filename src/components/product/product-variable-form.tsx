@@ -9,8 +9,7 @@ import {
   FieldArrayMethodProps,
 } from 'react-hook-form';
 import Button from '@/components/ui/button';
-import Description from '@/components/ui/description';
-import Card from '@/components/common/card';
+import ProductFormSection from '@/components/product/product-form-section';
 import Label from '@/components/ui/label';
 import Title from '@/components/ui/title';
 import Checkbox from '@/components/ui/checkbox/checkbox';
@@ -83,17 +82,15 @@ export default function ProductVariableForm({
   const cartesianProduct = getCartesianProduct(getValues(name));
 
   return (
-    <div className="my-5 flex flex-wrap sm:my-8">
-      <Description
-        title={t('form:form-title-variation-product-info')}
-        details={`${
-          initialValues
-            ? t('form:item-description-update')
-            : t('form:item-description-choose')
-        } ${t('form:form-description-variation-product-info')}`}
-        className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-      />
-      <Card className="w-full p-0 sm:w-8/12 md:w-2/3 md:p-0">
+    <ProductFormSection
+      title={t('form:form-title-variation-product-info')}
+      details={`${
+        initialValues
+          ? t('form:item-description-update')
+          : t('form:item-description-choose')
+      } ${t('form:form-description-variation-product-info')}`}
+      cardClassName="p-0 pt-0"
+    >
         <div className="mb-5 md:mb-8">
           <Title className="mt-8 mb-0 px-5 text-center text-lg uppercase md:px-8">
             {t('form:form-title-options')}
@@ -358,8 +355,7 @@ export default function ProductVariableForm({
             </div>
           )}
         </div>
-      </Card>
-    </div>
+    </ProductFormSection>
   );
 }
 

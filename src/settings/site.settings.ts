@@ -10,15 +10,15 @@ export const siteSettings = {
   name: 'Shievon',
   description: '',
   logo: {
-    url: '/logo.svg',
+    url: '/icons/Shievon_Logo/Rosso_Corsa/Full_Side_Rosso_Corsa.svg',
     alt: 'Shievon',
     href: '/',
     width: 187,
     height: 40,
   },
   collapseLogo: {
-    url: '/collapse-logo.svg',
-    alt: 'S',
+    url: '/icons/Shievon_Logo/Rosso_Corsa/Only_Logo_Rosso_Corsa.svg',
+    alt: 'Shievon',
     href: '/',
     width: 32,
     height: 32,

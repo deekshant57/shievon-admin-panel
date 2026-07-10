@@ -1,47 +1,46 @@
 import { PaymentInfo } from '@/types';
 import { useTranslation } from 'next-i18next';
 import { ContentListVertical } from '@/components/shop-single/content-list';
+import EmptyState from '@/components/page/empty-state';
+import { Wallet } from 'lucide-react';
 
 type PaymentInfoProps = {
-  payment: PaymentInfo;
+  payment?: PaymentInfo;
 };
 
 const PaymentInfoList: React.FC<PaymentInfoProps> = ({ payment }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
+
+  if (!payment?.name && !payment?.email && !payment?.bank && !payment?.account) {
+    return (
+      <EmptyState
+        icon={<Wallet className="h-10 w-10" />}
+        title={t('text-no-payment-info')}
+        description={t('text-no-payment-info-description')}
+        className="py-8"
+      />
+    );
+  }
+
   return (
-    <>
-      {payment?.name || payment?.email || payment?.bank || payment?.account ? (
-        <div className="relative mt-5 pt-5 xl:mt-9">
-          <div className="absolute top-0 -left-8 w-[calc(100%+64px)] border-b border-dashed border-b-[#F0F0F0]" />
-          <h2 className="mb-4 text-lg font-semibold text-muted-black xl:mb-6 xl:text-xl">
-            {t('common:text-payment-info')}
-          </h2>
-          <div className="space-y-4">
-            <ContentListVertical
-              title={t('common:text-name')}
-              content={payment?.name as string}
-            />
-
-            <ContentListVertical
-              title={t('common:text-email')}
-              content={payment?.email as string}
-            />
-
-            <ContentListVertical
-              title={t('common:text-bank')}
-              content={payment?.bank as string}
-            />
-
-            <ContentListVertical
-              title={t('common:text-account-no')}
-              content={payment?.account.toLocaleString() as string}
-            />
-          </div>
-        </div>
-      ) : (
-        ''
-      )}
-    </>
+    <div className="space-y-4">
+      <ContentListVertical
+        title={t('text-name')}
+        content={payment?.name as string}
+      />
+      <ContentListVertical
+        title={t('text-email')}
+        content={payment?.email as string}
+      />
+      <ContentListVertical
+        title={t('text-bank')}
+        content={payment?.bank as string}
+      />
+      <ContentListVertical
+        title={t('text-account-no')}
+        content={payment?.account?.toLocaleString() as string}
+      />
+    </div>
   );
 };
 

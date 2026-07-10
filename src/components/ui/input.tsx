@@ -1,7 +1,7 @@
 import TooltipLabel from '@/components/ui/tooltip-label';
-import cn from 'classnames';
+import { Input as ShadInput } from '@/components/ui/shadcn/input';
+import { cn } from '@/lib/utils';
 import React, { InputHTMLAttributes } from 'react';
-import { twMerge } from 'tailwind-merge';
 
 export interface Props extends InputHTMLAttributes<HTMLInputElement> {
   className?: string;
@@ -20,20 +20,12 @@ export interface Props extends InputHTMLAttributes<HTMLInputElement> {
   required?: boolean;
 }
 
-const classes = {
-  root: 'px-4 h-12 flex items-center w-full rounded appearance-none transition duration-300 ease-in-out text-heading text-sm focus:outline-none focus:ring-0',
-  normal:
-    'bg-gray-100 border border-border-base focus:shadow focus:bg-light focus:border-accent',
-  solid:
-    'bg-gray-100 border border-border-100 focus:bg-light focus:border-accent',
-  outline: 'border border-border-base focus:border-accent',
-  shadow: 'focus:shadow',
-};
 const sizeClasses = {
-  small: 'text-sm h-10',
+  small: 'h-10 text-sm',
   medium: 'h-12',
   big: 'h-14',
 };
+
 const Input = React.forwardRef<HTMLInputElement, Props>(
   (
     {
@@ -57,22 +49,10 @@ const Input = React.forwardRef<HTMLInputElement, Props>(
     },
     ref,
   ) => {
-    const rootClassName = cn(
-      classes.root,
-      {
-        [classes.normal]: variant === 'normal',
-        [classes.solid]: variant === 'solid',
-        [classes.outline]: variant === 'outline',
-      },
-      {
-        [classes.shadow]: shadow,
-      },
-      sizeClasses[dimension],
-      inputClassName,
-    );
-    let numberDisable = type === 'number' && disabled ? 'number-disable' : '';
+    const numberDisable = type === 'number' && disabled ? 'number-disable' : '';
+
     return (
-      <div className={twMerge(className)}>
+      <div className={cn(className)}>
         {showLabel || label ? (
           <TooltipLabel
             htmlFor={name}
@@ -81,21 +61,21 @@ const Input = React.forwardRef<HTMLInputElement, Props>(
             required={required}
             className={labelClassName}
           />
-        ) : (
-          ''
-        )}
-        <input
+        ) : null}
+        <ShadInput
           id={name}
           name={name}
           type={type}
           ref={ref}
-          className={twMerge(
-            cn(
-              disabled
-                ? `cursor-not-allowed border-[#D4D8DD] bg-[#EEF1F4] ${numberDisable} select-none`
-                : '',
-              rootClassName,
-            ),
+          className={cn(
+            'rounded-md border-border-base bg-background text-sm text-heading transition-colors duration-200 focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-ring/30',
+            sizeClasses[dimension],
+            variant === 'outline' && 'bg-background',
+            (variant === 'normal' || variant === 'solid') && 'bg-background',
+            shadow && 'focus-visible:shadow-sm',
+            disabled && 'ui-field-disabled',
+            numberDisable,
+            inputClassName,
           )}
           autoComplete="off"
           autoCorrect="off"
@@ -107,7 +87,7 @@ const Input = React.forwardRef<HTMLInputElement, Props>(
         />
         {note && <p className="mt-2 text-xs text-body">{note}</p>}
         {error && (
-          <p className="my-2 text-xs text-red-500 text-start">{error}</p>
+          <p className="my-2 text-start text-xs text-red-500">{error}</p>
         )}
       </div>
     );

@@ -257,6 +257,7 @@
   "error-invalid-coupon": "This coupon code is not valid",
   "text-payment-method-preparing": "Please wait payment method is preparing...",
   "text-register": "Register",
+  "text-back-to-login": "Back to login",
   "text-no-account": "Don't have any account?",
   "text-already-account": "Already have an account?",
   "text-customer": "Customer",

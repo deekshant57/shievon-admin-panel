@@ -7,8 +7,7 @@ import {
   Controller,
 } from 'react-hook-form';
 import Button from '@/components/ui/button';
-import Description from '@/components/ui/description';
-import Card from '@/components/common/card';
+import ProductFormSection from '@/components/product/product-form-section';
 import Label from '@/components/ui/label';
 import Radio from '@/components/ui/radio/radio';
 import { useRouter } from 'next/router';
@@ -485,43 +484,24 @@ export default function CreateOrUpdateProductForm({
       ) : null}
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-            <Description
-              title={t('form:featured-image-title')}
-              details={featuredImageInformation}
-              className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-            />
+          <ProductFormSection
+            title={t('form:featured-image-title')}
+            details={featuredImageInformation}
+          >
+            <FileInput name="image" control={control} multiple={false} />
+          </ProductFormSection>
 
-            <Card className="w-full sm:w-8/12 md:w-2/3">
-              <FileInput name="image" control={control} multiple={false} />
-              {/* {errors.image?.message && (
-                <p className="my-2 text-xs text-red-500">
-                  {t(errors?.image?.message!)}
-                </p>
-              )} */}
-            </Card>
-          </div>
+          <ProductFormSection
+            title={t('form:gallery-title')}
+            details={galleryImageInformation}
+          >
+            <FileInput name="gallery" control={control} />
+          </ProductFormSection>
 
-          <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-            <Description
-              title={t('form:gallery-title')}
-              details={galleryImageInformation}
-              className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-            />
-
-            <Card className="w-full sm:w-8/12 md:w-2/3">
-              <FileInput name="gallery" control={control} />
-            </Card>
-          </div>
-
-          <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-            <Description
-              title={t('form:video-title')}
-              details={t('form:video-help-text')}
-              className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-            />
-
-            <Card className="w-full sm:w-8/12 md:w-2/3">
+          <ProductFormSection
+            title={t('form:video-title')}
+            details={t('form:video-help-text')}
+          >
               {/* Video url picker */}
               <div>
                 {fields?.map((item: any, index: number) => (
@@ -566,17 +546,12 @@ export default function CreateOrUpdateProductForm({
               >
                 {t('form:button-label-add-video')}
               </Button>
-            </Card>
-          </div>
+          </ProductFormSection>
 
-          <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-            <Description
-              title={t('form:type-and-category')}
-              details={t('form:type-and-category-help-text')}
-              className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-            />
-
-            <Card className="w-full sm:w-8/12 md:w-2/3">
+          <ProductFormSection
+            title={t('form:type-and-category')}
+            details={t('form:type-and-category-help-text')}
+          >
               <ProductGroupInput
                 control={control}
                 error={t((errors?.type as any)?.message)}
@@ -586,21 +561,16 @@ export default function CreateOrUpdateProductForm({
               <ProductAuthorInput control={control} />
               */}
               <ProductTagInput control={control} setValue={setValue} />
-            </Card>
-          </div>
+          </ProductFormSection>
 
-          <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-            <Description
-              title={t('form:item-description')}
-              details={`${
-                initialValues
-                  ? t('form:item-description-edit')
-                  : t('form:item-description-add')
-              } ${t('form:product-description-help-text')}`}
-              className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-            />
-
-            <Card className="w-full sm:w-8/12 md:w-2/3">
+          <ProductFormSection
+            title={t('form:item-description')}
+            details={`${
+              initialValues
+                ? t('form:item-description-edit')
+                : t('form:item-description-add')
+            } ${t('form:product-description-help-text')}`}
+          >
               <Input
                 label={`${t('form:input-label-name')}*`}
                 {...register('name')}
@@ -687,49 +657,33 @@ export default function CreateOrUpdateProductForm({
                   </p>
                 )}
               </div>
-            </Card>
-          </div>
+          </ProductFormSection>
 
           {initialValues?.in_flash_sale ? (
-            <>
-              <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-                <Description
-                  title="Promotional"
-                  details="Product selected for this campaign."
-                  className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-                />
-                <Card className="w-full sm:w-8/12 md:w-2/3">
-                  <ProductFlashSaleBox
-                    initialValues={initialValues}
-                    shop={shopData}
-                  />
-                </Card>
-              </div>
-            </>
+            <ProductFormSection
+              title="Promotional"
+              details="Product selected for this campaign."
+            >
+              <ProductFlashSaleBox
+                initialValues={initialValues}
+                shop={shopData}
+              />
+            </ProductFormSection>
           ) : (
-            <>
-              <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-                <Description
-                  title="Promotional"
-                  details="Select product promotional settings form here"
-                  className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-                />
-                <Card className="w-full sm:w-8/12 md:w-2/3">
-                  <Alert message={'Product is not selected in any campaign.'} />
-                </Card>
-              </div>
-            </>
+            <ProductFormSection
+              title="Promotional"
+              details="Select product promotional settings form here"
+            >
+              <Alert message={'Product is not selected in any campaign.'} />
+            </ProductFormSection>
           )}
 
-          <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-            <Description
-              title={t('form:form-title-product-type')}
-              details={t('form:form-description-product-type')}
-              className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pr-4 md:w-1/3 md:pr-5"
-            />
-
+          <ProductFormSection
+            title={t('form:form-title-product-type')}
+            details={t('form:form-description-product-type')}
+          >
             <ProductTypeInput />
-          </div>
+          </ProductFormSection>
 
           {hasPartialCategorySelection && (
             <div className="mb-5 rounded border border-border-200 bg-light p-5 text-sm text-body md:p-8">

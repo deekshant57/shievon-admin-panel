@@ -1,10 +1,9 @@
-import Description from '@/components/ui/description';
-import Card from '@/components/common/card';
+import Section from '@/components/page/section';
 import cn from 'classnames';
 
 type ProductFormSectionProps = {
   title: string;
-  details: string;
+  details: string | React.ReactNode;
   children: React.ReactNode;
   cardClassName?: string;
 };
@@ -20,17 +19,13 @@ export default function ProductFormSection({
   cardClassName,
 }: ProductFormSectionProps) {
   return (
-    <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-      <Description
-        title={title}
-        details={details}
-        className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-      />
-      <Card
-        className={cn('w-full sm:w-8/12 md:w-2/3', cardClassName)}
-      >
-        {children}
-      </Card>
-    </div>
+    <Section
+      title={title}
+      description={details}
+      className="mb-6"
+      contentClassName={cn(cardClassName)}
+    >
+      {children}
+    </Section>
   );
 }

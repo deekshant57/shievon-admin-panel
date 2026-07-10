@@ -1,3 +1,4 @@
+import EmptyState from '@/components/page/empty-state';
 import Pagination from '@/components/ui/pagination';
 import Image from 'next/image';
 import { Table } from '@/components/ui/table';
@@ -292,18 +293,16 @@ const ProductList = ({
 
   return (
     <>
-      <div className="mb-6 overflow-hidden rounded shadow">
+      <div className="overflow-hidden rounded-lg border border-border/60">
         <Table
           /* @ts-ignore */
           columns={columns}
           emptyText={() => (
-            <div className="flex flex-col items-center py-7">
-              <NoDataFound className="w-52" />
-              <div className="mb-1 pt-6 text-base font-semibold text-heading">
-                {t('table:empty-table-data')}
-              </div>
-              <p className="text-[13px]">{t('table:empty-table-sorry-text')}</p>
-            </div>
+            <EmptyState
+              icon={<NoDataFound className="w-52" />}
+              title={t('table:empty-table-data')}
+              description={t('table:empty-table-sorry-text')}
+            />
           )}
           data={products}
           rowKey="id"
@@ -312,7 +311,7 @@ const ProductList = ({
       </div>
 
       {!!paginatorInfo?.total && (
-        <div className="flex items-center justify-end">
+        <div className="mt-6 flex items-center justify-end">
           <Pagination
             total={paginatorInfo.total}
             current={paginatorInfo.currentPage}

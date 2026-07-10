@@ -1,24 +1,20 @@
-import { useRouter } from 'next/router';
-import Logo from '@/components/ui/logo';
-import React from 'react';
+import { AuthShell } from '@/components/auth/layout';
+import type { AuthBrandVariant } from '@/components/auth/layout';
+
+type AuthPageLayoutProps = {
+  children: React.ReactNode;
+  variant?: AuthBrandVariant;
+  formWidth?: 'md' | 'lg';
+};
 
 export default function AuthPageLayout({
   children,
-}: React.PropsWithChildren<{}>) {
-  // const { locale } = useRouter();
-  // const dir = locale === 'ar' || locale === 'he' ? 'rtl' : 'ltr';
-
+  variant = 'admin',
+  formWidth = 'md',
+}: AuthPageLayoutProps) {
   return (
-    <div
-      className="flex h-screen items-center justify-center bg-light sm:bg-gray-100"
-      // dir={dir}
-    >
-      <div className="m-auto w-full max-w-[420px] rounded bg-light p-5 sm:p-8 sm:shadow">
-        <div className="mb-2 flex justify-center">
-          <Logo />
-        </div>
-        {children}
-      </div>
-    </div>
+    <AuthShell variant={variant} formWidth={formWidth}>
+      {children}
+    </AuthShell>
   );
 }

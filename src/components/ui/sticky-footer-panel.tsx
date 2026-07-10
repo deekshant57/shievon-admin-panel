@@ -15,7 +15,7 @@ const StickyFooterPanel: React.FC<StickyFooterPanelProps> = ({
     <div
       className={twMerge(
         classNames(
-          'sticky bottom-0 -mx-5 bg-gray-100/10 py-3 px-5 backdrop-blur text-end md:py-5 lg:-mx-8 lg:px-8',
+          'sticky bottom-0 -mx-5 border-t border-border/60 bg-background/95 px-5 py-3 text-end backdrop-blur supports-[backdrop-filter]:bg-background/80 md:py-5 lg:-mx-8 lg:px-8',
           className,
         ),
       )}

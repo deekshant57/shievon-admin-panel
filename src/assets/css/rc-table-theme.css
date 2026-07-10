@@ -1,0 +1,61 @@
+/* shadcn-aligned rc-table theme overrides */
+
+.rc-table {
+  @apply w-full border-separate;
+  border-spacing: 0;
+}
+
+.rc-table .rc-table-content,
+.rc-table .rc-table-body,
+.rc-table .rc-table-header {
+  @apply border-0;
+}
+
+.rc-table tr th,
+.rc-table tr td {
+  @apply border-0 font-body;
+}
+
+.rc-table tr td {
+  @apply border-b border-border-200;
+}
+
+.rc-table thead.rc-table-thead th {
+  @apply whitespace-nowrap bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-body first:rounded-tl-md first:ps-5 last:rounded-tr-md last:pe-5;
+}
+
+.rc-table tr.rc-table-row:hover {
+  background-color: inherit;
+}
+
+.rc-table tr.rc-table-row td {
+  @apply cursor-default px-4 py-3.5 text-sm font-normal text-heading first:ps-5 last:pe-5;
+}
+
+.rc-table tr.rc-table-row td.rc-table-cell-row-hover {
+  @apply bg-gray-100;
+}
+
+.rc-table tr.rc-table-row-level-1 td {
+  @apply bg-gray-50;
+}
+
+.rc-table tr.rc-table-row:last-child td {
+  @apply border-b-0;
+}
+
+.rc-table tr.rc-table-expanded-row > td {
+  @apply whitespace-normal border border-border-200 bg-gray-50 p-0;
+}
+
+.rc-table tr.rc-table-expanded-row tr.rc-table-row {
+  cursor: default;
+}
+
+.rc-table .rc-table-row-expand-icon {
+  @apply inline-flex items-center justify-center rounded-sm;
+}
+
+.rc-table .rc-table-expanded-row-fixed::after {
+  border-width: 0;
+}

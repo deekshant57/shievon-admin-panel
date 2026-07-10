@@ -2,10 +2,8 @@ import Alert from '@/components/ui/alert';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
 import { useState } from 'react';
-import { Routes } from '@/config/routes';
 import { useTranslation } from 'next-i18next';
 import * as yup from 'yup';
-import Link from '@/components/ui/link';
 import Form from '@/components/ui/forms/form';
 import {
   allowedRoles,
@@ -18,9 +16,13 @@ import type { RegisterInput } from '@/types';
 import Router from 'next/router';
 import { getFormErrors } from '@/data/client/http-client';
 import PasswordInput from '@/components/ui/password-input';
+import { Routes } from '@/config/routes';
 
 const registrationFormSchema = yup.object().shape({
-  name: yup.string().required('form:error-name-required').min(2, 'form:error-name-required'),
+  name: yup
+    .string()
+    .required('form:error-name-required')
+    .min(2, 'form:error-name-required'),
   email: yup
     .string()
     .email('form:error-email-format')
@@ -53,11 +55,15 @@ const RegistrationForm = () => {
     register(payload, {
       onSuccess: (data: any) => {
         if (!data?.token) {
-          setErrorMessage(t('form:error-credential-wrong') || 'Registration failed');
+          setErrorMessage(
+            t('form:error-credential-wrong') || 'Registration failed',
+          );
           return;
         }
         if (!hasAccess(allowedRoles, data.permissions)) {
-          setErrorMessage(t('form:error-enough-permission') || 'Insufficient permission');
+          setErrorMessage(
+            t('form:error-enough-permission') || 'Insufficient permission',
+          );
           return;
         }
         setAuthCredentials(data.token, data.permissions, data.role);
@@ -74,78 +80,66 @@ const RegistrationForm = () => {
       onError: (error: unknown) => {
         const msg = getFormErrors(error) || (error as Error)?.message;
         setErrorMessage(
-          typeof msg === 'string' ? msg : t('form:error-credential-wrong') || 'Registration failed'
+          typeof msg === 'string'
+            ? msg
+            : t('form:error-credential-wrong') || 'Registration failed',
         );
       },
     });
   }
 
   return (
-    <>
-      <Form<RegisterInput>
-        validationSchema={registrationFormSchema}
-        onSubmit={onSubmit}
-        useFormProps={{ defaultValues: defaultRegistrationValues }}
-      >
-        {({ register, formState: { errors } }) => (
-          <>
-            <Input
-              label={t('form:input-label-name') || 'Name'}
-              {...register('name')}
-              variant="outline"
-              className="mb-4"
-              error={t(errors?.name?.message ?? '')}
+    <Form<RegisterInput>
+      validationSchema={registrationFormSchema}
+      onSubmit={onSubmit}
+      useFormProps={{ defaultValues: defaultRegistrationValues }}
+    >
+      {({ register, formState: { errors } }) => (
+        <div className="space-y-4">
+          <Input
+            label={t('form:input-label-name') || 'Name'}
+            {...register('name')}
+            variant="outline"
+            error={t(errors?.name?.message ?? '')}
+          />
+          <Input
+            label={t('form:input-label-email')}
+            {...register('email')}
+            type="email"
+            variant="outline"
+            error={t(errors?.email?.message ?? '')}
+          />
+          <PasswordInput
+            label={t('form:input-label-password')}
+            name="password"
+            {...register('password')}
+            variant="outline"
+            required={true}
+            error={
+              errors?.password?.message ? t(errors.password.message) : undefined
+            }
+          />
+
+          {errorMessage ? (
+            <Alert
+              message={errorMessage}
+              variant="error"
+              closeable={true}
+              onClose={() => setErrorMessage(null)}
             />
-            <Input
-              label={t('form:input-label-email')}
-              {...register('email')}
-              type="email"
-              variant="outline"
-              className="mb-4"
-              error={t(errors?.email?.message ?? '')}
-            />
-            <PasswordInput
-              label={t('form:input-label-password')}
-              name="password"
-              {...register('password')}
-              variant="outline"
-              className="mb-4"
-              required={true}
-              error={errors?.password?.message ? t(errors.password.message) : undefined}
-            />
-            <Button className="w-full" loading={isRegistering} disabled={isRegistering}>
-              {'Register'}
-            </Button>
-          </>
-        )}
-      </Form>
-      {errorMessage ? (
-        <Alert
-          message={errorMessage}
-          variant="error"
-          closeable={true}
-          className="mt-5"
-          onClose={() => setErrorMessage(null)}
-        />
-      ) : null}
-      <div className="relative flex flex-col items-center justify-center mt-8 mb-6 text-sm text-heading sm:mt-11 sm:mb-8">
-        <hr className="w-full" />
-        <span className="start-2/4 -ms-4 absolute -top-2.5 bg-light px-2">
-          {t('common:text-or')}
-        </span>
-      </div>
-      <div className="text-sm text-center text-body sm:text-base">
-        {t('form:text-have-account') || 'Already have an account?'}{' '}
-        <Link
-          href={Routes.login}
-          className="font-semibold underline transition-colors duration-200 ms-1 text-accent hover:text-accent-hover hover:no-underline focus:text-accent-700 focus:no-underline focus:outline-none"
-        >
-          {t('form:button-label-login') === 'form:button-label-login'
-            ? 'Login'
-            : t('form:button-label-login')}
-        </Link>
-      </div>
-    </>
+          ) : null}
+
+          <Button
+            type="submit"
+            className="h-11 w-full"
+            loading={isRegistering}
+            disabled={isRegistering}
+          >
+            {t('form:text-register') || 'Register'}
+          </Button>
+        </div>
+      )}
+    </Form>
   );
 };
 

@@ -54,14 +54,14 @@ function SidebarShortItem({
                     query: { parents: label },
                   }}
                   className={cn(
-                    'relative flex w-full cursor-pointer items-center rounded-lg py-2 text-sm text-start focus:text-accent',
+                    'relative flex w-full cursor-pointer items-center rounded-md px-3 py-2 text-sm text-start transition-colors duration-200',
                     (
                       shop
                         ? sanitizedPath === item?.href(shop?.toString()!)
                         : sanitizedPath === item?.href
                     )
-                      ? 'bg-transparent font-medium text-accent-hover'
-                      : 'text-body-dark hover:text-accent focus:text-accent',
+                      ? 'bg-primary/10 font-semibold text-accent-hover'
+                      : 'text-body-dark hover:bg-muted hover:text-accent',
                   )}
                   title={t(item?.label)}
                   onClick={() => closeSidebar()}
@@ -173,8 +173,8 @@ const SidebarItem = ({
         <motion.div
           initial={false}
           className={cn(
-            'group cursor-pointer rounded-md px-3 py-2.5 text-body-dark hover:bg-gray-100 focus:text-accent',
-            isOpen ? 'bg-gray-100 font-medium' : '',
+            'group cursor-pointer rounded-md px-3 py-2.5 text-body-dark transition-colors duration-200 hover:bg-muted',
+            isOpen ? 'bg-muted font-semibold' : '',
           )}
           onClick={onClick}
         >
@@ -196,7 +196,7 @@ const SidebarItem = ({
 
             <ChevronRight
               className={cn(
-                'h-3.5 w-3.5 shrink-0 opacity-75 transition-transform duration-300 ltr:ml-auto ltr:mr-0 rtl:mr-auto rtl:ml-0',
+                'h-3.5 w-3.5 shrink-0 opacity-75 transition-transform duration-200 ltr:ml-auto ltr:mr-0 rtl:mr-auto rtl:ml-0',
                 isOpen ? 'rotate-90 transform' : '',
                 width >= RESPONSIVE_WIDTH && miniSidebar ? 'hidden' : '',
               )}
@@ -221,8 +221,8 @@ const SidebarItem = ({
               }}
               className={miniSidebar ? 'relative' : '!mt-0'}
             >
-              <div className="pt-2 ltr:pl-5 rtl:pr-5">
-                <div className="space-y-1 border-0 border-l border-dashed border-slate-300 ltr:pl-1 rtl:pr-1">
+              <div className="pt-1 ltr:pl-4 rtl:pr-4">
+                <div className="space-y-0.5">
                   {childMenu?.map((item: any, index: number) => {
                     if (
                       shop &&
@@ -243,15 +243,15 @@ const SidebarItem = ({
                           }}
                           as={shop ? item?.href(shop?.toString()!) : item?.href}
                           className={cn(
-                            'relative flex w-full cursor-pointer items-center rounded-lg py-2 px-5 text-sm text-start before:absolute before:-left-0.5 before:top-[18px] before:h-px before:w-3 before:border-t before:border-dashed before:border-gray-300 before:content-[""] focus:text-accent',
+                            'relative flex w-full cursor-pointer items-center rounded-md py-2 px-3 text-sm text-start transition-colors duration-200',
                             (
                               shop
                                 ? sanitizedPath ===
                                   item?.href(shop?.toString()!)
                                 : sanitizedPath === item?.href
                             )
-                              ? 'bg-transparent font-medium text-accent-hover'
-                              : 'text-body-dark hover:text-accent focus:text-accent',
+                              ? 'bg-primary/10 font-semibold text-accent-hover'
+                              : 'text-body-dark hover:bg-muted hover:text-accent',
                           )}
                           title={t(item.label)}
                           onClick={() => closeSidebar()}
@@ -272,15 +272,16 @@ const SidebarItem = ({
     <Link
       href={href}
       className={cn(
-        `group flex w-full items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-gray-700 text-start focus:text-accent ${
-          miniSidebar && width >= RESPONSIVE_WIDTH
-            ? 'hover:text-accent-hover ltr:pl-3 rtl:pr-3'
-            : 'hover:bg-gray-100'
-        }`,
+        'group flex w-full items-center gap-2.5 rounded-md px-3 py-2.5 text-sm text-start transition-colors duration-200',
+        miniSidebar && width >= RESPONSIVE_WIDTH
+          ? 'text-gray-700 hover:text-accent-hover ltr:pl-3 rtl:pr-3'
+          : 'text-gray-700 hover:bg-muted',
         sanitizedPath === href
-          ? `font-medium !text-accent-hover ${
-              !miniSidebar ? 'bg-accent/10 hover:!bg-accent/10' : ''
-            }`
+          ? cn(
+              'font-semibold text-accent-hover',
+              !miniSidebar &&
+                'border-s-2 border-accent bg-primary/10 hover:bg-primary/10',
+            )
           : '',
       )}
       title={label}

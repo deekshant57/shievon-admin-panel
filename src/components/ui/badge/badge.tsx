@@ -1,6 +1,6 @@
-import cn from 'classnames';
+import { Badge as ShadBadge } from '@/components/ui/shadcn/badge';
+import { cn } from '@/lib/utils';
 import { useTranslation } from 'next-i18next';
-import { twMerge } from 'tailwind-merge';
 
 type BadgeProps = {
   className?: string;
@@ -22,34 +22,19 @@ const Badge: React.FC<BadgeProps> = (props) => {
     animate = false,
   } = props;
 
-  const classes = {
-    root: 'px-3 py-1.5 rounded text-xs whitespace-nowrap relative font-medium',
-    animate: 'animate-pulse',
-    default: 'bg-accent',
-    text: 'text-light',
-  };
-
   return (
-    <>
-      <span
-        className={twMerge(
-          cn(
-            'inline-block',
-            classes.root,
-            {
-              [classes.default]: !colorOverride,
-              [classes.text]: !textColorOverride,
-              [classes.animate]: animate,
-            },
-            colorOverride,
-            textColorOverride,
-            className
-          )
-        )}
-      >
-        {textKey ? t(textKey) : text}
-      </span>
-    </>
+    <ShadBadge
+      className={cn(
+        'relative whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium',
+        !colorOverride && 'bg-accent text-light hover:bg-accent',
+        colorOverride,
+        textColorOverride,
+        animate && 'animate-pulse',
+        className,
+      )}
+    >
+      {textKey ? t(textKey) : text}
+    </ShadBadge>
   );
 };
 

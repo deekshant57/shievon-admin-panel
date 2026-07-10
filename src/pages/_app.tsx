@@ -1,4 +1,5 @@
 import type { AppProps } from 'next/app';
+import localFont from 'next/font/local';
 import 'react-toastify/dist/ReactToastify.css';
 import '@/assets/css/main.css';
 import { UIProvider } from '@/contexts/ui.context';
@@ -21,6 +22,33 @@ import { useRouter } from 'next/router';
 import PrivateRoute from '@/utils/private-route';
 import { Config } from '@/config';
 import axios from 'axios';
+
+const inter = localFont({
+  src: [
+    {
+      path: '../assets/fonts/inter/inter-latin-400-normal.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/inter/inter-latin-500-normal.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/inter/inter-latin-600-normal.woff2',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/inter/inter-latin-700-normal.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  display: 'swap',
+});
+
 const Noop: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
   <>{children}</>
 );
@@ -69,7 +97,7 @@ const CustomApp = ({ Component, pageProps }: AppPropsWithLayout) => {
   const { locale } = useRouter();
   const dir = Config.getDirection(locale);
   return (
-    <div dir={dir}>
+    <div dir={dir} className={inter.className}>
       <QueryClientProvider client={queryClient}>
         <Hydrate state={pageProps?.dehydratedState}>
           <AppSettings>
@@ -89,7 +117,12 @@ const CustomApp = ({ Component, pageProps }: AppPropsWithLayout) => {
                         <Component {...pageProps} />
                       </Layout>
                     )}
-                    <ToastContainer autoClose={2000} theme="colored" />
+                    <ToastContainer
+                      autoClose={2000}
+                      theme="colored"
+                      position="top-right"
+                      toastClassName="!rounded-lg !shadow-md"
+                    />
                     <ManagedModal />
                   </CartProvider>
                 </>

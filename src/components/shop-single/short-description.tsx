@@ -33,7 +33,7 @@ const ShortDescription: React.FC<ShortDescriptionProps> = ({
         <div
           {...rest}
           className={twMerge(
-            classNames('text-sm leading-[171.429%] text-[#666]', className),
+            classNames('text-sm leading-relaxed text-body', className),
           )}
         >
           {content?.length < character

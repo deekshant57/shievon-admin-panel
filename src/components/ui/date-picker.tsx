@@ -96,10 +96,8 @@ const DatePickerInput: React.FC<DatePickerInputProps> = ({
                 <div
                   className={twMerge(
                     classNames(
-                      'border border-border-base px-4 h-12 flex items-center w-full rounded transition duration-300 ease-in-out text-heading text-sm cursor-pointer',
-                      disabled
-                        ? 'cursor-not-allowed border-[#D4D8DD] bg-[#EEF1F4] select-none'
-                        : '',
+                      'ui-control flex h-12 w-full cursor-pointer items-center border border-border-base px-4',
+                      disabled ? 'ui-field-disabled' : '',
                     ),
                   )}
                 >
