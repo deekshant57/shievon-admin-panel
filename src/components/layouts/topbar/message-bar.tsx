@@ -65,10 +65,9 @@ const MessageBar = ({ user }: IProps) => {
       });
 
       return () => {
+        channel.unbind(`${process.env.NEXT_PUBLIC_MESSAGE_EVENT}`);
         PusherConfig.unsubscribe(channelName);
       };
-    } else {
-      PusherConfig.disconnect();
     }
   }, [notice]);
 

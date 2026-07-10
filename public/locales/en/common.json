@@ -757,5 +757,7 @@
   "text-close-order-not-ready": "Finish all fulfillment tracks before closing",
   "text-close-order-ready": "All fulfillment tracks are complete. Close the order when the customer has left.",
   "text-new-paid-order": "New paid order",
-  "text-order-is-paid": "is paid"
+  "text-order-is-paid": "is paid",
+  "text-enable-order-alert-sound": "Click the order bag icon once to enable new-order alert sounds.",
+  "text-order-alert-sound-enabled": "Order alert sounds enabled."
 }

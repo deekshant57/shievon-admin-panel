@@ -75,10 +75,9 @@ const StoreNoticeBar = ({ user }: IProps) => {
       );
 
       return () => {
+        channel.unbind(`${process.env.NEXT_PUBLIC_STORE_NOTICE_CREATED_EVENT}`);
         PusherConfig.unsubscribe(channelName);
       };
-    } else {
-      PusherConfig.disconnect();
     }
   }, [notice]);
 

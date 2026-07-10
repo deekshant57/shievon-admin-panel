@@ -5,11 +5,9 @@ import type { VendorNotificationQueryOptions } from '@/types';
 import { getApiErrorMessage } from './client/http-client';
 import { toast } from 'react-toastify';
 
-const POLL_INTERVAL_MS = 30_000;
-
 export const useVendorNotificationsQuery = (
   params: Partial<VendorNotificationQueryOptions> = {},
-  options: { enabled?: boolean; refetchInterval?: number | false } = {},
+  options: { enabled?: boolean } = {},
 ) => {
   const { data, error, isLoading, refetch } = useQuery(
     [API_ENDPOINTS.VENDOR_NOTIFICATIONS, params],
@@ -17,9 +15,9 @@ export const useVendorNotificationsQuery = (
     {
       keepPreviousData: true,
       enabled: options.enabled ?? true,
-      refetchInterval: options.refetchInterval ?? POLL_INTERVAL_MS,
-      refetchIntervalInBackground: false,
-      refetchOnWindowFocus: true,
+      // Initial load only — live updates come from Pusher in RecentOrderBar.
+      refetchOnWindowFocus: false,
+      refetchInterval: false,
     },
   );
 
@@ -34,16 +32,15 @@ export const useVendorNotificationsQuery = (
 
 export const useVendorNotificationsUnreadCountQuery = (
   params: Pick<VendorNotificationQueryOptions, 'shop_id'> = {},
-  options: { enabled?: boolean; refetchInterval?: number | false } = {},
+  options: { enabled?: boolean } = {},
 ) => {
   const { data, error, isLoading, refetch } = useQuery(
     [API_ENDPOINTS.VENDOR_NOTIFICATIONS_UNREAD_COUNT, params],
     () => vendorNotificationsClient.unreadCount(params),
     {
       enabled: options.enabled ?? true,
-      refetchInterval: options.refetchInterval ?? POLL_INTERVAL_MS,
-      refetchIntervalInBackground: false,
-      refetchOnWindowFocus: true,
+      refetchOnWindowFocus: false,
+      refetchInterval: false,
     },
   );
 

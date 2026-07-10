@@ -7,6 +7,7 @@ import {
 import { ShoppingBagIcon } from '@/components/icons/sidebar/shopping-bag';
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment, useEffect, useMemo, useRef } from 'react';
+import { useQueryClient } from 'react-query';
 import Link from '@/components/ui/link';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import utc from 'dayjs/plugin/utc';
@@ -19,6 +20,14 @@ import { Routes } from '@/config/routes';
 import { useRouter } from 'next/router';
 import { useShopQuery } from '@/data/shop';
 import { VendorNotification } from '@/types';
+import { Config } from '@/config';
+import { PusherConfig } from '@/utils/pusher-config';
+import { API_ENDPOINTS } from '@/data/client/api-endpoints';
+import {
+  enableOrderAlertSound,
+  isOrderAlertSoundUnlocked,
+  playNewOrderAlertSound,
+} from '@/utils/play-new-order-alert-sound';
 
 type RecentOrderBarProps = {
   user: {
@@ -65,10 +74,10 @@ const VendorNotificationItem = ({
     const shopSlug = resolveShopSlug(item, user?.shops, activeShopSlug);
     const orderPath = Routes.order.details(item.order_id);
     const redirectTo = isSuperAdmin
-      ? `/${orderPath}`
+      ? orderPath
       : shopSlug
-        ? `/${shopSlug}/${orderPath}`
-        : `/${orderPath}`;
+        ? `/${shopSlug}${orderPath}`
+        : orderPath;
 
     router.push(redirectTo);
   }
@@ -105,9 +114,19 @@ const VendorNotificationItem = ({
   );
 };
 
+type VendorOrderPaidPusherPayload = {
+  message?: string;
+  title?: string;
+  notification_id?: string;
+  order_id?: string;
+  order_number?: string;
+  shop_id?: number;
+};
+
 const RecentOrderBar = ({ user }: RecentOrderBarProps) => {
   const { t } = useTranslation();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { permissions } = getAuthCredentials();
   const isSuperAdmin = hasAccess(adminOnly, permissions);
   const activeShopSlug = router.query.shop as string | undefined;
@@ -124,31 +143,113 @@ const RecentOrderBar = ({ user }: RecentOrderBarProps) => {
   const { mutate: markAllRead } = useMarkAllVendorNotificationsReadMutation();
   const toastedIdsRef = useRef<Set<string>>(new Set());
 
+  const soundPromptShownRef = useRef(false);
+
   const unreadNotifications = useMemo(
     () => notifications.filter((item) => !item.is_read),
     [notifications],
   );
 
+  // One-time hint: browsers require a click before alert audio can play.
   useEffect(() => {
-    unreadNotifications.forEach((item) => {
-      if (toastedIdsRef.current.has(item.id)) {
-        return;
-      }
-      toastedIdsRef.current.add(item.id);
-      toast.success(item.body || item.title || t('common:text-new-paid-order'), {
-        toastId: `vendor-order-${item.id}`,
-      });
+    if (
+      soundPromptShownRef.current ||
+      isOrderAlertSoundUnlocked() ||
+      Config.broadcastDriver !== 'pusher' ||
+      Config.pusherEnable !== 'true'
+    ) {
+      return;
+    }
+    soundPromptShownRef.current = true;
+    toast.info(
+      t('common:text-enable-order-alert-sound') ||
+        'Click the order bag icon once to enable new-order alert sounds.',
+      { autoClose: 8000, toastId: 'vendor-order-sound-hint' },
+    );
+  }, [t]);
+
+  useEffect(() => {
+    if (
+      Config.broadcastDriver !== 'pusher' ||
+      Config.pusherEnable !== 'true' ||
+      !user?.id
+    ) {
+      return;
+    }
+
+    const channelPrefix =
+      process.env.NEXT_PUBLIC_ORDER_CREATED_CHANNEL_PRIVATE ||
+      'private-order.created';
+    const eventName =
+      process.env.NEXT_PUBLIC_ORDER_CREATED_EVENT || 'order.create.event';
+    const channelName = `${channelPrefix}.${user.id}`;
+    // Reconnect if MessageBar/StoreNotice previously tore the shared socket down.
+    if (PusherConfig.connection.state === 'disconnected') {
+      PusherConfig.connect();
+    }
+
+    const channel = PusherConfig.subscribe(channelName);
+
+    channel.bind('pusher:subscription_succeeded', () => {
+      // eslint-disable-next-line no-console
+      console.info('[vendor-order-pusher] subscribed', channelName);
     });
-  }, [unreadNotifications, t]);
+
+    channel.bind(eventName, (data: VendorOrderPaidPusherPayload) => {
+      // Always attempt sound on live events (toast text is deduped below).
+      playNewOrderAlertSound();
+
+      const toastId =
+        data?.notification_id != null
+          ? `vendor-order-${data.notification_id}`
+          : data?.order_id != null
+            ? `vendor-order-${data.order_id}`
+            : 'vendor-order-paid';
+
+      if (!toastedIdsRef.current.has(String(toastId))) {
+        toastedIdsRef.current.add(String(toastId));
+        toast.success(
+          data?.message || data?.title || t('common:text-new-paid-order'),
+          { toastId },
+        );
+      }
+
+      queryClient.invalidateQueries(API_ENDPOINTS.VENDOR_NOTIFICATIONS);
+      queryClient.invalidateQueries(
+        API_ENDPOINTS.VENDOR_NOTIFICATIONS_UNREAD_COUNT,
+      );
+      // Refresh orders list / detail caches so the open orders page updates live.
+      queryClient.invalidateQueries(API_ENDPOINTS.ORDERS);
+      queryClient.invalidateQueries(API_ENDPOINTS.ANALYTICS);
+    });
+
+    channel.bind('pusher:subscription_error', (status: unknown) => {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[vendor-order-pusher] subscription_error on',
+        channelName,
+        status,
+      );
+    });
+
+    return () => {
+      channel.unbind(eventName);
+      channel.unbind('pusher:subscription_succeeded');
+      channel.unbind('pusher:subscription_error');
+      PusherConfig.unsubscribe(channelName);
+    };
+  }, [queryClient, t, user?.id]);
 
   const ordersListHref = useMemo(() => {
     if (isSuperAdmin) {
-      return `/${Routes.order.list}`;
+      return Routes.order.list;
     }
     const shopSlug =
       activeShopSlug ||
       user?.shops?.find((shop) => Boolean(shop.slug))?.slug;
-    return shopSlug ? `/${shopSlug}/${Routes.order.list}` : `/${Routes.order.list}`;
+    return shopSlug
+      ? `/${shopSlug}${Routes.order.list}`
+      : Routes.order.list;
   }, [activeShopSlug, isSuperAdmin, user?.shops]);
 
   function handleMarkAllRead() {
@@ -162,6 +263,18 @@ const RecentOrderBar = ({ user }: RecentOrderBarProps) => {
           'relative flex h-9 w-9 items-center justify-center gap-2 rounded-full border border-gray-200 bg-gray-50 text-gray-600 before:absolute before:top-0 before:right-0 before:h-2 before:w-2 before:rounded-full focus:outline-none data-[headlessui-state=open]:bg-white data-[headlessui-state=open]:text-accent',
           unreadNotifications.length > 0 ? 'before:bg-[#3080F8]' : '',
         )}
+        onPointerDown={() => {
+          const wasUnlocked = isOrderAlertSoundUnlocked();
+          void enableOrderAlertSound().then((ok) => {
+            if (ok && !wasUnlocked) {
+              toast.success(
+                t('common:text-order-alert-sound-enabled') ||
+                  'Order alert sounds enabled.',
+                { toastId: 'vendor-order-sound-enabled' },
+              );
+            }
+          });
+        }}
       >
         <ShoppingBagIcon className="h-5 w-5" />
       </Menu.Button>
