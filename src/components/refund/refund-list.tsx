@@ -205,8 +205,7 @@ const RefundList = ({ refunds, onSort, onOrder, onPagination }: IProps) => {
 
   return (
     <>
-      <div className="mb-8 overflow-hidden rounded shadow">
-        <Table
+      <Table
           //@ts-ignore
           columns={columns}
           emptyText={() => (
@@ -222,7 +221,6 @@ const RefundList = ({ refunds, onSort, onOrder, onPagination }: IProps) => {
           rowKey="id"
           scroll={{ x: 900 }}
         />
-      </div>
       {!!refunds?.total && (
         <div className="flex items-center justify-end">
           <Pagination

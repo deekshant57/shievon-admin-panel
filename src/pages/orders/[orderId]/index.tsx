@@ -1,10 +1,11 @@
-import Card from '@/components/common/card';
 import { DownloadIcon } from '@/components/icons/download-icon';
 import Layout from '@/components/layouts/admin';
 import OrderStatusProgressBox from '@/components/order/order-status-progress-box';
 import OrderViewHeader from '@/components/order/order-view-header';
 import OrderFulfillmentSection from '@/components/order/order-fulfillment-section';
-import Button from '@/components/ui/button';
+import PageHeader from '@/components/page/page-header';
+import Section from '@/components/page/section';
+import ActionButton from '@/components/ui/action-button';
 import ErrorMessage from '@/components/ui/error-message';
 import ValidationError from '@/components/ui/form-validation-error';
 import Loader from '@/components/ui/loader/loader';
@@ -66,7 +67,7 @@ export default function OrderDetailsPage() {
       isRTL,
       language: locale!,
     },
-    { enabled: false }
+    { enabled: false },
   );
 
   const {
@@ -87,28 +88,23 @@ export default function OrderDetailsPage() {
   const { price: subtotal } = usePrice(
     order && {
       amount: order?.amount!,
-    }
+    },
   );
 
   const { price: total } = usePrice(
     order && {
       amount: order?.paid_total!,
-    }
+    },
   );
   const { price: discount } = usePrice(
     order && {
       amount: order?.discount! ?? 0,
-    }
-  );
-  const { price: delivery_fee } = usePrice(
-    order && {
-      amount: order?.delivery_fee!,
-    }
+    },
   );
   const { price: sales_tax } = usePrice(
     order && {
       amount: order?.sales_tax!,
-    }
+    },
   );
   const { price: sub_total } = usePrice({ amount: order?.amount! });
   const { price: shipping_charge } = usePrice({
@@ -124,12 +120,6 @@ export default function OrderDetailsPage() {
       : 0;
 
   const { price: amountDue } = usePrice({ amount: amountPayable });
-
-  const totalItem = order?.products.reduce(
-    // @ts-ignore
-    (initial = 0, p) => initial + parseInt(p?.pivot?.order_quantity!),
-    0
-  );
 
   const phoneNumber = useFormatPhoneNumber({
     customer_contact: order?.customer_contact as string,
@@ -204,72 +194,89 @@ export default function OrderDetailsPage() {
     },
   ];
 
+  const canChangeStatus = ![
+    OrderStatus.FAILED,
+    OrderStatus.CANCELLED,
+    OrderStatus.REFUNDED,
+  ].includes(order?.order_status! as OrderStatus);
+
   return (
-    <>
-      <Card className="relative overflow-hidden">
-        <div className="mb-6 -mt-5 -ml-5 -mr-5 md:-mr-8 md:-ml-8 md:-mt-8">
-          <OrderViewHeader order={order} wrapperClassName="px-8 py-4" />
+    <div className="min-w-0 max-w-full space-y-6">
+      <PageHeader
+        title={`${t('form:input-label-order-id')} - ${order?.tracking_number}`}
+        subtitle={t('common:order-details-subtitle')}
+        toolbarLayout="stacked"
+      >
+        <ActionButton
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={handleDownloadInvoice}
+          className="w-full justify-center sm:w-auto"
+        >
+          <DownloadIcon className="h-4 w-4 shrink-0" />
+          {t('common:text-download')} {t('common:text-invoice')}
+        </ActionButton>
+      </PageHeader>
+
+      <Section className="mb-0 overflow-hidden">
+        <div className="-mx-6 -mt-6 mb-6 md:-mx-6">
+          <OrderViewHeader order={order} wrapperClassName="px-6 py-4 md:px-8" />
         </div>
-        <div className="flex w-full">
-          <Button
-            onClick={handleDownloadInvoice}
-            className="mb-5 bg-blue-500 ltr:ml-auto rtl:mr-auto"
+
+        {canChangeStatus ? (
+          <form
+            onSubmit={handleSubmit(ChangeStatus)}
+            className="mb-6 flex w-full flex-col gap-3 sm:flex-row sm:items-start"
           >
-            <DownloadIcon className="h-4 w-4 me-3" />
-            {t('common:text-download')} {t('common:text-invoice')}
-          </Button>
-        </div>
-
-        <div className="flex flex-col items-center lg:flex-row">
-          <h3 className="mb-8 w-full whitespace-nowrap text-center text-2xl font-semibold text-heading lg:mb-0 lg:w-1/3 lg:text-start">
-            {t('form:input-label-order-id')} - {order?.tracking_number}
-          </h3>
-
-          {![
-            OrderStatus.FAILED,
-            OrderStatus.CANCELLED,
-            OrderStatus.REFUNDED,
-          ].includes(order?.order_status! as OrderStatus) && (
-            <form
-              onSubmit={handleSubmit(ChangeStatus)}
-              className="flex w-full items-start ms-auto lg:w-2/4"
+            <div className="z-20 w-full min-w-0 flex-1">
+              <SelectInput
+                name="order_status"
+                control={control}
+                getOptionLabel={(option: any) => t(option.name)}
+                getOptionValue={(option: any) => option.status}
+                options={legacyStatusOptions}
+                placeholder={t('form:input-placeholder-order-status')}
+              />
+              <ValidationError message={t(errors?.order_status?.message)} />
+            </div>
+            <ActionButton
+              type="submit"
+              variant="primary"
+              size="sm"
+              loading={updating}
+              disabled={updating}
+              className="w-full shrink-0 justify-center sm:w-auto"
             >
-              <div className="z-20 w-full me-5">
-                <SelectInput
-                  name="order_status"
-                  control={control}
-                  getOptionLabel={(option: any) => t(option.name)}
-                  getOptionValue={(option: any) => option.status}
-                  options={legacyStatusOptions}
-                  placeholder={t('form:input-placeholder-order-status')}
-                />
-
-                <ValidationError message={t(errors?.order_status?.message)} />
-              </div>
-              <Button loading={updating}>
-                <span className="hidden sm:block">
-                  {t('form:button-label-change-status')}
-                </span>
-                <span className="block sm:hidden">
-                  {t('form:form:button-label-change')}
-                </span>
-              </Button>
-            </form>
-          )}
-        </div>
+              <span className="hidden sm:block">
+                {t('form:button-label-change-status')}
+              </span>
+              <span className="block sm:hidden">
+                {t('form:form:button-label-change')}
+              </span>
+            </ActionButton>
+          </form>
+        ) : null}
 
         {showFulfillmentUi ? (
           <OrderFulfillmentSection order={order} />
         ) : (
-          <div className="my-5 flex items-center justify-center lg:my-10">
+          <div className="my-5 flex items-center justify-center lg:my-8">
             <OrderStatusProgressBox
               orderStatus={order?.order_status as OrderStatus}
               paymentStatus={order?.payment_status as PaymentStatus}
             />
           </div>
         )}
+      </Section>
 
-        <div className="mb-10">
+      <Section
+        title={t('table:table-item-products')}
+        description={t('common:order-items-subtitle')}
+        className="mb-0"
+        contentClassName="px-0 pb-0 pt-0 sm:px-0"
+      >
+        <div className="overflow-x-auto">
           {order ? (
             <Table
               //@ts-ignore
@@ -290,124 +297,103 @@ export default function OrderDetailsPage() {
               scroll={{ x: 300 }}
             />
           ) : (
-            <span>{t('common:no-order-found')}</span>
-          )}
-
-          {order?.parent_id! ? (
-            <div className="flex w-full flex-col space-y-2 border-t-4 border-double border-border-200 px-4 py-4 ms-auto sm:w-1/2 md:w-1/3">
-              <div className="flex items-center justify-between text-sm text-body">
-                <span>{t('common:order-sub-total')}</span>
-                <span>{subtotal}</span>
-              </div>
-              <div className="flex items-center justify-between text-base font-semibold text-heading">
-                <span>{t('common:order-total')}</span>
-                <span>{total}</span>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="flex w-full flex-col space-y-2 border-t-4 border-double border-border-200 px-4 py-4 ms-auto sm:w-1/2 md:w-1/3">
-                <div className="flex items-center justify-between text-sm text-body">
-                  <span>{t('common:order-sub-total')}</span>
-                  <span>{sub_total}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm text-body">
-                  <span> {t('text-shipping-charge')}</span>
-                  <span>{shipping_charge}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm text-body">
-                  <span> {t('text-tax')}</span>
-                  <span>{sales_tax}</span>
-                </div>
-                {order?.discount! > 0 && (
-                  <div className="flex items-center justify-between text-sm text-body">
-                    <span>{t('text-discount')}</span>
-                    <span>{discount}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between text-base font-semibold text-heading">
-                  <span> {t('text-total')}</span>
-                  <span>{total}</span>
-                </div>
-
-                {order?.wallet_point?.amount! && (
-                  <>
-                    <div className="flex items-center justify-between text-sm text-body">
-                      <span> {t('text-paid-from-wallet')}</span>
-                      <span>{wallet_total}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-base font-semibold text-heading">
-                      <span> {t('text-amount-due')}</span>
-                      <span>{amountDue}</span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </>
+            <span className="px-6">{t('common:no-order-found')}</span>
           )}
         </div>
 
-        {order?.note ? (
-          <div>
-            <h2 className="mt-12 mb-5 text-xl font-bold text-heading">
-              Purchase Note
-            </h2>
-            <div className="mb-12 flex items-start rounded border border-gray-700 bg-gray-100 p-4">
-              {order?.note}
+        {order?.parent_id! ? (
+          <div className="flex w-full flex-col space-y-2 border-t border-border/60 px-5 py-4 ms-auto sm:w-1/2 md:w-1/3 md:px-8">
+            <div className="flex items-center justify-between text-sm text-body">
+              <span>{t('common:order-sub-total')}</span>
+              <span>{subtotal}</span>
+            </div>
+            <div className="flex items-center justify-between text-base font-semibold text-heading">
+              <span>{t('common:order-total')}</span>
+              <span>{total}</span>
             </div>
           </div>
         ) : (
-          ''
+          <div className="flex w-full flex-col space-y-2 border-t border-border/60 px-5 py-4 ms-auto sm:w-1/2 md:w-1/3 md:px-8">
+            <div className="flex items-center justify-between text-sm text-body">
+              <span>{t('common:order-sub-total')}</span>
+              <span>{sub_total}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm text-body">
+              <span>{t('text-shipping-charge')}</span>
+              <span>{shipping_charge}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm text-body">
+              <span>{t('text-tax')}</span>
+              <span>{sales_tax}</span>
+            </div>
+            {order?.discount! > 0 && (
+              <div className="flex items-center justify-between text-sm text-body">
+                <span>{t('text-discount')}</span>
+                <span>{discount}</span>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between text-base font-semibold text-heading">
+              <span>{t('text-total')}</span>
+              <span>{total}</span>
+            </div>
+
+            {order?.wallet_point?.amount! ? (
+              <>
+                <div className="flex items-center justify-between text-sm text-body">
+                  <span>{t('text-paid-from-wallet')}</span>
+                  <span>{wallet_total}</span>
+                </div>
+                <div className="flex items-center justify-between text-base font-semibold text-heading">
+                  <span>{t('text-amount-due')}</span>
+                  <span>{amountDue}</span>
+                </div>
+              </>
+            ) : null}
+          </div>
         )}
+      </Section>
 
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
-          <div className="mb-10 w-full sm:mb-0 sm:w-1/2 sm:pe-8">
-            <h3 className="mb-3 border-b border-border-200 pb-2 font-semibold text-heading">
-              {t('text-order-details')}
-            </h3>
+      {order?.note ? (
+        <Section title={t('common:text-purchase-note') || 'Purchase Note'}>
+          <p className="rounded-lg border border-border/60 bg-muted/40 p-4 text-sm text-body">
+            {order?.note}
+          </p>
+        </Section>
+      ) : null}
 
-            <div className="flex flex-col items-start space-y-1 text-sm text-body">
-              <span>
-                {formatString(order?.products?.length, t('text-item'))}
-              </span>
-              <span>{order?.delivery_time}</span>
-              <span>
-                {`${t('text-payment-method')}:  ${order?.payment_gateway}`}
-              </span>
-            </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <Section title={t('text-order-details')} className="mb-0">
+          <div className="flex flex-col items-start space-y-1 text-sm text-body">
+            <span>{formatString(order?.products?.length, t('text-item'))}</span>
+            <span>{order?.delivery_time}</span>
+            <span>
+              {`${t('text-payment-method')}:  ${order?.payment_gateway}`}
+            </span>
           </div>
+        </Section>
 
-          <div className="mb-10 w-full sm:mb-0 sm:w-1/2 sm:pe-8">
-            <h3 className="mb-3 border-b border-border-200 pb-2 font-semibold text-heading">
-              {t('common:billing-address')}
-            </h3>
-
-            <div className="flex flex-col items-start space-y-1 text-sm text-body">
-              <span>{order?.customer_name}</span>
-              {order?.billing_address && (
-                <span>{formatAddress(order.billing_address)}</span>
-              )}
-              {order?.customer_contact && <span>{phoneNumber}</span>}
-            </div>
+        <Section title={t('common:billing-address')} className="mb-0">
+          <div className="flex flex-col items-start space-y-1 text-sm text-body">
+            <span>{order?.customer_name}</span>
+            {order?.billing_address && (
+              <span>{formatAddress(order.billing_address)}</span>
+            )}
+            {order?.customer_contact && <span>{phoneNumber}</span>}
           </div>
+        </Section>
 
-          <div className="w-full sm:w-1/2 sm:ps-8">
-            <h3 className="mb-3 border-b border-border-200 pb-2 font-semibold text-heading text-start sm:text-end">
-              {t('common:shipping-address')}
-            </h3>
-
-            <div className="flex flex-col items-start space-y-1 text-sm text-body text-start sm:items-end sm:text-end">
-              <span>{order?.customer_name}</span>
-              {order?.shipping_address && (
-                <span>{formatAddress(order.shipping_address)}</span>
-              )}
-              {order?.customer_contact && <span>{phoneNumber}</span>}
-            </div>
+        <Section title={t('common:shipping-address')} className="mb-0">
+          <div className="flex flex-col items-start space-y-1 text-sm text-body">
+            <span>{order?.customer_name}</span>
+            {order?.shipping_address && (
+              <span>{formatAddress(order.shipping_address)}</span>
+            )}
+            {order?.customer_contact && <span>{phoneNumber}</span>}
           </div>
-        </div>
-      </Card>
-    </>
+        </Section>
+      </div>
+    </div>
   );
 }
 OrderDetailsPage.Layout = Layout;

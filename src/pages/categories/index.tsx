@@ -1,8 +1,10 @@
 import CategoryList from '@/components/category/category-list';
-import Card from '@/components/common/card';
+import CategoriesSummaryStrip from '@/components/category/categories-summary-strip';
+import TypeFilter from '@/components/category/type-filter';
 import Layout from '@/components/layouts/admin';
+import DataPanel from '@/components/page/data-panel';
 import Search from '@/components/common/search';
-import LinkButton from '@/components/ui/link-button';
+import LinkActionButton from '@/components/ui/link-action-button';
 import { useState } from 'react';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
@@ -10,12 +12,11 @@ import { SortOrder, Type } from '@/types';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { Routes } from '@/config/routes';
-import TypeFilter from '@/components/category/type-filter';
 import { adminOnly } from '@/utils/auth-utils';
 import { useCategoriesQuery } from '@/data/category';
 import { useRouter } from 'next/router';
 import { Config } from '@/config';
-import PageHeading from '@/components/common/page-heading';
+
 export default function Categories() {
   const { locale } = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,7 +32,6 @@ export default function Categories() {
     name: searchTerm,
     orderBy,
     sortedBy,
-    // Request all categories so pagination counts include nested categories as well.
     parent: 'all',
     language: locale,
   });
@@ -49,51 +49,56 @@ export default function Categories() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col">
-        <div className="flex w-full flex-col items-center md:flex-row">
-          <div className="mb-4 md:mb-0 md:w-1/4">
-            <PageHeading title={t('form:input-label-categories')} />
-          </div>
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <CategoriesSummaryStrip
+        totalCategories={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
+      />
 
-          <div className="flex w-full flex-col items-center space-y-4 ms-auto md:flex-row md:space-y-0 xl:w-3/4">
+      <DataPanel
+        className="mb-0"
+        title={t('form:input-label-categories')}
+        subtitle={t('common:categories-page-subtitle')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
             <Search
               onSearch={handleSearch}
               placeholderText={t('form:input-placeholder-search-name')}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 lg:flex-1"
             />
-
             <TypeFilter
-              className="md:ms-6"
-              onTypeFilter={(type: Type) => {
-                setType(type?.slug!);
+              className="w-full shrink-0 lg:w-56"
+              onTypeFilter={(selectedType: Type) => {
+                setType(selectedType?.slug ?? '');
                 setPage(1);
               }}
             />
-
-            {locale === Config.defaultLanguage && (
-              <LinkButton
-                href={`${Routes.category.create}`}
-                className="h-12 w-full md:w-auto md:ms-6"
+            {locale === Config.defaultLanguage ? (
+              <LinkActionButton
+                href={Routes.category.create}
+                variant="primary"
+                size="sm"
+                className="w-full shrink-0 justify-center lg:w-auto"
               >
-                <span className="block md:hidden xl:block">
-                  + {t('form:button-label-add-categories')}
-                </span>
-                <span className="hidden md:block xl:hidden">
-                  + {t('form:button-label-add')}
-                </span>
-              </LinkButton>
-            )}
+                + {t('form:button-label-add-categories')}
+              </LinkActionButton>
+            ) : null}
           </div>
-        </div>
-      </Card>
-      <CategoryList
-        categories={categories}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
-      />
-    </>
+        }
+      >
+        <CategoryList
+          categories={categories}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 

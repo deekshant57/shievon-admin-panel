@@ -1,9 +1,8 @@
-import Card from '@/components/common/card'
-import Description from '@/components/ui/description'
+import FormSection from '@/components/page/form-section'
 import Input from '@/components/ui/input'
 import TextArea from '@/components/ui/text-area'
 import Label from '@/components/ui/label'
-import Button from '@/components/ui/button'
+import ActionButton from '@/components/ui/action-button'
 import FileInput from '@/components/ui/file-input'
 import SelectInput from '@/components/ui/select-input'
 import ValidationError from '@/components/ui/form-validation-error'
@@ -127,7 +126,6 @@ export default function CreateOrUpdateServiceOfferingForm({
     setValue,
     getValues,
     formState: { errors },
-    watch,
   } = useForm<FormValues>({
     defaultValues: initialValues
       ? {
@@ -244,10 +242,8 @@ export default function CreateOrUpdateServiceOfferingForm({
     }
   }
 
-  const selectedName = watch('name')
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
       {errorMessage ? (
         <Alert
           message={errorMessage}
@@ -258,116 +254,118 @@ export default function CreateOrUpdateServiceOfferingForm({
         />
       ) : null}
 
-      <div className="my-5 flex flex-wrap border-b border-dashed border-border-base pb-8 sm:my-8">
-        <Description
-          title={t('form:input-label-image') || 'Image'}
-          details={t('Upload a main image for this service') || 'Upload a main image for this service'}
-          className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-        />
-        <Card className="w-full sm:w-8/12 md:w-2/3">
-          <FileInput name="image" control={control} multiple={false} />
-        </Card>
-      </div>
+      <FormSection
+        title={t('form:input-label-image') || 'Image'}
+        details={
+          t('common:services-image-help') ||
+          'Upload a main image for this service'
+        }
+      >
+        <FileInput name="image" control={control} multiple={false} />
+      </FormSection>
 
-      <div className="my-5 flex flex-wrap border-b border-dashed border-border-base pb-8 sm:my-8">
-        <Description
-          title={t('form:gallery-title') || 'Gallery'}
-          details={
-            t('form:gallery-help-text') ||
-            t('Upload multiple images for this service') ||
-            'Upload multiple images for this service'
-          }
-          className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-        />
-        <Card className="w-full sm:w-8/12 md:w-2/3">
-          <FileInput name="gallery" control={control} />
-        </Card>
-      </div>
+      <FormSection
+        title={t('form:gallery-title') || 'Gallery'}
+        details={
+          t('form:gallery-help-text') ||
+          'Upload multiple images for this service'
+        }
+      >
+        <FileInput name="gallery" control={control} />
+      </FormSection>
 
-      <div className="my-5 flex flex-wrap sm:my-8">
-        <Description
-          title={t('Service details') || 'Service details'}
-          details={
-            t('Provide the basic details for this service offering') ||
-            'Provide the basic details for this service offering'
-          }
-          className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-        />
-
-        <Card className="w-full sm:w-8/12 md:w-2/3">
-          <div className="mb-5">
-            <Label>{t('form:input-label-group') || 'Group'}*</Label>
-            <SelectInput
-              name="type"
-              control={control}
-              options={serviceTypes}
-              isLoading={loadingTypes}
-              getOptionLabel={(option: any) => option.name}
-              getOptionValue={(option: any) => option.id}
-            />
-            <ValidationError message={t((errors as any)?.type?.message)} />
-          </div>
-
-          <ServiceCategoryCascader
+      <FormSection
+        title={t('common:services-details-title') || 'Service details'}
+        details={
+          t('common:services-details-help') ||
+          'Provide the basic details for this service offering'
+        }
+      >
+        <div className="mb-5">
+          <Label>{t('form:input-label-group') || 'Group'}*</Label>
+          <SelectInput
+            name="type"
             control={control}
-            setValue={setValue}
-            getValues={getValues}
+            options={serviceTypes}
+            isLoading={loadingTypes}
+            getOptionLabel={(option: any) => option.name}
+            getOptionValue={(option: any) => option.id}
           />
+          <ValidationError message={t((errors as any)?.type?.message)} />
+        </div>
 
+        <ServiceCategoryCascader
+          control={control}
+          setValue={setValue}
+          getValues={getValues}
+        />
+
+        <Input
+          label={(t('form:input-label-name') || 'Name') + '*'}
+          {...register('name')}
+          error={t((errors as any)?.name?.message)}
+          variant="outline"
+          className="mb-5"
+        />
+
+        <TextArea
+          label={t('form:input-label-description') || 'Description'}
+          {...register('description')}
+          variant="outline"
+          className="mb-5"
+        />
+
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <Input
-            label={(t('form:input-label-name') || 'Name') + '*'}
-            {...register('name')}
-            error={t((errors as any)?.name?.message)}
+            label={t('form:input-label-price') || 'Base price'}
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            min={0}
+            {...register('base_price')}
+            error={t((errors as any)?.base_price?.message)}
             variant="outline"
-            className="mb-5"
           />
-
-          <TextArea
-            label={t('form:input-label-description') || 'Description'}
-            {...register('description')}
+          <Input
+            label={t('form:input-label-sale-price') || 'Sale price'}
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            min={0}
+            {...register('sale_price')}
+            error={t((errors as any)?.sale_price?.message)}
             variant="outline"
-            className="mb-5"
           />
+        </div>
+      </FormSection>
 
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-            <Input
-              label={t('form:input-label-price') || 'Base price'}
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              min={0}
-              {...register('base_price')}
-              error={t((errors as any)?.base_price?.message)}
-              variant="outline"
-            />
-            <Input
-              label={t('form:input-label-sale-price') || 'Sale price'}
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              min={0}
-              {...register('sale_price')}
-              error={t((errors as any)?.sale_price?.message)}
-              variant="outline"
-            />
-          </div>
-        </Card>
-      </div>
-
-      <StickyFooterPanel>
-        <div className="flex w-full items-center justify-end gap-3">
-          <Button
+      <StickyFooterPanel className="z-0">
+        <div className="flex flex-col-reverse gap-3 text-end sm:flex-row sm:justify-end">
+          {initialValues?.id ? (
+            <ActionButton
+              variant="secondary"
+              size="sm"
+              onClick={router.back}
+              type="button"
+              className="w-full sm:w-auto"
+            >
+              {t('form:button-label-back')}
+            </ActionButton>
+          ) : null}
+          <ActionButton
+            type="submit"
+            variant="primary"
+            size="sm"
             loading={creating || updating}
             disabled={creating || updating}
-            type="submit"
+            className="w-full sm:w-auto"
           >
             {initialValues?.id
               ? t('form:button-label-update') || 'Update'
               : t('form:button-label-add') || 'Create'}
-          </Button>
+          </ActionButton>
         </div>
       </StickyFooterPanel>
     </form>
   )
 }
-

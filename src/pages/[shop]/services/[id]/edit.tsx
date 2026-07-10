@@ -5,6 +5,7 @@ import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import ShopLayout from '@/components/layouts/shop'
+import PageHeader from '@/components/page/page-header'
 import { adminOwnerAndStaffOnly } from '@/utils/auth-utils'
 import { useServiceOfferingQuery } from '@/data/service-offering'
 import { useShopQuery } from '@/data/shop'
@@ -35,18 +36,23 @@ export default function UpdateServiceOfferingPage() {
     return <ErrorMessage message={t('Not found') || 'Not found'} />
 
   return (
-    <>
-      <div className="flex border-b border-dashed border-border-base pb-5 md:pb-7">
-        <h1 className="text-lg font-semibold text-heading">
-          {t('Edit service') || 'Edit service'}
-        </h1>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title={t('common:services-edit-title') || 'Edit service'}
+        subtitle={
+          serviceOffering?.name
+            ? t('common:services-edit-subtitle', {
+                name: serviceOffering.name,
+              })
+            : t('common:services-edit-subtitle-generic')
+        }
+      />
       <CreateOrUpdateServiceOfferingForm
         key={serviceOffering?.id ?? 'service'}
         initialValues={serviceOffering}
         shopId={shopId}
       />
-    </>
+    </div>
   )
 }
 
@@ -60,4 +66,3 @@ export const getServerSideProps = async ({ locale }: any) => ({
     ...(await serverSideTranslations(locale, ['form', 'common'])),
   },
 })
-

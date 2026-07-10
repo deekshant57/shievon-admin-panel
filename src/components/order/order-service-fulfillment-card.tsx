@@ -136,6 +136,7 @@ export default function OrderServiceFulfillmentCard({
         }
       >
         <Table
+          shellVariant="plain"
           //@ts-ignore
           columns={columns}
           data={items}

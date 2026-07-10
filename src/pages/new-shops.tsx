@@ -29,7 +29,7 @@ export default function NewShopPage() {
     is_active: false,
   });
   const {
-    paginatorInfo: allShopsPaginatorInfo,
+    shopCounts,
     loading: allShopsLoading,
     error: allShopsError,
   } = useShopsQuery({
@@ -54,22 +54,43 @@ export default function NewShopPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 max-w-full">
       <ShopsSummaryStrip
-        totalShops={allShopsPaginatorInfo?.total}
-        inactiveShops={paginatorInfo?.total}
+        totalShops={shopCounts?.total}
+        activeShops={shopCounts?.active}
+        inactiveShops={shopCounts?.inactive}
       />
 
       <DataPanel
+        className="mb-0"
         title={t('common:text-inactive-shops')}
+        subtitle={t('common:inactive-shops-page-subtitle')}
+        toolbarLayout="stacked"
         toolbar={
-          <div className="flex w-full flex-col gap-4 md:flex-row md:items-center">
-            <Search onSearch={handleSearch} debounceMs={400} />
-            <div className="flex flex-wrap items-center gap-3 md:ms-auto">
-              <LinkActionButton href={Routes.shop.list} variant="secondary">
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Search
+              onSearch={handleSearch}
+              placeholderText={t('form:input-placeholder-search-name')}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
+            />
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <LinkActionButton
+                href={Routes.shop.list}
+                variant="secondary"
+                size="sm"
+                className="w-full justify-center sm:w-auto"
+              >
                 {t('common:text-all-shops')}
               </LinkActionButton>
-              <LinkActionButton href={Routes.shop.create} variant="primary">
+              <LinkActionButton
+                href={Routes.shop.create}
+                variant="primary"
+                size="sm"
+                className="w-full justify-center sm:w-auto"
+              >
                 + {t('common:text-add-all-shops')}
               </LinkActionButton>
             </div>

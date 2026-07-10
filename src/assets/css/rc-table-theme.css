@@ -1,7 +1,7 @@
 /* shadcn-aligned rc-table theme overrides */
 
 .rc-table {
-  @apply w-full border-separate;
+  @apply w-full min-w-0 max-w-full border-separate;
   border-spacing: 0;
 }
 
@@ -9,6 +9,40 @@
 .rc-table .rc-table-body,
 .rc-table .rc-table-header {
   @apply border-0;
+}
+
+/* Full-bleed table inside DataPanel — no double inset beside the shell */
+.data-panel-body > *:not(.data-table-shell) {
+  @apply px-5 md:px-8;
+}
+
+.data-panel-body > *:last-child:not(.data-table-shell) {
+  @apply pb-5 md:pb-6;
+}
+
+.data-panel-body > .data-table-shell {
+  @apply mb-0 rounded-none border-x-0 border-b-0;
+}
+
+/* Shell owns horizontal scroll; never clip table cells/columns */
+.data-table-shell .rc-table {
+  @apply w-full min-w-0 max-w-full;
+}
+
+.data-table-shell .rc-table .rc-table-container {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Prefer shell scrollbar over nested rc-table overflow */
+.data-table-shell .rc-table .rc-table-content {
+  overflow: visible !important;
+}
+
+.data-table-shell .rc-table table {
+  min-width: 100%;
+  table-layout: auto;
 }
 
 .rc-table tr th,
@@ -21,7 +55,7 @@
 }
 
 .rc-table thead.rc-table-thead th {
-  @apply whitespace-nowrap bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-body first:rounded-tl-md first:ps-5 last:rounded-tr-md last:pe-5;
+  @apply whitespace-nowrap bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-body first:rounded-tl-md last:rounded-tr-md;
 }
 
 .rc-table tr.rc-table-row:hover {
@@ -29,7 +63,7 @@
 }
 
 .rc-table tr.rc-table-row td {
-  @apply cursor-default px-4 py-3.5 text-sm font-normal text-heading first:ps-5 last:pe-5;
+  @apply cursor-default px-4 py-3.5 text-sm font-normal text-heading;
 }
 
 .rc-table tr.rc-table-row td.rc-table-cell-row-hover {

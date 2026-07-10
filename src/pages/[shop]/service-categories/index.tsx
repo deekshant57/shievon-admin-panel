@@ -1,8 +1,7 @@
-import Card from '@/components/common/card'
 import ShopLayout from '@/components/layouts/shop'
-import PageHeading from '@/components/common/page-heading'
+import DataPanel from '@/components/page/data-panel'
 import Search from '@/components/common/search'
-import LinkButton from '@/components/ui/link-button'
+import LinkActionButton from '@/components/ui/link-action-button'
 import ErrorMessage from '@/components/ui/error-message'
 import Loader from '@/components/ui/loader/loader'
 import { Config } from '@/config'
@@ -46,41 +45,42 @@ export default function ShopServiceCategoriesPage() {
   const shopSlug = shop as string
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col">
-        <div className="flex w-full flex-col items-center md:flex-row">
-          <div className="mb-4 md:mb-0 md:w-1/4">
-            <PageHeading title={t('common:sidebar-nav-item-service-categories')} />
-          </div>
-
-          <div className="flex w-full flex-col items-center space-y-4 ms-auto md:flex-row md:space-y-0 xl:w-3/4">
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <DataPanel
+        className="mb-0"
+        title={t('common:sidebar-nav-item-service-categories')}
+        subtitle={t('common:service-categories-page-subtitle')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <Search
               onSearch={handleSearch}
               placeholderText={t('form:input-placeholder-search-name')}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
             />
-
             {locale === Config.defaultLanguage && (
-              <LinkButton
+              <LinkActionButton
                 href={`/${shopSlug}${Routes.serviceCategory.create}`}
-                className="h-12 w-full md:w-auto md:ms-6"
+                variant="primary"
+                size="sm"
+                className="w-full shrink-0 justify-center sm:w-auto"
               >
-                <span className="block md:hidden xl:block">
-                  + {t('form:button-label-add-service-categories')}
-                </span>
-                <span className="hidden md:block xl:hidden">
-                  + {t('form:button-label-add')}
-                </span>
-              </LinkButton>
+                + {t('form:button-label-add-service-categories')}
+              </LinkActionButton>
             )}
           </div>
-        </div>
-      </Card>
-      <ServiceCategoryList
-        serviceCategories={serviceCategories}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-      />
-    </>
+        }
+      >
+        <ServiceCategoryList
+          serviceCategories={serviceCategories}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+        />
+      </DataPanel>
+    </div>
   )
 }
 

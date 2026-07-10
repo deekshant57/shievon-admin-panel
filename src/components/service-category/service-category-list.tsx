@@ -94,8 +94,7 @@ const ServiceCategoryList = ({
 
   return (
     <>
-      <div className="mb-8 overflow-hidden rounded shadow">
-        <Table
+      <Table
           //@ts-ignore
           columns={columns}
           emptyText={() => (
@@ -111,7 +110,6 @@ const ServiceCategoryList = ({
           rowKey="id"
           scroll={{ x: 900 }}
         />
-      </div>
 
       {!!paginatorInfo?.total && (
         <div className="flex items-center justify-end">

@@ -2704,7 +2704,15 @@ export interface ItemProps {
   title: string;
 }
 
-export interface ShopPaginator extends PaginatorInfo<Shop> {}
+export interface ShopCounts {
+  total: number;
+  active: number;
+  inactive: number;
+}
+
+export interface ShopPaginator extends PaginatorInfo<Shop> {
+  counts?: ShopCounts;
+}
 
 export interface WithdrawPaginator extends PaginatorInfo<Withdraw> {}
 

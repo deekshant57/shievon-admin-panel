@@ -196,8 +196,7 @@ const AdminsList = ({
 
   return (
     <>
-      <div className="mb-6 overflow-hidden rounded shadow">
-        <Table
+      <Table
           // @ts-ignore
           columns={columns}
           emptyText={() => (
@@ -213,7 +212,6 @@ const AdminsList = ({
           rowKey="id"
           scroll={{ x: 1000 }}
         />
-      </div>
 
       {!!paginatorInfo?.total && (
         <div className="flex items-center justify-end">

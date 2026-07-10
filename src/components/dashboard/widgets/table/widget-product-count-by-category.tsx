@@ -67,6 +67,7 @@ const ProductCountByCategory = ({ products, title, className }: IProps) => {
           </h3>
         </div>
         <Table
+          shellVariant="plain"
           /* @ts-ignore */
           columns={columns}
           emptyText={() => (

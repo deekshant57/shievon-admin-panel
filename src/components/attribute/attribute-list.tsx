@@ -132,8 +132,7 @@ const AttributeList = ({ attributes, onSort, onOrder }: IProps) => {
     columns = columns?.filter((column) => column?.key !== 'shop');
   }
   return (
-    <div className="mb-8 overflow-hidden rounded shadow">
-      <Table
+    <Table
         // @ts-ignore
         columns={columns}
         emptyText={() => (
@@ -149,7 +148,6 @@ const AttributeList = ({ attributes, onSort, onOrder }: IProps) => {
         rowKey="id"
         scroll={{ x: 900 }}
       />
-    </div>
   );
 };
 

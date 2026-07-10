@@ -6,11 +6,10 @@ import {
   useFormState,
   useWatch,
 } from 'react-hook-form';
-import Button from '@/components/ui/button';
+import ActionButton from '@/components/ui/action-button';
 import TextArea from '@/components/ui/text-area';
 import Label from '@/components/ui/label';
-import Card from '@/components/common/card';
-import Description from '@/components/ui/description';
+import CategoryFormSection from '@/components/category/category-form-section';
 import * as categoriesIcon from '@/components/icons/category';
 import { EditIcon } from '@/components/icons/edit';
 import { getIcon } from '@/utils/get-icon';
@@ -273,127 +272,122 @@ export default function CreateOrUpdateCategoriesForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-        <Description
-          title={t('form:input-label-image')}
-          details={t('form:category-image-helper-text')}
-          className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+      <CategoryFormSection
+        title={t('form:input-label-image')}
+        details={t('form:category-image-helper-text')}
+      >
+        <FileInput
+          name="image"
+          control={control}
+          multiple={false}
+          skipDeleteOnRemove
+        />
+      </CategoryFormSection>
+
+      <CategoryFormSection
+        title={t('form:input-label-description')}
+        details={`${
+          initialValues
+            ? t('form:item-description-edit')
+            : t('form:item-description-add')
+        } ${t('form:category-description-helper-text')}`}
+      >
+        <Input
+          label={t('form:input-label-name')}
+          {...register('name')}
+          error={t(errors.name?.message!)}
+          variant="outline"
+          className="mb-5"
         />
 
-        <Card className="w-full sm:w-8/12 md:w-2/3">
-          <FileInput
-            name="image"
-            control={control}
-            multiple={false}
-            skipDeleteOnRemove
-          />
-        </Card>
-      </div>
-
-      <div className="flex flex-wrap my-5 sm:my-8">
-        <Description
-          title={t('form:input-label-description')}
-          details={`${
-            initialValues
-              ? t('form:item-description-edit')
-              : t('form:item-description-add')
-          } ${t('form:category-description-helper-text')}`}
-          className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5 "
-        />
-
-        <Card className="w-full sm:w-8/12 md:w-2/3">
-          <Input
-            label={t('form:input-label-name')}
-            {...register('name')}
-            error={t(errors.name?.message!)}
-            variant="outline"
-            className="mb-5"
-          />
-
-          {isSlugEditable ? (
-            <div className="relative mb-5">
-              <Input
-                label={t('form:input-label-slug')}
-                {...register('slug')}
-                error={t(errors.slug?.message!)}
-                variant="outline"
-                disabled={isSlugDisable}
-              />
-              <button
-                className="absolute top-[27px] right-px z-0 flex h-[46px] w-11 items-center justify-center rounded-tr rounded-br border-l border-solid border-border-base bg-white px-2 text-body transition duration-200 hover:text-heading focus:outline-none"
-                type="button"
-                title={t('common:text-edit')}
-                onClick={() => setIsSlugDisable(false)}
-              >
-                <EditIcon width={14} />
-              </button>
-            </div>
-          ) : (
+        {isSlugEditable ? (
+          <div className="relative mb-5">
             <Input
               label={t('form:input-label-slug')}
               {...register('slug')}
-              value={slugAutoSuggest}
+              error={t(errors.slug?.message!)}
               variant="outline"
-              className="mb-5"
-              disabled
+              disabled={isSlugDisable}
+            />
+            <button
+              className="absolute top-[27px] end-px z-0 flex h-[46px] w-11 items-center justify-center rounded-e-md border-s border-border/60 bg-background px-2 text-body transition duration-200 hover:text-heading focus:outline-none"
+              type="button"
+              title={t('common:text-edit')}
+              onClick={() => setIsSlugDisable(false)}
+            >
+              <EditIcon width={14} />
+            </button>
+          </div>
+        ) : (
+          <Input
+            label={t('form:input-label-slug')}
+            {...register('slug')}
+            value={slugAutoSuggest}
+            variant="outline"
+            className="mb-5"
+            disabled
+          />
+        )}
+
+        <div className="relative">
+          {options?.useAi && (
+            <OpenAIButton
+              title={t('form:button-label-description-ai')}
+              onClick={handleGenerateDescription}
             />
           )}
-
-          <div className="relative">
-            {options?.useAi && (
-              <OpenAIButton
-                title={t('form:button-label-description-ai')}
-                onClick={handleGenerateDescription}
-              />
-            )}
-            <TextArea
-              label={t('form:input-label-details')}
-              {...register('details')}
-              variant="outline"
-              className="mb-5"
-            />
-          </div>
-
-          <div className="mb-5">
-            <Label>{t('form:input-label-select-icon')}</Label>
-            <SelectInput
-              name="icon"
-              control={control}
-              options={updatedIcons}
-              isClearable={true}
-            />
-          </div>
-          <SelectTypes control={control} errors={errors} />
-          <SelectCategories
-            control={control}
-            setValue={setValue}
-            initialValue={initialValues}
+          <TextArea
+            label={t('form:input-label-details')}
+            {...register('details')}
+            variant="outline"
+            className="mb-5"
           />
-        </Card>
-      </div>
+        </div>
+
+        <div className="mb-5">
+          <Label>{t('form:input-label-select-icon')}</Label>
+          <SelectInput
+            name="icon"
+            control={control}
+            options={updatedIcons}
+            isClearable={true}
+          />
+        </div>
+        <SelectTypes control={control} errors={errors} />
+        <SelectCategories
+          control={control}
+          setValue={setValue}
+          initialValue={initialValues}
+        />
+      </CategoryFormSection>
+
       <StickyFooterPanel className="z-0">
-        <div className="text-end">
-          {initialValues && (
-            <Button
-              variant="outline"
+        <div className="flex flex-col-reverse gap-3 text-end sm:flex-row sm:justify-end">
+          {initialValues ? (
+            <ActionButton
+              variant="secondary"
+              size="sm"
               onClick={router.back}
-              className="text-sm me-4 md:text-base"
               type="button"
+              className="w-full sm:w-auto"
             >
               {t('form:button-label-back')}
-            </Button>
-          )}
+            </ActionButton>
+          ) : null}
 
-          <Button
+          <ActionButton
+            type="submit"
+            variant="primary"
+            size="sm"
             loading={creating || updating}
             disabled={creating || updating}
-            className="text-sm md:text-base"
+            className="w-full sm:w-auto"
           >
             {initialValues
               ? t('form:button-label-update-category')
               : t('form:button-label-add-category')}
-          </Button>
+          </ActionButton>
         </div>
       </StickyFooterPanel>
     </form>

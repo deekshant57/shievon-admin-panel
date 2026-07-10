@@ -1,5 +1,5 @@
-import Card from '@/components/common/card';
-import PageHeading from '@/components/common/page-heading';
+import Search from '@/components/common/search';
+import DataPanel from '@/components/page/data-panel';
 import Layout from '@/components/layouts/admin';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
@@ -47,14 +47,23 @@ export default function Vendors({ initialVendorsData }: VendorsPageProps) {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center md:flex-row">
-        <div className="w-full">
-          <PageHeading title={t('text-vendors')} />
-        </div>
-      </Card>
-
-      {loading ? null : (
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <DataPanel
+        className="mb-0"
+        title={t('text-vendors')}
+        subtitle={t('common:vendors-page-subtitle')}
+        toolbarLayout="stacked"
+        toolbar={
+          <Search
+            onSearch={handleSearch}
+            placeholderText={t('form:input-placeholder-search-name')}
+            debounceMs={400}
+            variant="hybrid"
+            size="sm"
+            className="w-full min-w-0 sm:max-w-md"
+          />
+        }
+      >
         <AdminsList
           admins={vendors}
           paginatorInfo={paginatorInfo}
@@ -62,8 +71,8 @@ export default function Vendors({ initialVendorsData }: VendorsPageProps) {
           onOrder={setOrder}
           onSort={setColumn}
         />
-      )}
-    </>
+      </DataPanel>
+    </div>
   );
 }
 

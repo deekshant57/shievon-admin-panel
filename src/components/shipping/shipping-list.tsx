@@ -128,8 +128,7 @@ const ShippingList = ({ shippings, onSort, onOrder }: IProps) => {
   ];
 
   return (
-    <div className="mb-8 overflow-hidden rounded shadow">
-      <Table
+    <Table
         //@ts-ignore
         columns={columns}
         emptyText={() => (
@@ -145,7 +144,6 @@ const ShippingList = ({ shippings, onSort, onOrder }: IProps) => {
         rowKey="id"
         scroll={{ x: 900 }}
       />
-    </div>
   );
 };
 

@@ -1,4 +1,5 @@
-import Card from '@/components/common/card';
+import Search from '@/components/common/search';
+import DataPanel from '@/components/page/data-panel';
 import Layout from '@/components/layouts/admin';
 import { useState } from 'react';
 import ErrorMessage from '@/components/ui/error-message';
@@ -9,7 +10,6 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { SortOrder } from '@/types';
 import { adminOnly } from '@/utils/auth-utils';
 import AdminsList from '@/components/user/user-admin-list';
-import PageHeading from '@/components/common/page-heading';
 
 type PendingVendorsPageProps = {
   initialVendorsData?: any
@@ -47,14 +47,23 @@ export default function PendingVendors({ initialVendorsData }: PendingVendorsPag
   }
 
   return (
-    <>
-      <Card className="mb-8 flex items-center">
-        <div className="w-1/4">
-          <PageHeading title={t('text-vendors')} />
-        </div>
-      </Card>
-
-      {loading ? null : (
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <DataPanel
+        className="mb-0"
+        title={t('text-pending-vendors') || t('text-vendors')}
+        subtitle={t('common:pending-vendors-page-subtitle')}
+        toolbarLayout="stacked"
+        toolbar={
+          <Search
+            onSearch={handleSearch}
+            placeholderText={t('form:input-placeholder-search-name')}
+            debounceMs={400}
+            variant="hybrid"
+            size="sm"
+            className="w-full min-w-0 sm:max-w-md"
+          />
+        }
+      >
         <AdminsList
           admins={vendors}
           paginatorInfo={paginatorInfo}
@@ -62,8 +71,8 @@ export default function PendingVendors({ initialVendorsData }: PendingVendorsPag
           onOrder={setOrder}
           onSort={setColumn}
         />
-      )}
-    </>
+      </DataPanel>
+    </div>
   );
 }
 

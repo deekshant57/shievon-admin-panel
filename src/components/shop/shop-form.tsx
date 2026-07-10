@@ -1,7 +1,6 @@
-import Card from '@/components/common/card';
 import * as socialIcons from '@/components/icons/social';
-import Button from '@/components/ui/button';
-import Description from '@/components/ui/description';
+import FormSection from '@/components/page/form-section';
+import ActionButton from '@/components/ui/action-button';
 import FileInput from '@/components/ui/file-input';
 import Input from '@/components/ui/input';
 import Label from '@/components/ui/label';
@@ -441,543 +440,489 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-          <Description
-            title={t('form:input-label-logo')}
-            details={shopLogoInformation}
-            className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-          />
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-2">
+      <FormSection
+        title={t('form:input-label-logo')}
+        details={shopLogoInformation}
+      >
+        <FileInput
+          name="logo"
+          control={control}
+          multiple={false}
+          skipDeleteOnRemove
+        />
+      </FormSection>
 
-          <Card className="w-full sm:w-8/12 md:w-2/3">
-            <FileInput
-              name="logo"
-              control={control}
-              multiple={false}
-              skipDeleteOnRemove
+      <FormSection
+        title={t('form:shop-cover-image-title')}
+        details={coverImageInformation}
+      >
+        <FileInput
+          name="cover_image"
+          control={control}
+          multiple={false}
+          skipDeleteOnRemove
+        />
+      </FormSection>
+
+      <FormSection
+        title={t('form:shop-basic-info')}
+        details={t('form:shop-basic-info-help-text')}
+      >
+        <Input
+          label={t('form:input-label-name')}
+          {...register('name')}
+          variant="outline"
+          className="mb-5"
+          error={t(errors.name?.message!)}
+          required
+        />
+
+        <input type="hidden" {...register('slug')} />
+
+        <div className="relative">
+          {options?.useAi && (
+            <OpenAIButton
+              title={t('form:button-label-description-ai')}
+              onClick={handleGenerateDescription}
             />
-          </Card>
-        </div>
-
-        <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-          <Description
-            title={t('form:shop-cover-image-title')}
-            details={coverImageInformation}
-            className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
+          )}
+          <TextArea
+            label={t('form:input-label-description')}
+            {...register('description')}
+            variant="outline"
+            error={t(errors.description?.message!)}
           />
+        </div>
+      </FormSection>
 
-          <Card className="w-full sm:w-8/12 md:w-2/3">
-            <FileInput
-              name="cover_image"
+      <FormSection
+        title={t('form:shop-payment-info')}
+        details={t('form:payment-info-helper-text')}
+      >
+        <Input
+          label={t('form:input-label-account-holder-name')}
+          {...register('balance.payment_info.name')}
+          variant="outline"
+          className="mb-5"
+        />
+        <Input
+          label={t('form:input-label-account-holder-email')}
+          {...register('balance.payment_info.email')}
+          variant="outline"
+          className="mb-5"
+        />
+        <Input
+          label={t('form:input-label-bank-name')}
+          {...register('balance.payment_info.bank')}
+          variant="outline"
+          className="mb-5"
+        />
+        <Input
+          label={t('form:input-label-account-number')}
+          {...register('balance.payment_info.account')}
+          variant="outline"
+        />
+      </FormSection>
+
+      <FormSection
+        title={t('form:shop-address')}
+        details={t('form:shop-address-helper-text')}
+      >
+        <p className="mb-4 text-sm font-medium text-heading">
+          {t('form:shop-address-structured-title')}
+        </p>
+        <div className="space-y-5">
+          <Input
+            label={t('form:input-label-street-address')}
+            {...register('address.street_address')}
+            variant="outline"
+            className="mb-0"
+            error={t(errors.address?.street_address?.message as string)}
+            required
+          />
+          <Input
+            label={t('form:input-label-city')}
+            {...register('address.city')}
+            variant="outline"
+            className="mb-0"
+            error={t(errors.address?.city?.message as string)}
+            required
+          />
+          <Input
+            label={t('form:input-label-state')}
+            {...register('address.state')}
+            variant="outline"
+            className="mb-0"
+            error={t(errors.address?.state?.message as string)}
+            required
+          />
+          <Input
+            label={t('form:input-label-zip')}
+            {...register('address.zip')}
+            variant="outline"
+            className="mb-0"
+            error={t(errors.address?.zip?.message as string)}
+            required
+          />
+          <Input
+            label={t('form:input-label-country')}
+            {...register('address.country')}
+            variant="outline"
+            className="mb-0"
+            error={t(errors.address?.country?.message as string)}
+            required
+          />
+          <Input
+            label={t('form:input-label-latitude')}
+            {...register('settings.location.lat')}
+            variant="outline"
+            type="number"
+            step="any"
+            className="mb-0"
+            error={t(errors.settings?.location?.lat?.message as string)}
+            required
+          />
+          <Input
+            label={t('form:input-label-longitude')}
+            {...register('settings.location.lng')}
+            variant="outline"
+            type="number"
+            step="any"
+            className="mb-0"
+            error={t(errors.settings?.location?.lng?.message as string)}
+            required
+          />
+        </div>
+      </FormSection>
+
+      {permissions?.includes(STORE_OWNER) ? (
+        <FormSection
+          title={t('form:form-notification-title')}
+          details={t('form:form-notification-description')}
+        >
+          <Input
+            label={t('form:input-notification-email')}
+            {...register('settings.notifications.email')}
+            error={t(errors?.settings?.notifications?.email?.message!)}
+            variant="outline"
+            className="mb-5"
+            disabled={permissions?.includes(SUPER_ADMIN)}
+            type="email"
+          />
+          <div className="flex items-center gap-x-4">
+            <SwitchInput
+              name="settings.notifications.enable"
               control={control}
-              multiple={false}
-              skipDeleteOnRemove
+              disabled={permissions?.includes(SUPER_ADMIN)}
             />
-          </Card>
-        </div>
-        <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-          <Description
-            title={t('form:shop-basic-info')}
-            details={t('form:shop-basic-info-help-text')}
-            className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-          />
-          <Card className="w-full sm:w-8/12 md:w-2/3">
-            <Input
-              label={t('form:input-label-name')}
-              {...register('name')}
-              variant="outline"
-              className="mb-5"
-              error={t(errors.name?.message!)}
+            <Label className="!mb-0.5">
+              {t('form:input-enable-notification')}
+            </Label>
+          </div>
+        </FormSection>
+      ) : null}
+
+      <FormSection
+        title={t('form:shop-settings')}
+        details={t('form:shop-settings-helper-text')}
+      >
+        <PhoneNumberInput
+          label={t('form:input-label-contact')}
+          required
+          {...register('settings.contact')}
+          control={control}
+          error={t(errors.settings?.contact?.message!)}
+        />
+        <Input
+          label={t('form:input-label-website')}
+          {...register('settings.website')}
+          variant="outline"
+          className="mb-5"
+          error={t(errors.settings?.website?.message!)}
+        />
+        <div className="mb-5 grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-5">
+          <div className="mb-5 sm:mb-0">
+            <TooltipLabel
+              htmlFor="timings.open"
+              label={t('form:input-label-opening-time')}
               required
             />
-
-            <input type="hidden" {...register('slug')} />
-
-            <div className="relative">
-              {options?.useAi && (
-                <OpenAIButton
-                  title={t('form:button-label-description-ai')}
-                  onClick={handleGenerateDescription}
+            <Controller
+              control={control}
+              name="timings.open"
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  value={
+                    SHOP_TIME_OPTIONS.find((o) => o.value === field.value) ??
+                    null
+                  }
+                  onChange={(option: any) =>
+                    field.onChange(option?.value ?? '')
+                  }
+                  options={SHOP_TIME_OPTIONS}
                 />
               )}
-              <TextArea
-                label={t('form:input-label-description')}
-                {...register('description')}
-                variant="outline"
-                error={t(errors.description?.message!)}
-              />
-            </div>
-          </Card>
+            />
+            {errors.timings?.open?.message && (
+              <p className="my-2 text-start text-xs text-red-500">
+                {t(errors.timings.open.message)}
+              </p>
+            )}
+          </div>
+          <div className="mb-5 sm:mb-0">
+            <TooltipLabel
+              htmlFor="timings.close"
+              label={t('form:input-label-closing-time')}
+              required
+            />
+            <Controller
+              control={control}
+              name="timings.close"
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  value={
+                    SHOP_TIME_OPTIONS.find((o) => o.value === field.value) ??
+                    null
+                  }
+                  onChange={(option: any) =>
+                    field.onChange(option?.value ?? '')
+                  }
+                  options={SHOP_TIME_OPTIONS}
+                />
+              )}
+            />
+            {errors.timings?.close?.message && (
+              <p className="my-2 text-start text-xs text-red-500">
+                {t(errors.timings.close.message)}
+              </p>
+            )}
+          </div>
         </div>
-        <div className="flex flex-wrap pb-8 my-5 border-b border-gray-300 border-dashed sm:my-8">
-          <Description
-            title={t('form:shop-payment-info')}
-            details={t('form:payment-info-helper-text')}
-            className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-          />
+      </FormSection>
 
-          <Card className="w-full sm:w-8/12 md:w-2/3">
-            <Input
-              label={t('form:input-label-account-holder-name')}
-              {...register('balance.payment_info.name')}
-              variant="outline"
-              className="mb-5"
-              // error={t(errors.balance?.payment_info?.name?.message!)}
-            />
-            <Input
-              label={t('form:input-label-account-holder-email')}
-              {...register('balance.payment_info.email')}
-              variant="outline"
-              className="mb-5"
-              // error={t(errors.balance?.payment_info?.email?.message!)}
-            />
-            <Input
-              label={t('form:input-label-bank-name')}
-              {...register('balance.payment_info.bank')}
-              variant="outline"
-              className="mb-5"
-              // error={t(errors.balance?.payment_info?.bank?.message!)}
-            />
-            <Input
-              label={t('form:input-label-account-number')}
-              {...register('balance.payment_info.account')}
-              variant="outline"
-              // error={t(errors.balance?.payment_info?.account?.message!)}
-            />
-          </Card>
-        </div>
-        <div className="flex flex-wrap pb-8 my-5 border-b border-gray-300 border-dashed sm:my-8">
-          <Description
-            title={t('form:shop-address')}
-            details={t('form:shop-address-helper-text')}
-            className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-          />
-
-          <Card className="w-full sm:w-8/12 md:w-2/3">
-            <div className="mb-5">
-              <div className="mt-6 border-t border-border-200 pt-6">
-                <p className="mb-1 text-sm font-medium text-heading">
-                  {t('form:shop-address-structured-title')}
-                </p>
-                <div className="space-y-5">
+      <FormSection
+        title={t('form:social-settings')}
+        details={t('form:social-settings-helper-text')}
+      >
+        <div>
+          {fields?.map(
+            (item: ShopSocialInput & { id: string }, index: number) => (
+              <div
+                className="border-b border-dashed border-border-200 py-5 first:mt-0 first:border-t-0 first:pt-0 last:border-b-0 md:py-8 md:first:mt-0"
+                key={item.id}
+              >
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-5">
+                  <div className="sm:col-span-2">
+                    <Label>{t('form:input-label-select-platform')}</Label>
+                    <SelectInput
+                      name={`settings.socials.${index}.icon` as const}
+                      control={control}
+                      options={updatedIcons}
+                      isClearable={true}
+                      defaultValue={item?.icon!}
+                    />
+                  </div>
                   <Input
-                    label={t('form:input-label-street-address')}
-                    {...register('address.street_address')}
+                    className="sm:col-span-2"
+                    label={t('form:input-label-url')}
                     variant="outline"
-                    className="mb-0"
-                    error={t(errors.address?.street_address?.message as string)}
+                    {...register(`settings.socials.${index}.url` as const)}
+                    error={t(errors?.settings?.socials?.[index]?.url?.message!)}
+                    defaultValue={item.url!}
                     required
                   />
-                  <Input
-                    label={t('form:input-label-city')}
-                    {...register('address.city')}
-                    variant="outline"
-                    className="mb-0"
-                    error={t(errors.address?.city?.message as string)}
-                    required
-                  />
-                  <Input
-                    label={t('form:input-label-state')}
-                    {...register('address.state')}
-                    variant="outline"
-                    className="mb-0"
-                    error={t(errors.address?.state?.message as string)}
-                    required
-                  />
-                  <Input
-                    label={t('form:input-label-zip')}
-                    {...register('address.zip')}
-                    variant="outline"
-                    className="mb-0"
-                    error={t(errors.address?.zip?.message as string)}
-                    required
-                  />
-                  <Input
-                    label={t('form:input-label-country')}
-                    {...register('address.country')}
-                    variant="outline"
-                    className="mb-0"
-                    error={t(errors.address?.country?.message as string)}
-                    required
-                  />
-                  <Input
-                    label={t('form:input-label-latitude')}
-                    {...register('settings.location.lat')}
-                    variant="outline"
-                    type="number"
-                    step="any"
-                    className="mb-0"
-                    error={t(errors.settings?.location?.lat?.message as string)}
-                    required
-                  />
-                  <Input
-                    label={t('form:input-label-longitude')}
-                    {...register('settings.location.lng')}
-                    variant="outline"
-                    type="number"
-                    step="any"
-                    className="mb-0"
-                    error={t(errors.settings?.location?.lng?.message as string)}
-                    required
-                  />
+                  <button
+                    onClick={() => {
+                      remove(index);
+                    }}
+                    type="button"
+                    className="text-sm text-red-500 transition-colors duration-200 hover:text-red-700 focus:outline-none sm:col-span-1 sm:mt-4"
+                  >
+                    {t('form:button-label-remove')}
+                  </button>
                 </div>
               </div>
-            </div>
-          </Card>
+            ),
+          )}
         </div>
+        <ActionButton
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={() => append({ icon: '', url: '' })}
+          className="w-full sm:w-auto"
+        >
+          {t('form:button-label-add-social')}
+        </ActionButton>
+      </FormSection>
 
-        {permissions?.includes(STORE_OWNER) ? (
-          <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-            <Description
-              title={t('form:form-notification-title')}
-              details={t('form:form-notification-description')}
-              className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
+      {!permissions?.includes(SUPER_ADMIN) ? (
+        <FormSection
+          title={t('form:shop-maintenance-title') || 'Shop maintenance settings'}
+          details={
+            t('form:shop-maintenance-help-text') ||
+            'Control all the maintenance settings related to this shop.'
+          }
+        >
+          <div className="mb-5">
+            <SwitchInput
+              name="settings.isShopUnderMaintenance"
+              label={t('form:input-label-enable-maintenance-mode')}
+              toolTipText={t('form:input-tooltip-enable-maintenance-mode')}
+              control={control}
             />
+          </div>
 
-            <Card className="w-full mb-5 sm:w-8/12 md:w-2/3">
+          <div className="mb-5">
+            <FileInput
+              name="settings.shopMaintenance.image"
+              control={control}
+              multiple={false}
+              disabled={!isMaintenanceMode}
+            />
+          </div>
+
+          <Input
+            label={t('form:input-label-title')}
+            toolTipText={t('form:input-tooltip-maintenance-title')}
+            {...register('settings.shopMaintenance.title')}
+            error={t(errors?.settings?.shopMaintenance?.title?.message!)}
+            variant="outline"
+            className="mb-5"
+            {...(isMaintenanceMode && {
+              required: true,
+            })}
+            disabled={!isMaintenanceMode}
+          />
+          <TextArea
+            label={t('form:input-label-description')}
+            toolTipText={t('form:input-tooltip-maintenance-description')}
+            {...register('settings.shopMaintenance.description')}
+            error={t(errors?.settings?.shopMaintenance?.description?.message!)}
+            variant="outline"
+            className="mb-5"
+            {...(isMaintenanceMode && {
+              required: true,
+            })}
+            disabled={!isMaintenanceMode}
+          />
+          <div className="mb-5">
+            <DatePicker
+              control={control}
+              name="settings.shopMaintenance.start"
+              minDate={today}
+              startDate={new Date(startDate)}
+              locale={locale}
+              placeholder="Start Date"
+              disabled={!isMaintenanceMode}
+              label={t('form:maintenance-start-time')}
+              toolTipText={t('form:input-tooltip-maintenance-start-time')}
+              {...(isMaintenanceMode && {
+                required: true,
+              })}
+              error={t(errors?.settings?.shopMaintenance?.start?.message!)}
+              showTimeSelect
+              timeFormat="h:mm aa"
+              timeIntervals={15}
+              timeCaption="time"
+              dateFormat="MMMM d, yyyy h:mm aa"
+              filterTime={filterStartTime}
+            />
+          </div>
+          <div className="w-full">
+            <DatePicker
+              control={control}
+              name="settings.shopMaintenance.until"
+              disabled={!startDate || !isMaintenanceMode}
+              minDate={new Date(startDate)}
+              placeholder="End Date"
+              locale={locale}
+              {...(isMaintenanceMode && {
+                required: true,
+              })}
+              toolTipText={t('form:input-tooltip-maintenance-end-time')}
+              label={t('form:maintenance-end-date')}
+              error={t(errors?.settings?.shopMaintenance?.until?.message!)}
+              showTimeSelect
+              timeFormat="h:mm aa"
+              timeIntervals={15}
+              timeCaption="time"
+              dateFormat="MMMM d, yyyy h:mm aa"
+              filterTime={filterUntilTime}
+            />
+          </div>
+        </FormSection>
+      ) : null}
+
+      {!permissions?.includes(SUPER_ADMIN) &&
+      !permissions?.includes(STAFF) &&
+      !Boolean(initialValues?.is_active) &&
+      Boolean(options?.isMultiCommissionRate) ? (
+        <FormSection
+          title={t('form:ask-for-quote-title') || 'Ask for a quote?'}
+          details={
+            t('form:ask-for-quote-help-text') || 'Set your ask for a quote here.'
+          }
+        >
+          <SwitchInput
+            name="settings.askForAQuote.enable"
+            control={control}
+            label="Ask for a quote?"
+            className={askForAQuote ? 'mb-4' : ''}
+          />
+          {askForAQuote ? (
+            <>
               <Input
-                label={t('form:input-notification-email')}
-                {...register('settings.notifications.email')}
-                error={t(errors?.settings?.notifications?.email?.message!)}
+                label="Quote"
+                {...register('settings.askForAQuote.quote')}
                 variant="outline"
                 className="mb-5"
-                disabled={permissions?.includes(SUPER_ADMIN)}
-                type="email"
+                error={t(errors?.settings?.askForAQuote?.quote?.message)}
+                required
               />
-              <div className="flex items-center gap-x-4">
-                <SwitchInput
-                  name="settings.notifications.enable"
-                  control={control}
-                  disabled={permissions?.includes(SUPER_ADMIN)}
-                />
-                <Label className="!mb-0.5">
-                  {t('form:input-enable-notification')}
-                </Label>
-              </div>
-            </Card>
-          </div>
-        ) : (
-          ''
-        )}
-        <div className="flex flex-wrap pb-8 my-5 border-b border-gray-300 border-dashed sm:my-8">
-          <Description
-            title={t('form:shop-settings')}
-            details={t('form:shop-settings-helper-text')}
-            className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-          />
+              <TextArea
+                label="Ask for a quote content."
+                {...register('settings.askForAQuote.content')}
+                variant="outline"
+                error={t(errors?.settings?.askForAQuote?.content?.message)}
+                required
+              />
+            </>
+          ) : null}
+        </FormSection>
+      ) : null}
 
-          <Card className="w-full sm:w-8/12 md:w-2/3">
-            <PhoneNumberInput
-              label={t('form:input-label-contact')}
-              required
-              {...register('settings.contact')}
-              control={control}
-              error={t(errors.settings?.contact?.message!)}
-            />
-            <Input
-              label={t('form:input-label-website')}
-              {...register('settings.website')}
-              variant="outline"
-              className="mb-5"
-              error={t(errors.settings?.website?.message!)}
-            />
-            <div className="grid grid-cols-1 gap-2 mb-5">
-              <div className="mb-5">
-                <TooltipLabel
-                  htmlFor="timings.open"
-                  label={t('form:input-label-opening-time')}
-                  required
-                />
-                <Controller
-                  control={control}
-                  name="timings.open"
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      value={
-                        SHOP_TIME_OPTIONS.find((o) => o.value === field.value) ?? null
-                      }
-                      onChange={(option: any) =>
-                        field.onChange(option?.value ?? '')
-                      }
-                      options={SHOP_TIME_OPTIONS}
-                    />
-                  )}
-                />
-                {errors.timings?.open?.message && (
-                  <p className="my-2 text-xs text-red-500 text-start">
-                    {t(errors.timings.open.message)}
-                  </p>
-                )}
-              </div>
-              <div className="mb-5">
-                <TooltipLabel
-                  htmlFor="timings.close"
-                  label={t('form:input-label-closing-time')}
-                  required
-                />
-                <Controller
-                  control={control}
-                  name="timings.close"
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      value={
-                        SHOP_TIME_OPTIONS.find((o) => o.value === field.value) ?? null
-                      }
-                      onChange={(option: any) =>
-                        field.onChange(option?.value ?? '')
-                      }
-                      options={SHOP_TIME_OPTIONS}
-                    />
-                  )}
-                />
-                {errors.timings?.close?.message && (
-                  <p className="my-2 text-xs text-red-500 text-start">
-                    {t(errors.timings.close.message)}
-                  </p>
-                )}
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        <div className="flex flex-wrap pb-8 my-5 border-b border-gray-300 border-dashed sm:my-8">
-          <Description
-            title={t('form:social-settings')}
-            details={t('form:social-settings-helper-text')}
-            className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-          />
-
-          <Card className="w-full sm:w-8/12 md:w-2/3">
-            <div>
-              {fields?.map(
-                (item: ShopSocialInput & { id: string }, index: number) => (
-                  <div
-                    className="py-5 border-b border-dashed border-border-200 first:mt-0 first:border-t-0 first:pt-0 last:border-b-0 md:py-8 md:first:mt-0"
-                    key={item.id}
-                  >
-                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-5">
-                      <div className="sm:col-span-2">
-                        <Label>{t('form:input-label-select-platform')}</Label>
-                        <SelectInput
-                          name={`settings.socials.${index}.icon` as const}
-                          control={control}
-                          options={updatedIcons}
-                          isClearable={true}
-                          defaultValue={item?.icon!}
-                        />
-                      </div>
-                      {/* <Input
-                        className="sm:col-span-2"
-                        label={t("form:input-label-icon")}
-                        variant="outline"
-                        {...register(`settings.socials.${index}.icon` as const)}
-                        defaultValue={item?.icon!} // make sure to set up defaultValue
-                      /> */}
-                      <Input
-                        className="sm:col-span-2"
-                        label={t('form:input-label-url')}
-                        variant="outline"
-                        {...register(`settings.socials.${index}.url` as const)}
-                        error={t(
-                          errors?.settings?.socials?.[index]?.url?.message!,
-                        )}
-                        defaultValue={item.url!} // make sure to set up defaultValue
-                        required
-                      />
-                      <button
-                        onClick={() => {
-                          remove(index);
-                        }}
-                        type="button"
-                        className="text-sm text-red-500 transition-colors duration-200 hover:text-red-700 focus:outline-none sm:col-span-1 sm:mt-4"
-                      >
-                        {t('form:button-label-remove')}
-                      </button>
-                    </div>
-                  </div>
-                ),
-              )}
-            </div>
-            <Button
+      <StickyFooterPanel className="z-0">
+        <div className="flex flex-col-reverse gap-3 text-end sm:flex-row sm:justify-end">
+          {initialValues ? (
+            <ActionButton
+              variant="secondary"
+              size="sm"
+              onClick={router.back}
               type="button"
-              onClick={() => append({ icon: '', url: '' })}
-              className="w-full text-sm sm:w-auto md:text-base"
+              className="w-full sm:w-auto"
             >
-              {t('form:button-label-add-social')}
-            </Button>
-          </Card>
+              {t('form:button-label-back')}
+            </ActionButton>
+          ) : null}
+          <ActionButton
+            type="submit"
+            variant="primary"
+            size="sm"
+            loading={creating || updating}
+            disabled={creating || updating}
+            className="w-full sm:w-auto"
+          >
+            {initialValues
+              ? t('form:button-label-update')
+              : t('form:button-label-save')}
+          </ActionButton>
         </div>
-        {!permissions?.includes(SUPER_ADMIN) ? (
-          <div className="flex flex-wrap pb-8 my-5 border-b border-gray-300 border-dashed sm:my-8">
-            <Description
-              title="Shop maintenance settings "
-              details="Control all the maintenance settings related to this shop."
-              className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-            />
-
-            <Card className="w-full sm:w-8/12 md:w-2/3">
-              <div className="my-5">
-                <SwitchInput
-                  name="settings.isShopUnderMaintenance"
-                  label={t('form:input-label-enable-maintenance-mode')}
-                  toolTipText={t('form:input-tooltip-enable-maintenance-mode')}
-                  control={control}
-                />
-              </div>
-
-              <div className="my-5 mt-10">
-                <FileInput
-                  name="settings.shopMaintenance.image"
-                  control={control}
-                  multiple={false}
-                  disabled={!isMaintenanceMode}
-                />
-              </div>
-
-              <div className="my-5 mt-10">
-                <Input
-                  label={t('form:input-label-title')}
-                  toolTipText={t('form:input-tooltip-maintenance-title')}
-                  {...register('settings.shopMaintenance.title')}
-                  error={t(errors?.settings?.shopMaintenance?.title?.message!)}
-                  variant="outline"
-                  className="mb-5"
-                  {...(isMaintenanceMode && {
-                    required: true,
-                  })}
-                  disabled={!isMaintenanceMode}
-                />
-                <TextArea
-                  label={t('form:input-label-description')}
-                  toolTipText={t('form:input-tooltip-maintenance-description')}
-                  {...register('settings.shopMaintenance.description')}
-                  error={t(
-                    errors?.settings?.shopMaintenance?.description?.message!,
-                  )}
-                  variant="outline"
-                  className="mb-5"
-                  {...(isMaintenanceMode && {
-                    required: true,
-                  })}
-                  disabled={!isMaintenanceMode}
-                />
-                <div className="mb-5">
-                  <DatePicker
-                    control={control}
-                    name="settings.shopMaintenance.start"
-                    minDate={today}
-                    startDate={new Date(startDate)}
-                    locale={locale}
-                    placeholder="Start Date"
-                    disabled={!isMaintenanceMode}
-                    label={t('form:maintenance-start-time')}
-                    toolTipText={t('form:input-tooltip-maintenance-start-time')}
-                    {...(isMaintenanceMode && {
-                      required: true,
-                    })}
-                    error={t(
-                      errors?.settings?.shopMaintenance?.start?.message!,
-                    )}
-                    showTimeSelect
-                    timeFormat="h:mm aa"
-                    timeIntervals={15}
-                    timeCaption="time"
-                    dateFormat="MMMM d, yyyy h:mm aa"
-                    filterTime={filterStartTime}
-                  />
-                </div>
-                <div className="w-full">
-                  <DatePicker
-                    control={control}
-                    name="settings.shopMaintenance.until"
-                    disabled={!startDate || !isMaintenanceMode}
-                    minDate={new Date(startDate)}
-                    placeholder="End Date"
-                    locale={locale}
-                    {...(isMaintenanceMode && {
-                      required: true,
-                    })}
-                    toolTipText={t('form:input-tooltip-maintenance-end-time')}
-                    label={t('form:maintenance-end-date')}
-                    error={t(
-                      errors?.settings?.shopMaintenance?.until?.message!,
-                    )}
-                    showTimeSelect
-                    timeFormat="h:mm aa"
-                    timeIntervals={15}
-                    timeCaption="time"
-                    dateFormat="MMMM d, yyyy h:mm aa"
-                    filterTime={filterUntilTime}
-                  />
-                </div>
-              </div>
-            </Card>
-          </div>
-        ) : (
-          ''
-        )}
-           {!permissions?.includes(SUPER_ADMIN) &&
-        !permissions?.includes(STAFF) &&
-        !Boolean(initialValues?.is_active) &&
-        Boolean(options?.isMultiCommissionRate) ? (
-          <div className="flex flex-wrap pb-8 my-5 border-b border-gray-300 border-dashed sm:my-8">
-            <Description
-              title="Ask for a quote?"
-              details="Set your ask for a quote here."
-              className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-            />
-
-            <Card className="w-full sm:w-8/12 md:w-2/3">
-              <SwitchInput
-                name="settings.askForAQuote.enable"
-                control={control}
-                label="Ask for a quote?"
-                className={askForAQuote ? 'mb-4' : ''}
-              />
-              {askForAQuote ? (
-                <>
-                  <Input
-                    label="Quote"
-                    {...register('settings.askForAQuote.quote')}
-                    variant="outline"
-                    className="mb-5"
-                    error={t(errors?.settings?.askForAQuote?.quote?.message)}
-                    required
-                  />
-                  <TextArea
-                    label="Ask for a quote content."
-                    {...register('settings.askForAQuote.content')}
-                    variant="outline"
-                    error={t(errors?.settings?.askForAQuote?.content?.message)}
-                    required
-                  />
-                </>
-              ) : (
-                ''
-              )}
-            </Card>
-          </div>
-        ) : (
-          ''
-        )}
-
-        <StickyFooterPanel className="z-0">
-          <div className="mb-5 text-end">
-            <Button
-              loading={creating || updating}
-              disabled={creating || updating}
-            >
-              {initialValues
-                ? t('form:button-label-update')
-                : t('form:button-label-save')}
-            </Button>
-          </div>
-        </StickyFooterPanel>
-      </form>
-    </>
+      </StickyFooterPanel>
+    </form>
   );
 };
 

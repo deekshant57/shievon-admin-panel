@@ -5,20 +5,18 @@ import { useTranslation } from 'next-i18next';
 
 type ShopsSummaryStripProps = {
   totalShops?: number;
+  activeShops?: number;
   inactiveShops?: number;
   className?: string;
 };
 
 const ShopsSummaryStrip = ({
   totalShops,
+  activeShops,
   inactiveShops,
   className,
 }: ShopsSummaryStripProps) => {
   const { t } = useTranslation('common');
-  const activeShops =
-    totalShops != null && inactiveShops != null
-      ? Math.max(totalShops - inactiveShops, 0)
-      : undefined;
 
   return (
     <StatStrip columns={3} className={className}>

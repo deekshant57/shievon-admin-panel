@@ -293,8 +293,7 @@ const ProductList = ({
 
   return (
     <>
-      <div className="overflow-hidden rounded-lg border border-border/60">
-        <Table
+      <Table
           /* @ts-ignore */
           columns={columns}
           emptyText={() => (
@@ -308,7 +307,6 @@ const ProductList = ({
           rowKey="id"
           scroll={{ x: 900 }}
         />
-      </div>
 
       {!!paginatorInfo?.total && (
         <div className="mt-6 flex items-center justify-end">

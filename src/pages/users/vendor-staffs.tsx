@@ -1,5 +1,5 @@
-import Card from '@/components/common/card';
 import Search from '@/components/common/search';
+import DataPanel from '@/components/page/data-panel';
 import Layout from '@/components/layouts/admin';
 import StaffList from '@/components/shop/staff-list';
 import ErrorMessage from '@/components/ui/error-message';
@@ -10,7 +10,6 @@ import { adminOnly } from '@/utils/auth-utils';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useState } from 'react';
-import PageHeading from '@/components/common/page-heading';
 
 type VendorStaffsPageProps = {
   initialAllStaffsData?: any
@@ -49,28 +48,32 @@ export default function VendorStaffsPage({ initialAllStaffsData }: VendorStaffsP
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('form:input-label-all-staffs')} />
-        </div>
-
-        <div className="flex w-full items-center ms-auto md:w-2/4">
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <DataPanel
+        className="mb-0"
+        title={t('form:input-label-all-staffs')}
+        subtitle={t('common:vendor-staffs-page-subtitle')}
+        toolbarLayout="stacked"
+        toolbar={
           <Search
             onSearch={handleSearch}
             placeholderText={t('form:input-placeholder-search-name')}
+            debounceMs={400}
+            variant="hybrid"
+            size="sm"
+            className="w-full min-w-0 sm:max-w-md"
           />
-        </div>
-      </Card>
-
-      <StaffList
-        staffs={allStaffs}
-        onPagination={handlePagination}
-        paginatorInfo={paginatorInfo}
-        onOrder={setOrder}
-        onSort={setColumn}
-      />
-    </>
+        }
+      >
+        <StaffList
+          staffs={allStaffs}
+          onPagination={handlePagination}
+          paginatorInfo={paginatorInfo}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 

@@ -1,8 +1,9 @@
-import Card from '@/components/common/card';
 import Search from '@/components/common/search';
 import OrderList from '@/components/order/order-list';
+import DataPanel from '@/components/page/data-panel';
+import ActionButton from '@/components/ui/action-button';
 import { LIMIT } from '@/utils/constants';
-import { Fragment, useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
 import { useTranslation } from 'next-i18next';
@@ -18,13 +19,9 @@ import { useOrdersQuery } from '@/data/order';
 import { SortOrder } from '@/types';
 import { useShopQuery } from '@/data/shop';
 import { DownloadIcon } from '@/components/icons/download-icon';
-import { Menu, Transition } from '@headlessui/react';
-import classNames from 'classnames';
-import { MoreIcon } from '@/components/icons/more-icon';
 import { useExportOrderQuery } from '@/data/export';
 import { useMeQuery } from '@/data/user';
 import { Routes } from '@/config/routes';
-import PageHeading from '@/components/common/page-heading';
 
 export default function Orders() {
   const router = useRouter();
@@ -56,24 +53,21 @@ export default function Orders() {
     },
     {
       enabled: Boolean(shopId),
-    }
+    },
   );
 
   const { refetch } = useExportOrderQuery(
     {
       ...(shopId && { shop_id: shopId }),
     },
-    { enabled: false }
+    { enabled: false },
   );
 
-  // Check permissions and redirect if user doesn't have access
   useEffect(() => {
-    // Prevent multiple redirects
     if (hasRedirectedRef.current) {
       return;
     }
 
-    // Wait for both shop and user data to be loaded before checking permissions
     if (fetchingShop || !shopId || !me) {
       return;
     }
@@ -83,7 +77,7 @@ export default function Orders() {
       permissions,
     );
     const ownsShop =
-      me?.shops?.some((shop) => String(shop.id) === String(shopId)) ?? false;
+      me?.shops?.some((s) => String(s.id) === String(shopId)) ?? false;
     const isManagedShop =
       me?.managed_shop?.id != null &&
       String(me.managed_shop.id) === String(shopId);
@@ -111,6 +105,7 @@ export default function Orders() {
 
   function handleSearch({ searchText }: { searchText: string }) {
     setSearchTerm(searchText);
+    setPage(1);
   }
 
   function handlePagination(current: any) {
@@ -118,70 +113,46 @@ export default function Orders() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center justify-between md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('form:input-label-orders')} />
-        </div>
-
-        <div className="flex w-full flex-col items-center ms-auto md:w-1/2 md:flex-row">
-          <Search
-            onSearch={handleSearch}
-            placeholderText={t('form:input-placeholder-search-tracking-number')}
-          />
-        </div>
-
-        <Menu
-          as="div"
-          className="relative inline-block ltr:text-left rtl:text-right"
-        >
-          <Menu.Button className="group p-2">
-            <MoreIcon className="w-3.5 text-body" />
-          </Menu.Button>
-          <Transition
-            as={Fragment}
-            enter="transition ease-out duration-100"
-            enterFrom="transform opacity-0 scale-95"
-            enterTo="transform opacity-100 scale-100"
-            leave="transition ease-in duration-75"
-            leaveFrom="transform opacity-100 scale-100"
-            leaveTo="transform opacity-0 scale-95"
-          >
-            <Menu.Items
-              as="ul"
-              className={classNames(
-                'shadow-700 absolute z-50 mt-2 w-52 overflow-hidden rounded border border-border-200 bg-light py-2 focus:outline-none ltr:right-0 ltr:origin-top-right rtl:left-0 rtl:origin-top-left'
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <DataPanel
+        className="mb-0"
+        title={t('form:input-label-orders')}
+        subtitle={t('common:orders-page-subtitle')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Search
+              onSearch={handleSearch}
+              placeholderText={t(
+                'form:input-placeholder-search-tracking-number',
               )}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
+            />
+            <ActionButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleExportOrder}
+              className="w-full shrink-0 justify-center sm:w-auto"
             >
-              <Menu.Item>
-                {({ active }) => (
-                  <button
-                    onClick={handleExportOrder}
-                    className={classNames(
-                      'flex w-full items-center space-x-3 px-5 py-2.5 text-sm font-semibold capitalize transition duration-200 hover:text-accent focus:outline-none rtl:space-x-reverse',
-                      active ? 'text-accent' : 'text-body'
-                    )}
-                  >
-                    <DownloadIcon className="w-5 shrink-0" />
-                    <span className="whitespace-nowrap">
-                      {t('common:text-export-orders')}
-                    </span>
-                  </button>
-                )}
-              </Menu.Item>
-            </Menu.Items>
-          </Transition>
-        </Menu>
-      </Card>
-
-      <OrderList
-        orders={orders}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
-      />
-    </>
+              <DownloadIcon className="me-2 h-4 w-4 shrink-0" />
+              {t('common:text-export-orders')}
+            </ActionButton>
+          </div>
+        }
+      >
+        <OrderList
+          orders={orders}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 Orders.authenticate = {

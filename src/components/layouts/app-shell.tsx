@@ -86,13 +86,13 @@ const AppShell: React.FC<AppShellProps> = ({
 
   return (
     <div
-      className="flex min-h-screen flex-col bg-background transition-colors duration-150"
+      className="flex min-h-screen min-w-0 flex-col overflow-x-hidden bg-background transition-colors duration-150"
       dir={dir}
     >
       <Navbar />
       <MobileNavigation>{mobileSidebar ?? sidebar}</MobileNavigation>
 
-      <div className="flex flex-1">
+      <div className="flex min-w-0 flex-1">
         <aside
           className={cn(
             'fixed bottom-0 z-10 hidden h-full w-72 border-r border-border/60 bg-card transition-[width] duration-200 ltr:left-0 ltr:right-auto rtl:right-0 rtl:left-auto lg:block',
@@ -122,7 +122,7 @@ const AppShell: React.FC<AppShellProps> = ({
 
         <main
           className={cn(
-            'relative flex w-full flex-col justify-start transition-[padding] duration-200',
+            'relative flex min-w-0 max-w-full flex-1 flex-col overflow-x-hidden transition-[padding] duration-200',
             getMainPadding(
               variant,
               width,
@@ -132,7 +132,7 @@ const AppShell: React.FC<AppShellProps> = ({
             ),
           )}
         >
-          <div className="h-full p-5 md:p-8">{children}</div>
+          <div className="h-full min-w-0 max-w-full p-5 md:p-8">{children}</div>
           <Footer />
         </main>
       </div>

@@ -1,8 +1,8 @@
-import Card from '@/components/common/card';
 import Layout from '@/components/layouts/admin';
 import Search from '@/components/common/search';
 import UserList from '@/components/user/user-list';
-import LinkButton from '@/components/ui/link-button';
+import LinkActionButton from '@/components/ui/link-action-button';
+import DataPanel from '@/components/page/data-panel';
 import { useState } from 'react';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
@@ -12,7 +12,6 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { Routes } from '@/config/routes';
 import { SortOrder } from '@/types';
 import { adminOnly } from '@/utils/auth-utils';
-import PageHeading from '@/components/common/page-heading';
 
 type AllUsersPageProps = {
   initialUsersData?: any
@@ -50,28 +49,33 @@ export default function AllUsersPage({ initialUsersData }: AllUsersPageProps) {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('form:input-label-users')} />
-        </div>
-
-        <div className="flex w-full flex-col items-center space-y-4 ms-auto md:w-3/4 md:flex-row md:space-y-0 xl:w-2/4">
-          <Search
-            onSearch={handleSearch}
-            placeholderText={t('form:input-placeholder-search-name')}
-          />
-
-          <LinkButton
-            href={`${Routes.user.create}`}
-            className="h-12 w-full md:w-auto md:ms-6"
-          >
-            <span>+ {t('form:button-label-add-user')}</span>
-          </LinkButton>
-        </div>
-      </Card>
-
-      {loading ? null : (
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <DataPanel
+        className="mb-0"
+        title={t('form:input-label-users')}
+        subtitle={t('common:users-page-subtitle')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Search
+              onSearch={handleSearch}
+              placeholderText={t('form:input-placeholder-search-name')}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
+            />
+            <LinkActionButton
+              href={Routes.user.create}
+              variant="primary"
+              size="sm"
+              className="w-full shrink-0 justify-center sm:w-auto"
+            >
+              + {t('form:button-label-add-user')}
+            </LinkActionButton>
+          </div>
+        }
+      >
         <UserList
           customers={users}
           paginatorInfo={paginatorInfo}
@@ -79,8 +83,8 @@ export default function AllUsersPage({ initialUsersData }: AllUsersPageProps) {
           onOrder={setOrder}
           onSort={setColumn}
         />
-      )}
-    </>
+      </DataPanel>
+    </div>
   );
 }
 

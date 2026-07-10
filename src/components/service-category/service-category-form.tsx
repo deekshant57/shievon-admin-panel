@@ -1,5 +1,5 @@
-import Button from '@/components/ui/button'
-import Card from '@/components/common/card'
+import FormSection from '@/components/page/form-section'
+import ActionButton from '@/components/ui/action-button'
 import Input from '@/components/ui/input'
 import Label from '@/components/ui/label'
 import SelectInput from '@/components/ui/select-input'
@@ -16,6 +16,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'next-i18next'
+import { useRouter } from 'next/router'
 import { serviceCategoryValidationSchema } from './service-category-validation-schema'
 
 type FormValues = {
@@ -40,6 +41,7 @@ type IProps = {
 
 export default function ServiceCategoryForm({ initialValues }: IProps) {
   const { t } = useTranslation()
+  const router = useRouter()
   const [isSlugManual, setIsSlugManual] = useState(false)
 
   const { serviceCategories: parentOptions, loading: loadingParents } =
@@ -120,8 +122,14 @@ export default function ServiceCategoryForm({ initialValues }: IProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Card className="mb-8 p-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+      <FormSection
+        title={t('form:form-title-information') || 'Details'}
+        details={
+          t('common:service-categories-form-help') ||
+          'Set the name, slug, parent, and status for this service category'
+        }
+      >
         <Input
           label={t('form:input-label-name')}
           {...register('name')}
@@ -172,15 +180,33 @@ export default function ServiceCategoryForm({ initialValues }: IProps) {
           control={control}
           label={t('common:text-active')}
         />
-      </Card>
+      </FormSection>
 
       <StickyFooterPanel className="z-0">
-        <div className="mb-4 text-end">
-          <Button loading={creating || updating}>
+        <div className="flex flex-col-reverse gap-3 text-end sm:flex-row sm:justify-end">
+          {initialValues ? (
+            <ActionButton
+              variant="secondary"
+              size="sm"
+              onClick={router.back}
+              type="button"
+              className="w-full sm:w-auto"
+            >
+              {t('form:button-label-back')}
+            </ActionButton>
+          ) : null}
+          <ActionButton
+            type="submit"
+            variant="primary"
+            size="sm"
+            loading={creating || updating}
+            disabled={creating || updating}
+            className="w-full sm:w-auto"
+          >
             {initialValues
               ? t('form:button-label-update-service-category')
               : t('form:button-label-add-service-categories')}
-          </Button>
+          </ActionButton>
         </div>
       </StickyFooterPanel>
     </form>

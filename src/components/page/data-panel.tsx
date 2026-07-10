@@ -28,9 +28,14 @@ const DataPanel = ({
   className,
 }: DataPanelProps) => {
   return (
-    <Card className={cn('mb-8 border-border/60 shadow-sm', className)}>
+    <Card
+      className={cn(
+        'mb-8 w-full min-w-0 max-w-full overflow-hidden border-border/60 shadow-sm',
+        className,
+      )}
+    >
       {title || toolbar ? (
-        <div className="border-b border-border/60 px-5 py-5 md:px-8 md:py-6">
+        <div className="min-w-0 max-w-full border-b border-border/60 px-5 py-5 md:px-8 md:py-6">
           <PageHeader
             title={title ?? ''}
             subtitle={subtitle}
@@ -41,7 +46,10 @@ const DataPanel = ({
           {filters ? <div className="mt-5 border-t border-border/60 pt-5">{filters}</div> : null}
         </div>
       ) : null}
-      <CardContent className="px-5 py-5 md:px-8 md:py-6">{children}</CardContent>
+      <CardContent className="min-w-0 max-w-full overflow-hidden p-0">
+        {/* Table shell is full-bleed; other children (e.g. pagination) keep side padding */}
+        <div className="data-panel-body min-w-0 max-w-full">{children}</div>
+      </CardContent>
       {footer ? (
         <CardFooter className="border-t border-border/60 px-5 py-4 md:px-8">
           {footer}

@@ -228,8 +228,7 @@ const OwnershipTransferLists = ({
 
   return (
     <>
-      <div className="mb-6 overflow-hidden rounded shadow">
-        <Table
+      <Table
           columns={columns}
           emptyText={() => (
             <div className="flex flex-col items-center py-7">
@@ -244,7 +243,6 @@ const OwnershipTransferLists = ({
           rowKey="id"
           scroll={{ x: 1000 }}
         />
-      </div>
 
       {!!paginatorInfo?.total && (
         <div className="flex items-center justify-end">

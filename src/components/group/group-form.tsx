@@ -1,13 +1,12 @@
 import Input from '@/components/ui/input';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
-import Button from '@/components/ui/button';
-import Description from '@/components/ui/description';
-import Card from '@/components/common/card';
+import FormSection from '@/components/page/form-section';
+import ActionButton from '@/components/ui/action-button';
 import { useRouter } from 'next/router';
 import { getIcon } from '@/utils/get-icon';
 import Label from '@/components/ui/label';
 import * as typeIcons from '@/components/icons/type';
-import { AttachmentInput, Type, TypeSettingsInput } from '@/types';
+import { AttachmentInput, Category, Type, TypeSettingsInput } from '@/types';
 import { typeIconList } from './group-icons';
 import { useTranslation } from 'next-i18next';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -412,585 +411,564 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
     status: 'publish',
   });
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="flex flex-wrap my-5 sm:my-8">
-        <Description
-          title={t('form:item-description')}
-          details={`${
-            initialValues
-              ? t('form:item-description-update')
-              : t('form:item-description-add')
-          } ${t('form:group-description-help-text')}`}
-          className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+      <FormSection
+        title={t('form:item-description')}
+        details={`${
+          initialValues
+            ? t('form:item-description-update')
+            : t('form:item-description-add')
+        } ${t('form:group-description-help-text')}`}
+      >
+        <Input
+          label={t('form:input-label-name')}
+          {...register('name')}
+          error={t(errors.name?.message!)}
+          variant="outline"
+          className="mb-5"
+          // disabled={[].includes(Config.defaultLanguage)}
         />
-
-        <Card className="w-full sm:w-8/12 md:w-2/3">
-          <Input
-            label={t('form:input-label-name')}
-            {...register('name')}
-            error={t(errors.name?.message!)}
-            variant="outline"
-            className="mb-5"
-            // disabled={[].includes(Config.defaultLanguage)}
-          />
-          {isSlugEditable ? (
-            <div className="relative mb-5">
-              <Input
-                label={t('form:input-label-slug')}
-                {...register('slug')}
-                error={t(errors.slug?.message!)}
-                variant="outline"
-                disabled={isSlugDisable}
-              />
-              <button
-                className="absolute top-[27px] right-px z-0 flex h-[46px] w-11 items-center justify-center rounded-tr rounded-br border-l border-solid border-border-base bg-white px-2 text-body transition duration-200 hover:text-heading focus:outline-none"
-                type="button"
-                title={t('common:text-edit')}
-                onClick={() => setIsSlugDisable(false)}
-              >
-                <EditIcon width={14} />
-              </button>
-            </div>
-          ) : (
+        {isSlugEditable ? (
+          <div className="relative mb-5">
             <Input
               label={t('form:input-label-slug')}
               {...register('slug')}
-              value={slugAutoSuggest}
+              error={t(errors.slug?.message!)}
               variant="outline"
-              className="mb-5"
-              disabled
+              disabled={isSlugDisable}
             />
-          )}
+            <button
+              className="absolute top-[27px] right-px z-0 flex h-[46px] w-11 items-center justify-center rounded-tr rounded-br border-l border-solid border-border-base bg-white px-2 text-body transition duration-200 hover:text-heading focus:outline-none"
+              type="button"
+              title={t('common:text-edit')}
+              onClick={() => setIsSlugDisable(false)}
+            >
+              <EditIcon width={14} />
+            </button>
+          </div>
+        ) : (
           <Input
-            label="Sort Order"
-            type="number"
-            min={0}
-            {...register('sort_order', {
-              valueAsNumber: true,
-            })}
-            error={t((errors as any).sort_order?.message)}
+            label={t('form:input-label-slug')}
+            {...register('slug')}
+            value={slugAutoSuggest}
             variant="outline"
             className="mb-5"
+            disabled
           />
+        )}
+        <Input
+          label="Sort Order"
+          type="number"
+          min={0}
+          {...register('sort_order', {
+            valueAsNumber: true,
+          })}
+          error={t((errors as any).sort_order?.message)}
+          variant="outline"
+          className="mb-5"
+        />
 
-          <div className="mb-5">
-            <Label>{t('form:input-label-type-image')}</Label>
-            <Controller
-              control={control}
-              name="type_image"
-              render={({ field: { value, onChange } }) => {
-                const normalizedValue =
-                  Array.isArray(value) && value.length === 0
-                    ? null
-                    : Array.isArray(value) && value.length === 1
-                      ? value[0]
-                      : value ?? null;
-                return (
-                  <Uploader
-                    value={normalizedValue}
-                    onChange={(v: any) => {
-                      if (Array.isArray(v) && v.length === 0) onChange(null);
-                      else if (Array.isArray(v) && v.length === 1)
-                        onChange(v[0]);
-                      else onChange(v ?? null);
-                    }}
-                    multiple={false}
-                    helperText={t('form:input-label-type-image-help')}
-                    skipDeleteOnRemove
-                  />
-                );
-              }}
-            />
-          </div>
-          <div className="mb-5">
-            <Label>{t('form:input-label-select-icon')}</Label>
-            <SelectInput
-              name="icon"
-              control={control}
-              options={updatedIcons}
-              isClearable={true}
-              placeholder="Select Icon"
-            />
-          </div>
-
-          <div className="mb-5">
-            <Label>{t('form:input-label-videos')}</Label>
-            <Controller
-              control={control}
-              name="video"
-              render={({ field: { value, onChange } }) => (
-                <VideoUploader
-                  value={value ?? []}
-                  onChange={onChange}
-                  helperText={
-                    t('form:input-label-videos-help')
-                  }
+        <div className="mb-5">
+          <Label>{t('form:input-label-type-image')}</Label>
+          <Controller
+            control={control}
+            name="type_image"
+            render={({ field: { value, onChange } }) => {
+              const normalizedValue =
+                Array.isArray(value) && value.length === 0
+                  ? null
+                  : Array.isArray(value) && value.length === 1
+                    ? value[0]
+                    : value ?? null;
+              return (
+                <Uploader
+                  value={normalizedValue}
+                  onChange={(v: any) => {
+                    if (Array.isArray(v) && v.length === 0) onChange(null);
+                    else if (Array.isArray(v) && v.length === 1)
+                      onChange(v[0]);
+                    else onChange(v ?? null);
+                  }}
+                  multiple={false}
+                  helperText={t('form:input-label-type-image-help')}
+                  skipDeleteOnRemove
                 />
-              )}
-            />
-          </div>
-        </Card>
-      </div>
+              );
+            }}
+          />
+        </div>
+        <div className="mb-5">
+          <Label>{t('form:input-label-select-icon')}</Label>
+          <SelectInput
+            name="icon"
+            control={control}
+            options={updatedIcons}
+            isClearable={true}
+            placeholder="Select Icon"
+          />
+        </div>
+
+        <div className="mb-5">
+          <Label>{t('form:input-label-videos')}</Label>
+          <Controller
+            control={control}
+            name="video"
+            render={({ field: { value, onChange } }) => (
+              <VideoUploader
+                value={value ?? []}
+                onChange={onChange}
+                helperText={
+                  t('form:input-label-videos-help')
+                }
+              />
+            )}
+          />
+        </div>
+      </FormSection>
 
       {/* Group-related settings wrapper is hidden for now by request.
           Keeping defaults/payload logic intact for compatibility. */}
       {false && (
-        <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-          <Description
-            title={t('form:group-settings')}
-            details={t('form:group-settings-help-text')}
-            className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
+        <FormSection
+          title={t('form:group-settings')}
+          details={t('form:group-settings-help-text')}
+        >
+          <Checkbox
+            {...register('settings.isHome')}
+            error={t(errors.settings?.isHome?.message!)}
+            label={t('form:input-label-is-home')}
+            className="mb-5"
           />
-          <Card className="w-full sm:w-8/12 md:w-2/3">
-            <Checkbox
-              {...register('settings.isHome')}
-              error={t(errors.settings?.isHome?.message!)}
-              label={t('form:input-label-is-home')}
-              className="mb-5"
-            />
-            <div className="mb-10">
-              <Label className="mb-5">
-                {t('form:input-label-layout-type')}
-              </Label>
+          <div className="mb-10">
+            <Label className="mb-5">
+              {t('form:input-label-layout-type')}
+            </Label>
 
-              <div className="grid grid-cols-3 gap-5">
-                {layoutTypes?.map((layout, index) => {
-                  return (
-                    <RadioCard
-                      key={index}
-                      {...register('settings.layoutType')}
-                      label={t(layout.label)}
-                      value={layout.value}
-                      src={layout.img}
-                      id={layout?.value}
-                    />
-                  )
-                })}
-              </div>
+            <div className="grid grid-cols-3 gap-5">
+              {layoutTypes?.map((layout, index) => {
+                return (
+                  <RadioCard
+                    key={index}
+                    {...register('settings.layoutType')}
+                    label={t(layout.label)}
+                    value={layout.value}
+                    src={layout.img}
+                    id={layout?.value}
+                  />
+                )
+              })}
             </div>
-            <div className="mb-5">
-              <Label className="mb-5">
-                {t('form:input-label-product-card-type')}
-              </Label>
+          </div>
+          <div className="mb-5">
+            <Label className="mb-5">
+              {t('form:input-label-product-card-type')}
+            </Label>
 
-              <div className="grid grid-cols-3 gap-5">
-                {productCards?.map((productCard, index) => {
-                  return (
-                    <RadioCard
-                      key={`product-card-${index}`}
-                      {...register('settings.productCard')}
-                      label={t(productCard.label)}
-                      value={productCard.value}
-                      src={productCard.img}
-                      id={`product-card-${index}`}
-                    />
-                  )
-                })}
-              </div>
+            <div className="grid grid-cols-3 gap-5">
+              {productCards?.map((productCard, index) => {
+                return (
+                  <RadioCard
+                    key={`product-card-${index}`}
+                    {...register('settings.productCard')}
+                    label={t(productCard.label)}
+                    value={productCard.value}
+                    src={productCard.img}
+                    id={`product-card-${index}`}
+                  />
+                )
+              })}
             </div>
-          </Card>
-        </div>
+          </div>
+        </FormSection>
       )}
 
       {layoutType === 'classic' ? (
-        <div className="flex flex-wrap pb-8 my-5 border-b border-dashed border-border-base sm:my-8">
-          <Description
-            title={t('form:promotional-slider')}
-            details={t('form:promotional-slider-help-text')}
-            className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
+        <FormSection
+          title={t('form:promotional-slider')}
+          details={t('form:promotional-slider-help-text')}
+        >
+          <FileInput
+            name="promotional_sliders"
+            control={control}
+            folder="banners"
           />
-          <Card className="w-full sm:w-8/12 md:w-2/3">
-            <FileInput
-              name="promotional_sliders"
-              control={control}
-              folder="banners"
-            />
-          </Card>
-        </div>
+        </FormSection>
       ) : null}
 
-      <div
-        className={classNames(
-          layoutType === 'compact'
-            ? 'my-5 flex flex-wrap border-b border-dashed border-border-base pb-8 sm:my-8'
-            : 'my-5 flex flex-wrap sm:my-8',
-        )}
+      <FormSection
+        title={t('common:text-banner')}
+        details={t('form:banner-slider-help-text')}
       >
-        <Description
-          title={t('common:text-banner')}
-          details={t('form:banner-slider-help-text')}
-          className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-        />
-        <Card className="w-full sm:w-8/12 md:w-2/3">
-          {layoutType === 'minimal' && fields?.length > 0 ? (
-            <Alert
-              className="mb-5"
-              message="Minimal demo will show only first item of banner."
-            />
-          ) : (
-            ''
-          )}
-          {(layoutType === 'compact' || layoutType === 'minimal') &&
-          fields?.length > 0 ? (
-            <Alert
-              className="mb-5"
-              message="Disabled item will not show in shop end."
-              variant="warning"
-            />
-          ) : (
-            ''
-          )}
+        {layoutType === 'minimal' && fields?.length > 0 ? (
+          <Alert
+            className="mb-5"
+            message="Minimal demo will show only first item of banner."
+          />
+        ) : (
+          ''
+        )}
+        {(layoutType === 'compact' || layoutType === 'minimal') &&
+        fields?.length > 0 ? (
+          <Alert
+            className="mb-5"
+            message="Disabled item will not show in shop end."
+            variant="warning"
+          />
+        ) : (
+          ''
+        )}
 
-          <div>
-            {fields?.map((item: any & { id: string }, index: number) => (
-              <div
-                className="py-5 border-b border-dashed border-border-200 first:pt-0 last:border-0 md:py-8"
-                key={item.id}
-              >
-                <div className="flex items-center justify-between mb-5">
-                  <Title className="mb-0">
-                    {t('common:text-banner')} {index + 1}
-                  </Title>
-                  <button
-                    onClick={() => {
-                      remove(index);
-                    }}
-                    type="button"
-                    className={classNames(
-                      'text-sm text-red-500 transition-colors duration-200 hover:text-red-700 focus:outline-none sm:col-span-1 sm:mt-4',
-                      layoutType === 'minimal' && index !== 0 && index > 0
-                        ? 'pointer-events-none cursor-not-allowed text-opacity-80'
-                        : '',
-                    )}
-                    disabled={
-                      layoutType === 'minimal' && index !== 0 && index > 0
-                    }
-                  >
-                    {t('form:button-label-remove')}
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 gap-5">
-                  <Input
-                    label={t('form:input-title')}
-                    variant="outline"
-                    {...register(`banners.${index}.title` as const)}
-                    defaultValue={item?.title!} // make sure to set up defaultValue
-                    error={t(errors.banners?.[index]?.title?.message!)}
-                    disabled={
-                      layoutType === 'compact' ||
-                      (layoutType === 'minimal' && index !== 0 && index > 0)
-                    }
-                  />
-                  <TextArea
-                    label={t('form:input-description')}
-                    variant="outline"
-                    {...register(`banners.${index}.description` as const)}
-                    defaultValue={item.description!} // make sure to set up defaultValue
-                    disabled={
-                      layoutType === 'compact' ||
-                      (layoutType === 'minimal' && index !== 0 && index > 0)
-                    }
-                  />
-                </div>
-
-                <div className="mt-5 w-full">
-                  <Title>
-                    {t('form:input-gallery')}
-                    {layoutType === 'compact' ? (
-                      <span className="ml-0.5 text-red-500">*</span>
-                    ) : (
-                      ''
-                    )}
-                  </Title>
-                  <FileInput
-                    name={`banners.${index}.image`}
-                    control={control}
-                    multiple={false}
-                    folder="banners"
-                    disabled={
-                      layoutType === 'minimal' && index !== 0 && index > 0
-                    }
-                  />
-                  <ValidationError
-                    message={t(errors?.banners?.[index]?.image?.message!)}
-                  />
-                </div>
+        <div>
+          {fields?.map((item: any & { id: string }, index: number) => (
+            <div
+              className="py-5 border-b border-dashed border-border-200 first:pt-0 last:border-0 md:py-8"
+              key={item.id}
+            >
+              <div className="flex items-center justify-between mb-5">
+                <Title className="mb-0">
+                  {t('common:text-banner')} {index + 1}
+                </Title>
+                <button
+                  onClick={() => {
+                    remove(index);
+                  }}
+                  type="button"
+                  className={classNames(
+                    'text-sm text-red-500 transition-colors duration-200 hover:text-red-700 focus:outline-none sm:col-span-1 sm:mt-4',
+                    layoutType === 'minimal' && index !== 0 && index > 0
+                      ? 'pointer-events-none cursor-not-allowed text-opacity-80'
+                      : '',
+                  )}
+                  disabled={
+                    layoutType === 'minimal' && index !== 0 && index > 0
+                  }
+                >
+                  {t('form:button-label-remove')}
+                </button>
               </div>
-            ))}
-          </div>
+              <div className="grid grid-cols-1 gap-5">
+                <Input
+                  label={t('form:input-title')}
+                  variant="outline"
+                  {...register(`banners.${index}.title` as const)}
+                  defaultValue={item?.title!} // make sure to set up defaultValue
+                  error={t(errors.banners?.[index]?.title?.message!)}
+                  disabled={
+                    layoutType === 'compact' ||
+                    (layoutType === 'minimal' && index !== 0 && index > 0)
+                  }
+                />
+                <TextArea
+                  label={t('form:input-description')}
+                  variant="outline"
+                  {...register(`banners.${index}.description` as const)}
+                  defaultValue={item.description!} // make sure to set up defaultValue
+                  disabled={
+                    layoutType === 'compact' ||
+                    (layoutType === 'minimal' && index !== 0 && index > 0)
+                  }
+                />
+              </div>
 
-          <Button
-            type="button"
-            onClick={() =>
+              <div className="mt-5 w-full">
+                <Title>
+                  {t('form:input-gallery')}
+                  {layoutType === 'compact' ? (
+                    <span className="ml-0.5 text-red-500">*</span>
+                  ) : (
+                    ''
+                  )}
+                </Title>
+                <FileInput
+                  name={`banners.${index}.image`}
+                  control={control}
+                  multiple={false}
+                  folder="banners"
+                  disabled={
+                    layoutType === 'minimal' && index !== 0 && index > 0
+                  }
+                />
+                <ValidationError
+                  message={t(errors?.banners?.[index]?.image?.message!)}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <ActionButton
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={() =>
+            // @ts-ignore
+            append({ title: '', description: '', image: {} })
+          }
+          className="w-full sm:w-auto"
+          disabled={layoutType === 'minimal' && fields?.length > 0}
+        >
+          {t('form:button-label-add-banner')}
+        </ActionButton>
+
+        {/* @ts-ignore */}
+        {errors?.banners?.message ? (
+          <Alert
+            message={
               // @ts-ignore
-              append({ title: '', description: '', image: {} })
+              t(errors?.banners?.message)
             }
-            className="w-full sm:w-auto"
-            disabled={layoutType === 'minimal' && fields?.length > 0}
-          >
-            {t('form:button-label-add-banner')}
-          </Button>
-
-          {/* @ts-ignore */}
-          {errors?.banners?.message ? (
-            <Alert
-              message={
-                // @ts-ignore
-                t(errors?.banners?.message)
-              }
-              variant="error"
-              className="mt-5"
-            />
-          ) : null}
-        </Card>
-      </div>
+            variant="error"
+            className="mt-5"
+          />
+        ) : null}
+      </FormSection>
 
       {layoutType === 'compact' ? (
-        <div className="my-5 flex flex-wrap sm:my-8">
-          <Description
-            title="Layout Content Settings."
-            details="Please set your layout content here."
-            className="w-full px-0 pb-5 sm:w-4/12 sm:py-8 sm:pe-4 md:w-1/3 md:pe-5"
-          />
-          <Card className="w-full sm:w-8/12 md:w-2/3">
-            <div className="grid gap-5">
-              <div className="flex items-center gap-x-4">
-                <SwitchInput
-                  name="settings.bestSelling.enable"
-                  control={control}
-                />
-                <Label
-                  htmlFor="settings.bestSelling.enable"
-                  className="mb-0 cursor-pointer"
-                >
-                  Enable Best Selling Products?
-                </Label>
-              </div>
-              {bestSellingEnable ? (
-                <Input
-                  label={t('form:input-title')}
-                  variant="outline"
-                  {...register('settings.bestSelling.title')}
-                  error={t(errors?.settings?.bestSelling?.title?.message)}
-                  required
-                />
-              ) : (
-                ''
-              )}
-              <div className="flex items-center gap-x-4">
-                <SwitchInput
-                  name="settings.popularProducts.enable"
-                  control={control}
-                />
-                <Label
-                  className="mb-0 cursor-pointer"
-                  htmlFor="settings.popularProducts.enable"
-                >
-                  Enable Popular Products?
-                </Label>
-              </div>
-              {popularProductsEnable ? (
-                <Input
-                  label={t('form:input-title')}
-                  variant="outline"
-                  {...register('settings.popularProducts.title')}
-                  error={t(errors?.settings?.popularProducts?.title?.message)}
-                  required
-                />
-              ) : (
-                ''
-              )}
-              <div className="flex items-center gap-x-4">
-                <SwitchInput
-                  name="settings.category.enable"
-                  control={control}
-                />
-                <Label
-                  className="mb-0 cursor-pointer"
-                  htmlFor="settings.category.enable"
-                >
-                  Enable Category?
-                </Label>
-              </div>
-              {categoryEnable ? (
-                <Input
-                  label={t('form:input-title')}
-                  variant="outline"
-                  {...register('settings.category.title')}
-                  error={t(errors?.settings?.category?.title?.message)}
-                  required
-                />
-              ) : (
-                ''
-              )}
-              <div className="flex items-center gap-x-4">
-                <SwitchInput
-                  name="settings.handpickedProducts.enable"
-                  control={control}
-                />
-                <Label
-                  className="mb-0 cursor-pointer"
-                  htmlFor="settings.handpickedProducts.enable"
-                >
-                  Enable Handpicked Products?
-                </Label>
-              </div>
-              {handpickedProductsEnable ? (
-                <>
-                  <Input
-                    label={t('form:input-title')}
-                    variant="outline"
-                    {...register('settings.handpickedProducts.title')}
-                    error={t(
-                      errors?.settings?.handpickedProducts?.title?.message,
-                    )}
-                  />
-                  <div className="flex items-center gap-x-4">
-                    <SwitchInput
-                      name="settings.handpickedProducts.enableSlider"
-                      control={control}
-                    />
-                    <Label
-                      className="mb-0 cursor-pointer"
-                      htmlFor="settings.handpickedProducts.enableSlider"
-                    >
-                      Enable Slider?
-                    </Label>
-                  </div>
-                  <div className="grid gap-5">
-                    <CategoryTypeFilter
-                      className="w-full"
-                      type={type}
-                      enableCategory
-                      enableType
-                      onCategoryFilter={(category: Category) => {
-                        setCategory(category?.slug!);
-                      }}
-                      onTypeFilter={(type: Type) => {
-                        setType(type?.slug!);
-                      }}
-                    />
-                    <div>
-                      <Label>
-                        Products <span className="ml-0.5 text-red-500">*</span>
-                      </Label>
-                      <SelectInput
-                        name="settings.handpickedProducts.products"
-                        control={control}
-                        getOptionLabel={(option: any) => option.name}
-                        getOptionValue={(option: any) => option.id}
-                        options={products}
-                        isClearable={true}
-                        isLoading={loadingProduct}
-                        isMulti
-                      />
-                      <ValidationError
-                        message={t(
-                          errors?.settings?.handpickedProducts?.products
-                            ?.message,
-                        )}
-                      />
-                    </div>
-                  </div>
-                </>
-              ) : (
-                ''
-              )}
-              <div className="flex items-center gap-x-4">
-                <SwitchInput
-                  name="settings.newArrival.enable"
-                  control={control}
-                />
-                <Label
-                  className="mb-0 cursor-pointer"
-                  htmlFor="settings.newArrival.enable"
-                >
-                  Enable New Arrival?
-                </Label>
-              </div>
-              {newArrivalEnable ? (
-                <Input
-                  label={t('form:input-title')}
-                  variant="outline"
-                  {...register('settings.newArrival.title')}
-                  error={t(errors?.settings?.newArrival?.title?.message)}
-                  required
-                />
-              ) : (
-                ''
-              )}
-              <div className="flex items-center gap-x-4">
-                <SwitchInput name="settings.authors.enable" control={control} />
-                <Label
-                  className="mb-0 cursor-pointer"
-                  htmlFor="settings.authors.enable"
-                >
-                  Enable Authors?
-                </Label>
-              </div>
-              {authorsEnable ? (
-                <Input
-                  label={t('form:input-title')}
-                  variant="outline"
-                  {...register('settings.authors.title')}
-                  error={t(errors?.settings?.authors?.title?.message)}
-                  required
-                />
-              ) : (
-                ''
-              )}
-              <div className="flex items-center gap-x-4">
-                <SwitchInput
-                  name="settings.manufactures.enable"
-                  control={control}
-                />
-                <Label
-                  className="mb-0 cursor-pointer"
-                  htmlFor="settings.manufactures.enable"
-                >
-                  Enable Manufactures?
-                </Label>
-              </div>
-              {manufacturesEnable ? (
-                <Input
-                  label={t('form:input-title')}
-                  variant="outline"
-                  {...register('settings.manufactures.title')}
-                  error={t(errors?.settings?.manufactures?.title?.message)}
-                  required
-                />
-              ) : (
-                ''
-              )}
+        <FormSection
+          title="Layout Content Settings."
+          details="Please set your layout content here."
+        >
+          <div className="grid gap-5">
+            <div className="flex items-center gap-x-4">
+              <SwitchInput
+                name="settings.bestSelling.enable"
+                control={control}
+              />
+              <Label
+                htmlFor="settings.bestSelling.enable"
+                className="mb-0 cursor-pointer"
+              >
+                Enable Best Selling Products?
+              </Label>
             </div>
-          </Card>
-        </div>
+            {bestSellingEnable ? (
+              <Input
+                label={t('form:input-title')}
+                variant="outline"
+                {...register('settings.bestSelling.title')}
+                error={t(errors?.settings?.bestSelling?.title?.message)}
+                required
+              />
+            ) : (
+              ''
+            )}
+            <div className="flex items-center gap-x-4">
+              <SwitchInput
+                name="settings.popularProducts.enable"
+                control={control}
+              />
+              <Label
+                className="mb-0 cursor-pointer"
+                htmlFor="settings.popularProducts.enable"
+              >
+                Enable Popular Products?
+              </Label>
+            </div>
+            {popularProductsEnable ? (
+              <Input
+                label={t('form:input-title')}
+                variant="outline"
+                {...register('settings.popularProducts.title')}
+                error={t(errors?.settings?.popularProducts?.title?.message)}
+                required
+              />
+            ) : (
+              ''
+            )}
+            <div className="flex items-center gap-x-4">
+              <SwitchInput
+                name="settings.category.enable"
+                control={control}
+              />
+              <Label
+                className="mb-0 cursor-pointer"
+                htmlFor="settings.category.enable"
+              >
+                Enable Category?
+              </Label>
+            </div>
+            {categoryEnable ? (
+              <Input
+                label={t('form:input-title')}
+                variant="outline"
+                {...register('settings.category.title')}
+                error={t(errors?.settings?.category?.title?.message)}
+                required
+              />
+            ) : (
+              ''
+            )}
+            <div className="flex items-center gap-x-4">
+              <SwitchInput
+                name="settings.handpickedProducts.enable"
+                control={control}
+              />
+              <Label
+                className="mb-0 cursor-pointer"
+                htmlFor="settings.handpickedProducts.enable"
+              >
+                Enable Handpicked Products?
+              </Label>
+            </div>
+            {handpickedProductsEnable ? (
+              <>
+                <Input
+                  label={t('form:input-title')}
+                  variant="outline"
+                  {...register('settings.handpickedProducts.title')}
+                  error={t(
+                    errors?.settings?.handpickedProducts?.title?.message,
+                  )}
+                />
+                <div className="flex items-center gap-x-4">
+                  <SwitchInput
+                    name="settings.handpickedProducts.enableSlider"
+                    control={control}
+                  />
+                  <Label
+                    className="mb-0 cursor-pointer"
+                    htmlFor="settings.handpickedProducts.enableSlider"
+                  >
+                    Enable Slider?
+                  </Label>
+                </div>
+                <div className="grid gap-5">
+                  <CategoryTypeFilter
+                    className="w-full"
+                    type={type}
+                    enableCategory
+                    enableType
+                    onCategoryFilter={(category: Category) => {
+                      setCategory(category?.slug!);
+                    }}
+                    onTypeFilter={(type: Type) => {
+                      setType(type?.slug!);
+                    }}
+                  />
+                  <div>
+                    <Label>
+                      Products <span className="ml-0.5 text-red-500">*</span>
+                    </Label>
+                    <SelectInput
+                      name="settings.handpickedProducts.products"
+                      control={control}
+                      getOptionLabel={(option: any) => option.name}
+                      getOptionValue={(option: any) => option.id}
+                      options={products}
+                      isClearable={true}
+                      isLoading={loadingProduct}
+                      isMulti
+                    />
+                    <ValidationError
+                      message={t(
+                        errors?.settings?.handpickedProducts?.products
+                          ?.message,
+                      )}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              ''
+            )}
+            <div className="flex items-center gap-x-4">
+              <SwitchInput
+                name="settings.newArrival.enable"
+                control={control}
+              />
+              <Label
+                className="mb-0 cursor-pointer"
+                htmlFor="settings.newArrival.enable"
+              >
+                Enable New Arrival?
+              </Label>
+            </div>
+            {newArrivalEnable ? (
+              <Input
+                label={t('form:input-title')}
+                variant="outline"
+                {...register('settings.newArrival.title')}
+                error={t(errors?.settings?.newArrival?.title?.message)}
+                required
+              />
+            ) : (
+              ''
+            )}
+            <div className="flex items-center gap-x-4">
+              <SwitchInput name="settings.authors.enable" control={control} />
+              <Label
+                className="mb-0 cursor-pointer"
+                htmlFor="settings.authors.enable"
+              >
+                Enable Authors?
+              </Label>
+            </div>
+            {authorsEnable ? (
+              <Input
+                label={t('form:input-title')}
+                variant="outline"
+                {...register('settings.authors.title')}
+                error={t(errors?.settings?.authors?.title?.message)}
+                required
+              />
+            ) : (
+              ''
+            )}
+            <div className="flex items-center gap-x-4">
+              <SwitchInput
+                name="settings.manufactures.enable"
+                control={control}
+              />
+              <Label
+                className="mb-0 cursor-pointer"
+                htmlFor="settings.manufactures.enable"
+              >
+                Enable Manufactures?
+              </Label>
+            </div>
+            {manufacturesEnable ? (
+              <Input
+                label={t('form:input-title')}
+                variant="outline"
+                {...register('settings.manufactures.title')}
+                error={t(errors?.settings?.manufactures?.title?.message)}
+                required
+              />
+            ) : (
+              ''
+            )}
+          </div>
+        </FormSection>
       ) : (
         ''
       )}
 
       <StickyFooterPanel className="z-0">
-        <div className="text-end">
-          {initialValues && (
-            <Button
-              variant="outline"
+        <div className="flex flex-col-reverse gap-3 text-end sm:flex-row sm:justify-end">
+          {initialValues ? (
+            <ActionButton
+              variant="secondary"
+              size="sm"
               onClick={router.back}
-              className="text-sm me-4 md:text-base"
               type="button"
+              className="w-full sm:w-auto"
             >
               {t('form:button-label-back')}
-            </Button>
-          )}
+            </ActionButton>
+          ) : null}
 
-          <Button
+          <ActionButton
+            type="submit"
+            variant="primary"
+            size="sm"
             loading={creating || updating}
             disabled={creating || updating}
-            className="text-sm md:text-base"
+            className="w-full sm:w-auto"
           >
             {initialValues
               ? t('form:button-label-update-group')
               : t('form:button-label-add-type')}
-          </Button>
+          </ActionButton>
         </div>
       </StickyFooterPanel>
     </form>

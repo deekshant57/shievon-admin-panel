@@ -110,6 +110,7 @@ export const useShopsQuery = (options: Partial<ShopQueryOptions>) => {
   return {
     shops: data?.data ?? [],
     paginatorInfo: mapPaginatorData(data),
+    shopCounts: data?.counts ?? null,
     error,
     loading: isLoading,
   };

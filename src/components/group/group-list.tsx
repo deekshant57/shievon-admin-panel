@@ -88,8 +88,7 @@ const TypeList = ({ types, routes = Routes.type }: IProps) => {
   ];
 
   return (
-    <div className="mb-8 overflow-hidden rounded shadow">
-      <Table
+    <Table
         //@ts-ignore
         columns={columns}
         emptyText={() => (
@@ -105,7 +104,6 @@ const TypeList = ({ types, routes = Routes.type }: IProps) => {
         rowKey="id"
         scroll={{ x: 380 }}
       />
-    </div>
   );
 };
 

@@ -1,10 +1,10 @@
-import Card from '@/components/common/card'
 import Search from '@/components/common/search'
 import { ArrowDown } from '@/components/icons/arrow-down'
 import { ArrowUp } from '@/components/icons/arrow-up'
 import ShopLayout from '@/components/layouts/shop'
+import DataPanel from '@/components/page/data-panel'
 import ErrorMessage from '@/components/ui/error-message'
-import LinkButton from '@/components/ui/link-button'
+import LinkActionButton from '@/components/ui/link-action-button'
 import Loader from '@/components/ui/loader/loader'
 import { Config } from '@/config'
 import { Routes } from '@/config/routes'
@@ -21,18 +21,12 @@ import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import PageHeading from '@/components/common/page-heading'
 import Select from '@/components/ui/select/select'
 import Label from '@/components/ui/label'
 import { useTypesQuery } from '@/data/type'
 import { isServiceType } from '@/utils/service-type'
 import ServiceList from '@/components/service/service-list'
-import { SortOrder, Type } from '@/types'
-
-interface TypeOption {
-  name: string
-  slug: string
-}
+import { Type } from '@/types'
 
 export default function ServicesPage() {
   const router = useRouter()
@@ -86,10 +80,11 @@ export default function ServicesPage() {
 
   const filteredServiceOfferings = useMemo(() => {
     if (!type?.id) return serviceOfferings
-    return (serviceOfferings ?? []).filter((s: any) => Number(s?.typeId) === Number(type.id))
+    return (serviceOfferings ?? []).filter(
+      (s: any) => Number(s?.typeId) === Number(type.id),
+    )
   }, [serviceOfferings, type?.id])
 
-  // Permission/ownership check (mirrors products page)
   useEffect(() => {
     if (hasRedirectedRef.current) return
     if (fetchingShop || fetchingMe || !numericShopId || !me) return
@@ -131,74 +126,83 @@ export default function ServicesPage() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col">
-        <div className="flex w-full flex-col items-center md:flex-row">
-          <div className="mb-4 md:mb-0 md:w-1/4">
-            <PageHeading title={t('Services') || 'Services'} />
-          </div>
-
-          <div className="flex w-full flex-col items-center md:w-3/4 md:flex-row">
-            <div className="flex w-full items-center">
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <DataPanel
+        className="mb-0"
+        title={t('common:text-services') || 'Services'}
+        subtitle={t('common:services-page-subtitle')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
               <Search
                 onSearch={handleSearch}
                 placeholderText={t('form:input-placeholder-search-name')}
+                debounceMs={400}
+                variant="hybrid"
+                size="sm"
+                className="w-full min-w-0 sm:flex-1"
               />
-
-              {locale === Config.defaultLanguage && (
-                <LinkButton href={`/${shop}/services/create`} className="h-12 ms-4 md:ms-6">
-                  <span className="hidden md:block">
-                    + {t('Add service') || 'Add service'}
-                  </span>
-                  <span className="md:hidden">+ {t('form:button-label-add') || 'Add'}</span>
-                </LinkButton>
-              )}
+              <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                {locale === Config.defaultLanguage && (
+                  <LinkActionButton
+                    href={`/${shop}/services/create`}
+                    variant="primary"
+                    size="sm"
+                    className="w-full justify-center sm:w-auto"
+                  >
+                    + {t('common:text-add-service') || 'Add service'}
+                  </LinkActionButton>
+                )}
+                <button
+                  type="button"
+                  className="flex items-center justify-center whitespace-nowrap text-sm font-semibold text-accent"
+                  onClick={toggleVisible}
+                >
+                  {t('common:text-filter')}{' '}
+                  {visible ? (
+                    <ArrowUp className="ms-2" />
+                  ) : (
+                    <ArrowDown className="ms-2" />
+                  )}
+                </button>
+              </div>
             </div>
 
-            <button
-              className="mt-5 flex items-center whitespace-nowrap text-base font-semibold text-accent md:mt-0 md:ms-5"
-              onClick={toggleVisible}
+            <div
+              className={cn('w-full transition', {
+                'visible h-auto': visible,
+                'invisible h-0 overflow-hidden': !visible,
+              })}
             >
-              {t('common:text-filter')}{' '}
-              {visible ? <ArrowUp className="ms-2" /> : <ArrowDown className="ms-2" />}
-            </button>
-          </div>
-        </div>
-
-        <div
-          className={cn('flex w-full transition', {
-            'visible h-auto': visible,
-            'invisible h-0': !visible,
-          })}
-        >
-          <div className="mt-5 flex w-full flex-col border-t border-gray-200 pt-5 md:mt-8 md:flex-row md:items-center md:pt-8">
-            <div className="w-full">
-              <Label>{t('common:filter-by-type') || 'Filter by type'}</Label>
-              <Select
-                options={serviceTypes}
-                isLoading={loadingTypes}
-                getOptionLabel={(option: any) => option.name}
-                getOptionValue={(option: any) => option.slug}
-                placeholder={t('common:filter-by-type-placeholder')}
-                onChange={(typeOption: any) => {
-                  setType(typeOption ?? null)
-                  setPage(1)
-                }}
-                isClearable={true}
-              />
+              <div className="border-t border-border/60 pt-4">
+                <Label>{t('common:filter-by-type') || 'Filter by type'}</Label>
+                <Select
+                  options={serviceTypes}
+                  isLoading={loadingTypes}
+                  getOptionLabel={(option: any) => option.name}
+                  getOptionValue={(option: any) => option.slug}
+                  placeholder={t('common:filter-by-type-placeholder')}
+                  onChange={(typeOption: any) => {
+                    setType(typeOption ?? null)
+                    setPage(1)
+                  }}
+                  isClearable={true}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </Card>
-
-      <ServiceList
-        serviceOfferings={filteredServiceOfferings}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={() => {}}
-        onSort={() => {}}
-      />
-    </>
+        }
+      >
+        <ServiceList
+          serviceOfferings={filteredServiceOfferings}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={() => {}}
+          onSort={() => {}}
+        />
+      </DataPanel>
+    </div>
   )
 }
 
@@ -212,4 +216,3 @@ export const getServerSideProps = async ({ locale }: any) => ({
     ...(await serverSideTranslations(locale, ['table', 'common', 'form'])),
   },
 })
-

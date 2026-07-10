@@ -1,5 +1,6 @@
 import ShopLayout from '@/components/layouts/shop'
 import CreateOrUpdateServiceOfferingForm from '@/components/service/service-form'
+import PageHeader from '@/components/page/page-header'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { adminOwnerAndStaffOnly } from '@/utils/auth-utils'
@@ -22,14 +23,13 @@ export default function CreateServiceOfferingPage() {
   if (!shopId) return <ErrorMessage message={t('common:error-shop-not-found') || 'Shop not found'} />
 
   return (
-    <>
-      <div className="flex border-b border-dashed border-border-base pb-5 md:pb-7">
-        <h1 className="text-lg font-semibold text-heading">
-          {t('Create service') || 'Create service'}
-        </h1>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title={t('common:services-create-title') || 'Create service'}
+        subtitle={t('common:services-create-subtitle')}
+      />
       <CreateOrUpdateServiceOfferingForm shopId={shopId} />
-    </>
+    </div>
   )
 }
 
@@ -43,4 +43,3 @@ export const getServerSideProps = async ({ locale }: any) => ({
     ...(await serverSideTranslations(locale, ['form', 'common'])),
   },
 })
-

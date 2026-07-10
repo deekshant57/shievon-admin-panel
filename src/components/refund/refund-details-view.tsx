@@ -320,6 +320,7 @@ export default function RefundDetailsView({
         </span>
         {refund?.order ? (
           <Table
+            shellVariant="plain"
             //@ts-ignore
             columns={columns}
             emptyText={() => (

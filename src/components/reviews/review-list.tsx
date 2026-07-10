@@ -220,8 +220,7 @@ const ReviewList = ({
   ];
   return (
     <>
-      <div className="mb-6 overflow-hidden rounded shadow">
-        <Table
+      <Table
           //@ts-ignore
           columns={columns}
           emptyText={() => (
@@ -237,7 +236,6 @@ const ReviewList = ({
           rowKey="id"
           scroll={{ x: 1200 }}
         />
-      </div>
 
       {!!paginatorInfo?.total && (
         <div className="flex items-center justify-end">

@@ -1,5 +1,6 @@
-import Card from '@/components/common/card';
 import Layout from '@/components/layouts/admin';
+import Search from '@/components/common/search';
+import DataPanel from '@/components/page/data-panel';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
 import AdminsList from '@/components/user/user-admin-list';
@@ -9,7 +10,7 @@ import { adminOnly } from '@/utils/auth-utils';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useState } from 'react';
-import PageHeading from '@/components/common/page-heading';
+
 type AdminsPageProps = {
   initialAdminsData?: any
 }
@@ -45,14 +46,23 @@ export default function Admins({ initialAdminsData }: AdminsPageProps) {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex items-center">
-        <div className="md:w-1/4">
-          <PageHeading title={t('text-admins')} />
-        </div>
-      </Card>
-
-      {loading ? null : (
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <DataPanel
+        className="mb-0"
+        title={t('text-admins')}
+        subtitle={t('common:admins-page-subtitle')}
+        toolbarLayout="stacked"
+        toolbar={
+          <Search
+            onSearch={handleSearch}
+            placeholderText={t('form:input-placeholder-search-name')}
+            debounceMs={400}
+            variant="hybrid"
+            size="sm"
+            className="w-full min-w-0 sm:max-w-md"
+          />
+        }
+      >
         <AdminsList
           admins={admins}
           paginatorInfo={paginatorInfo}
@@ -60,8 +70,8 @@ export default function Admins({ initialAdminsData }: AdminsPageProps) {
           onOrder={setOrder}
           onSort={setColumn}
         />
-      )}
-    </>
+      </DataPanel>
+    </div>
   );
 }
 

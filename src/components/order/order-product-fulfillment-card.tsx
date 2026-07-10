@@ -243,6 +243,7 @@ export default function OrderProductFulfillmentCard({
         }
       >
         <Table
+          shellVariant="plain"
           //@ts-ignore
           columns={columns}
           data={lines}

@@ -10,7 +10,7 @@ import ShopsSummaryStrip from '@/components/shop/shops-summary-strip';
 import { useState } from 'react';
 import Search from '@/components/common/search';
 import { adminOnly } from '@/utils/auth-utils';
-import { useInActiveShopsQuery, useShopsQuery } from '@/data/shop';
+import { useShopsQuery } from '@/data/shop';
 import { SortOrder } from '@/types';
 import { useRouter } from 'next/router';
 import { useSettingsQuery } from '@/data/settings';
@@ -23,31 +23,22 @@ export default function AllShopPage() {
   const [page, setPage] = useState(1);
   const [orderBy, setOrder] = useState('created_at');
   const [sortedBy, setColumn] = useState<SortOrder>(SortOrder.Desc);
-  const { shops, paginatorInfo, loading, error } = useShopsQuery({
+  const { shops, paginatorInfo, shopCounts, loading, error } = useShopsQuery({
     name: searchTerm,
     limit: 10,
     page,
     orderBy,
     sortedBy,
   });
-  const {
-    paginatorInfo: inactivePaginatorInfo,
-    loading: inactiveLoading,
-    error: inactiveError,
-  } = useInActiveShopsQuery({
-    limit: 1,
-    page: 1,
-    is_active: false,
-  });
   const { settings, loading: loadingSettings } = useSettingsQuery({
     language: locale!,
   });
 
-  if (loading || loadingSettings || inactiveLoading) {
+  if (loading || loadingSettings) {
     return <Loader text={t('common:text-loading')} />;
   }
-  if (error || inactiveError) {
-    return <ErrorMessage message={error?.message || inactiveError?.message} />;
+  if (error) {
+    return <ErrorMessage message={error?.message} />;
   }
 
   function handleSearch({ searchText }: { searchText: string }) {
@@ -60,26 +51,43 @@ export default function AllShopPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 max-w-full">
       <ShopsSummaryStrip
-        totalShops={paginatorInfo?.total}
-        inactiveShops={inactivePaginatorInfo?.total}
+        totalShops={shopCounts?.total}
+        activeShops={shopCounts?.active}
+        inactiveShops={shopCounts?.inactive}
       />
 
       <DataPanel
+        className="mb-0"
         title={t('common:sidebar-nav-item-shops')}
+        subtitle={t('common:shops-page-subtitle')}
+        toolbarLayout="stacked"
         toolbar={
-          <div className="flex w-full flex-col gap-4 md:flex-row md:items-center">
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <Search
               onSearch={handleSearch}
               placeholderText={t('form:input-placeholder-search-name')}
               debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
             />
-            <div className="flex flex-wrap items-center gap-3 md:ms-auto">
-              <LinkActionButton href={Routes.newShops} variant="secondary">
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <LinkActionButton
+                href={Routes.newShops}
+                variant="secondary"
+                size="sm"
+                className="w-full justify-center sm:w-auto"
+              >
                 {t('common:text-inactive-shops')}
               </LinkActionButton>
-              <LinkActionButton href={Routes.shop.create} variant="primary">
+              <LinkActionButton
+                href={Routes.shop.create}
+                variant="primary"
+                size="sm"
+                className="w-full justify-center sm:w-auto"
+              >
                 + {t('common:text-add-all-shops')}
               </LinkActionButton>
             </div>

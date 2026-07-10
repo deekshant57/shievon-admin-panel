@@ -186,6 +186,7 @@ const LowStockProduct = ({
           {searchElement}
         </div>
         <Table
+          shellVariant="plain"
           //@ts-ignore
           columns={columns}
           emptyText={() => (

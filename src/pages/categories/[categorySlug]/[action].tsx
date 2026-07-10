@@ -1,5 +1,6 @@
 import Layout from '@/components/layouts/admin';
 import CreateOrUpdateCategoriesForm from '@/components/category/category-form';
+import PageHeader from '@/components/page/page-header';
 import { useRouter } from 'next/router';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
@@ -11,29 +12,36 @@ import { Config } from '@/config';
 export default function UpdateCategoriesPage() {
   const { query, locale } = useRouter();
   const { t } = useTranslation();
+  const action = query.action?.toString();
   const {
     category,
     isLoading: loading,
     error,
   } = useCategoryQuery({
     slug: query.categorySlug as string,
-    language:
-      query.action!.toString() === 'edit' ? locale! : Config.defaultLanguage,
+    language: action === 'edit' ? locale! : Config.defaultLanguage,
   });
 
   if (loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
 
-  return (
-    <>
-      <div className="flex border-b border-dashed border-border-base pb-5 md:pb-7">
-        <h1 className="text-lg font-semibold text-heading">
-          {t('form:form-title-edit-category')}
-        </h1>
-      </div>
+  const pageTitle =
+    action === 'translate'
+      ? t('common:categories-translate-title')
+      : t('form:form-title-edit-category');
 
+  const pageSubtitle =
+    action === 'translate'
+      ? t('common:categories-translate-subtitle', { name: category?.name ?? '' })
+      : category?.name
+        ? t('common:categories-edit-subtitle', { name: category.name })
+        : t('common:categories-edit-subtitle-generic');
+
+  return (
+    <div className="space-y-6">
+      <PageHeader title={pageTitle} subtitle={pageSubtitle} />
       <CreateOrUpdateCategoriesForm initialValues={category} />
-    </>
+    </div>
   );
 }
 

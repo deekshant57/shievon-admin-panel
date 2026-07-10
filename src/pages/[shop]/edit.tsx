@@ -5,14 +5,11 @@ import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import ShopForm from '@/components/shop/shop-form';
 import ShopLayout from '@/components/layouts/shop';
-import {
-  adminAndOwnerOnly,
-} from '@/utils/auth-utils';
+import PageHeader from '@/components/page/page-header';
+import { adminAndOwnerOnly } from '@/utils/auth-utils';
 import { useShopQuery } from '@/data/shop';
-import { Routes } from '@/config/routes';
 
 export default function UpdateShopPage() {
-  const router = useRouter();
   const { query } = useRouter();
   const { shop } = query;
   const { t } = useTranslation();
@@ -26,14 +23,17 @@ export default function UpdateShopPage() {
   if (loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
   return (
-    <>
-      <div className="flex py-5 border-b border-dashed border-border-base sm:py-8">
-        <h1 className="text-lg font-semibold text-heading">
-          {t('form:form-title-edit-shop')}
-        </h1>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title={t('form:form-title-edit-shop')}
+        subtitle={
+          data?.name
+            ? t('common:shops-edit-subtitle', { name: data.name })
+            : t('common:shops-edit-subtitle-generic')
+        }
+      />
       <ShopForm initialValues={data} />
-    </>
+    </div>
   );
 }
 UpdateShopPage.authenticate = {

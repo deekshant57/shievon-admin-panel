@@ -1,5 +1,6 @@
 import CreateOrUpdateTypeForm from '@/components/group/group-form'
 import ShopLayout from '@/components/layouts/shop'
+import PageHeader from '@/components/page/page-header'
 import ErrorMessage from '@/components/ui/error-message'
 import Loader from '@/components/ui/loader/loader'
 import { Config } from '@/config'
@@ -30,14 +31,19 @@ export default function UpdateShopServiceTypePage() {
     return <Loader text={t('common:text-loading')} />
 
   return (
-    <>
-      <div className="flex border-b border-dashed border-border-base pb-5 md:pb-7">
-        <h1 className="text-lg font-semibold text-heading">
-          {t('form:form-title-edit-type')}
-        </h1>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title={t('form:form-title-edit-type')}
+        subtitle={
+          data?.name
+            ? t('common:service-types-edit-subtitle', {
+                name: data.name,
+              })
+            : t('common:service-types-edit-subtitle-generic')
+        }
+      />
       <CreateOrUpdateTypeForm initialValues={data ?? undefined} />
-    </>
+    </div>
   )
 }
 
