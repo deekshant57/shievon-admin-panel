@@ -218,6 +218,41 @@ export const siteSettings = {
         ],
       },
 
+      service: {
+        href: '',
+        label: 'text-service-management',
+        icon: 'ProductsIcon',
+        childMenu: [
+          {
+            href: '',
+            label: 'sidebar-nav-item-services',
+            icon: 'ProductsIcon',
+            childMenu: [
+              {
+                href: Routes.serviceOffering.list,
+                label: 'text-all-services',
+                icon: 'ProductsIcon',
+              },
+              {
+                href: Routes.serviceOffering.create,
+                label: 'text-new-service',
+                icon: 'ProductsIcon',
+              },
+            ],
+          },
+          {
+            href: Routes.serviceCategory.list,
+            label: 'sidebar-nav-item-service-categories',
+            icon: 'CategoriesIcon',
+          },
+          {
+            href: Routes.serviceType.list,
+            label: 'sidebar-nav-item-service-types',
+            icon: 'HomeIcon',
+          },
+        ],
+      },
+
       financial: {
         href: '',
         label: 'text-e-commerce-management',
@@ -734,19 +769,9 @@ export const siteSettings = {
                 icon: 'ProductsIcon',
                 permissions: adminOwnerAndStaffOnly,
               },
-              {
-                href: (shop: string) =>
-                  `/${shop}${Routes.serviceCategory.list}`,
-                label: 'sidebar-nav-item-service-categories',
-                icon: 'CategoriesIcon',
-                permissions: adminOnly,
-              },
-              {
-                href: (shop: string) => `/${shop}${Routes.serviceType.list}`,
-                label: 'sidebar-nav-item-service-types',
-                icon: 'HomeIcon',
-                permissions: adminOnly,
-              },
+              /*
+               * Service Categories & Service Types moved to admin main panel.
+               */
             ],
           },
         ],
@@ -1074,19 +1099,9 @@ export const siteSettings = {
                 icon: 'ProductsIcon',
                 permissions: adminOwnerAndStaffOnly,
               },
-              {
-                href: (shop: string) =>
-                  `/${shop}${Routes.serviceCategory.list}`,
-                label: 'sidebar-nav-item-service-categories',
-                icon: 'CategoriesIcon',
-                permissions: adminOnly,
-              },
-              {
-                href: (shop: string) => `/${shop}${Routes.serviceType.list}`,
-                label: 'sidebar-nav-item-service-types',
-                icon: 'HomeIcon',
-                permissions: adminOnly,
-              },
+              /*
+               * Service Categories & Service Types moved to admin main panel.
+               */
             ],
           },
         ],
