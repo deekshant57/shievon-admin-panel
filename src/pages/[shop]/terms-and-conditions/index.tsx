@@ -1,8 +1,8 @@
-import Card from '@/components/common/card';
-import Layout from '@/components/layouts/admin';
 import Search from '@/components/common/search';
-import LinkButton from '@/components/ui/link-button';
-import { useState, useEffect } from 'react';
+import LinkActionButton from '@/components/ui/link-action-button';
+import DataPanel from '@/components/page/data-panel';
+import { DashboardShell } from '@/components/dashboard/layout';
+import { useState } from 'react';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
 import { useTranslation } from 'next-i18next';
@@ -12,6 +12,7 @@ import { useRouter } from 'next/router';
 import { Config } from '@/config';
 import { useTermsAndConditionsQuery } from '@/data/terms-and-condition';
 import TermsAndConditionsLists from '@/components/terms-and-conditions/terms-and-conditions-list';
+import TermsSummaryStrip from '@/components/terms-and-conditions/terms-summary-strip';
 import { useShopQuery } from '@/data/shop';
 import {
   adminAndOwnerOnly,
@@ -24,8 +25,6 @@ import { useMeQuery } from '@/data/user';
 import { Routes } from '@/config/routes';
 import ShopLayout from '@/components/layouts/shop';
 import { useSettingsQuery } from '@/data/settings';
-import { useAdminsQuery } from '@/data/user';
-import PageHeading from '@/components/common/page-heading';
 
 export default function TermsAndConditions() {
   // at first fetch related data (e.g. settings, shop, user, terms etc)
@@ -42,7 +41,6 @@ export default function TermsAndConditions() {
   const [sortedBy, setColumn] = useState<SortOrder>(SortOrder.Desc);
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
-
 
   const { settings, loading: settingsLoading } = useSettingsQuery({
     language: locale!,
@@ -65,17 +63,6 @@ export default function TermsAndConditions() {
       shop_id: shopId,
     });
 
-  // const {
-  //   admins,
-  //   loading: adminLoading,
-  //   error: adminError,
-  // } = useAdminsQuery({
-  //   limit: 1000,
-  //   page: 1,
-  //   orderBy: 'created_at',
-  //   sortedBy: SortOrder.Desc as SortOrder,
-  // });
-
   const handleSearch = ({ searchText }: { searchText: string }) => {
     setSearchTerm(searchText);
     setPage(1);
@@ -92,14 +79,6 @@ export default function TermsAndConditions() {
   if (error) return <ErrorMessage message={error.message} />;
 
   let currentUser = 'vendor';
-  // if (
-  //   admins.length > 0 &&
-  //   admins?.map((user: any) => user.id).includes(me?.id)
-  // ) {
-  //   currentUser = 'admin';
-  // } else {
-  //   currentUser = 'vendor';
-  // }
 
   if (currentUser === 'vendor') {
     const isEnableTermsRoute = settings?.options?.enableTerms;
@@ -115,37 +94,51 @@ export default function TermsAndConditions() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('text-listed-terms-conditions')} />
-        </div>
-
-        <div className="flex w-full flex-col items-center space-y-4 ms-auto md:w-2/3 md:flex-row md:space-y-0 xl:w-3/4 2xl:w-1/2">
-          <Search onSearch={handleSearch} />
-
-          {locale === Config.defaultLanguage && (
-            <LinkButton
-              href={`/${shop}/terms-and-conditions/create`}
-              className="h-12 w-full md:w-auto md:ms-6"
-            >
-              <span className="hidden xl:block">
-                + {t('text-add-terms-conditions')}
-              </span>
-              <span className="xl:hidden">+ {t('form:button-label-add')}</span>
-            </LinkButton>
-          )}
-        </div>
-      </Card>
-      <TermsAndConditionsLists
-        termsAndConditions={termsAndConditions}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
-        user={me}
+    <DashboardShell>
+      <TermsSummaryStrip
+        totalTerms={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('text-listed-terms-conditions')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Search
+              onSearch={handleSearch}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
+            />
+            {locale === Config.defaultLanguage ? (
+              <LinkActionButton
+                href={`/${shop}/terms-and-conditions/create`}
+                variant="primary"
+                size="sm"
+                className="w-full shrink-0 justify-center sm:w-auto"
+              >
+                <span className="hidden xl:block">
+                  + {t('text-add-terms-conditions')}
+                </span>
+                <span className="xl:hidden">+ {t('form:button-label-add')}</span>
+              </LinkActionButton>
+            ) : null}
+          </div>
+        }
+      >
+        <TermsAndConditionsLists
+          termsAndConditions={termsAndConditions}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+          user={me}
+        />
+      </DataPanel>
+    </DashboardShell>
   );
 }
 

@@ -1,15 +1,15 @@
-import Card from '@/components/common/card';
 import Layout from '@/components/layouts/admin';
+import DataPanel from '@/components/page/data-panel';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import WithdrawList from '@/components/withdraw/withdraw-list';
+import WithdrawsSummaryStrip from '@/components/withdraw/withdraws-summary-strip';
 import { adminOnly } from '@/utils/auth-utils';
 import { useWithdrawsQuery } from '@/data/withdraw';
 import { useState } from 'react';
 import { SortOrder } from '@/types';
-import PageHeading from '@/components/common/page-heading';
 
 export default function WithdrawsPage() {
   const { t } = useTranslation();
@@ -31,21 +31,26 @@ export default function WithdrawsPage() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-row items-center justify-between">
-        <div className="md:w-1/4">
-          <PageHeading title={t('common:sidebar-nav-item-withdraws')} />
-        </div>
-      </Card>
-
-      <WithdrawList
-        withdraws={withdraws}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <WithdrawsSummaryStrip
+        totalWithdraws={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('common:sidebar-nav-item-withdraws')}
+        toolbarLayout="stacked"
+      >
+        <WithdrawList
+          withdraws={withdraws}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 WithdrawsPage.authenticate = {

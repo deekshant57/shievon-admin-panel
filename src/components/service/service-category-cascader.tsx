@@ -36,6 +36,12 @@ function getTypeId(item: any): number | null {
 
 const EMPTY: any[] = []
 
+const pickCategory = (cat: any) => ({
+  id: cat.id,
+  name: cat.name,
+  slug: cat.slug,
+})
+
 export default function ServiceCategoryCascader({
   control,
   setValue,
@@ -52,22 +58,23 @@ export default function ServiceCategoryCascader({
       : undefined
   const hasGroup = typeId != null && !Number.isNaN(typeId)
 
-  // Reset cascading selections when the group changes/clears
+  // Clear categories only when the user clears or switches Group — not on mount /
+  // async type hydration (edit mode). Mirrors product-category-cascader.
+  const prevTypeId = useRef(typeId)
   useEffect(() => {
-    if (!hasGroup) {
+    const prev = prevTypeId.current
+    prevTypeId.current = typeId
+    const wasSet = prev != null && !Number.isNaN(Number(prev))
+    const switchedGroup =
+      wasSet && hasGroup && Number(prev) !== Number(typeId)
+
+    if ((!hasGroup && wasSet) || switchedGroup) {
       setValue('service_category_id', null)
       setValue('service_primary_category', null)
       setValue('service_secondary_category', null)
       setValue('service_tertiary_category', null)
       setValue('service_quaternary_category', null)
-      return
     }
-    // on group change we also clear, so category selection stays consistent
-    setValue('service_category_id', null)
-    setValue('service_primary_category', null)
-    setValue('service_secondary_category', null)
-    setValue('service_tertiary_category', null)
-    setValue('service_quaternary_category', null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [typeId])
 
@@ -88,6 +95,99 @@ export default function ServiceCategoryCascader({
     return filtered
   }, [stableRaw, hasGroup, typeId])
 
+  const hierarchyResolved = useRef(false)
+  const hierarchyResolvedAt = useRef(0)
+
+  // If edit defaults already include a cascade chain, arm the skip window before
+  // deeper-level clear effects run (they share this commit's effect flush).
+  useEffect(() => {
+    const hasChain =
+      getValues('service_primary_category')?.id != null &&
+      (getValues('service_secondary_category')?.id != null ||
+        getValues('service_tertiary_category')?.id != null ||
+        getValues('service_quaternary_category')?.id != null)
+    if (hasChain || getValues('service_category_id') != null) {
+      hierarchyResolvedAt.current = Date.now()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (hierarchyResolved.current) return
+    const list = Array.isArray(all) ? (all as any[]) : []
+    if (list.length === 0) return
+
+    const currentPrimary = getValues('service_primary_category')
+    const currentSecondary = getValues('service_secondary_category')
+    const currentTertiary = getValues('service_tertiary_category')
+    const currentQuaternary = getValues('service_quaternary_category')
+    const savedLeafIdRaw =
+      getValues('service_category_id') ??
+      currentQuaternary?.id ??
+      currentTertiary?.id ??
+      currentSecondary?.id ??
+      currentPrimary?.id
+
+    // Already have a multi-level chain from form defaults — keep it, just arm the skip window.
+    if (
+      currentPrimary?.id != null &&
+      (currentSecondary?.id != null ||
+        currentTertiary?.id != null ||
+        currentQuaternary?.id != null)
+    ) {
+      hierarchyResolvedAt.current = Date.now()
+      hierarchyResolved.current = true
+      return
+    }
+
+    if (savedLeafIdRaw == null) {
+      hierarchyResolved.current = true
+      return
+    }
+
+    const leafId = Number(savedLeafIdRaw)
+    if (Number.isNaN(leafId)) {
+      hierarchyResolved.current = true
+      return
+    }
+
+    const leaf = list.find((c: any) => Number(c.id) === leafId)
+    if (!leaf) return
+
+    // Level-1 leaf — primary alone is enough
+    if (getLevel(leaf) === 1 || getParentId(leaf) == null) {
+      setValue('service_primary_category', pickCategory(leaf))
+      setValue('service_secondary_category', null)
+      setValue('service_tertiary_category', null)
+      setValue('service_quaternary_category', null)
+      hierarchyResolvedAt.current = Date.now()
+      hierarchyResolved.current = true
+      return
+    }
+
+    const path: any[] = [leaf]
+    let current: any = leaf
+    while (getParentId(current) != null) {
+      const parentId = getParentId(current)
+      const parent = list.find((c: any) => Number(c.id) === parentId)
+      if (!parent) break
+      path.unshift(parent)
+      current = parent
+    }
+
+    setValue('service_primary_category', path[0] ? pickCategory(path[0]) : null)
+    setValue('service_secondary_category', path[1] ? pickCategory(path[1]) : null)
+    setValue('service_tertiary_category', path[2] ? pickCategory(path[2]) : null)
+    setValue(
+      'service_quaternary_category',
+      path[3] ? pickCategory(path[3]) : null,
+    )
+
+    hierarchyResolvedAt.current = Date.now()
+    hierarchyResolved.current = true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [all])
+
   const primary = useWatch({
     control,
     name: 'service_primary_category',
@@ -105,8 +205,9 @@ export default function ServiceCategoryCascader({
     name: 'service_quaternary_category',
   }) as ServiceCategory | null
 
-  // Clear deeper levels when upper changes (mirror product cascader, but without form context)
+  // Clear deeper levels when upper changes. Skip during/after hierarchy hydration.
   useEffect(() => {
+    if (Date.now() - hierarchyResolvedAt.current < 1000) return
     if (
       getValues('service_secondary_category') != null ||
       getValues('service_tertiary_category') != null ||
@@ -120,6 +221,7 @@ export default function ServiceCategoryCascader({
   }, [primary?.id])
 
   useEffect(() => {
+    if (Date.now() - hierarchyResolvedAt.current < 1000) return
     if (
       getValues('service_tertiary_category') != null ||
       getValues('service_quaternary_category') != null
@@ -131,6 +233,7 @@ export default function ServiceCategoryCascader({
   }, [secondary?.id])
 
   useEffect(() => {
+    if (Date.now() - hierarchyResolvedAt.current < 1000) return
     if (getValues('service_quaternary_category') != null) {
       setValue('service_quaternary_category', null)
     }
@@ -170,8 +273,19 @@ export default function ServiceCategoryCascader({
         setValue('service_category_id', leafId, { shouldValidate: true })
       }
     } else {
+      // Keep pre-filled leaf id during edit while options / cascade hydrate.
+      if (Date.now() - hierarchyResolvedAt.current < 1000) return
       const current = getValues('service_category_id')
-      if (current != null) setValue('service_category_id', null)
+      const preFilled =
+        current != null &&
+        primaryId != null &&
+        (Number(current) === primaryId ||
+          Number(current) === secondaryId ||
+          Number(current) === tertiaryId ||
+          Number(current) === quaternaryId)
+      if (current != null && !preFilled) {
+        setValue('service_category_id', null)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [primaryId, secondaryId, tertiaryId, quaternaryId])
@@ -263,4 +377,3 @@ export default function ServiceCategoryCascader({
     </div>
   )
 }
-

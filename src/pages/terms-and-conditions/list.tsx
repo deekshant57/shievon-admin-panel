@@ -1,7 +1,7 @@
-import Card from '@/components/common/card';
 import Layout from '@/components/layouts/admin';
 import Search from '@/components/common/search';
-import LinkButton from '@/components/ui/link-button';
+import LinkActionButton from '@/components/ui/link-action-button';
+import DataPanel from '@/components/page/data-panel';
 import { useState } from 'react';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
@@ -11,9 +11,10 @@ import { SortOrder } from '@/types';
 import { adminOnly } from '@/utils/auth-utils';
 import { useRouter } from 'next/router';
 import { Config } from '@/config';
+import { Routes } from '@/config/routes';
 import { useTermsAndConditionsQuery } from '@/data/terms-and-condition';
 import TermsAndConditionsLists from '@/components/terms-and-conditions/terms-and-conditions-list';
-import PageHeading from '@/components/common/page-heading';
+import TermsSummaryStrip from '@/components/terms-and-conditions/terms-summary-strip';
 
 export default function TermsAndConditionsListPage() {
   const { t } = useTranslation();
@@ -45,36 +46,50 @@ export default function TermsAndConditionsListPage() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('text-terms-conditions')} />
-        </div>
-
-        <div className="flex w-full flex-col items-center space-y-4 ms-auto md:w-2/3 md:flex-row md:space-y-0 xl:w-3/4 2xl:w-1/2">
-          <Search onSearch={handleSearch} />
-
-          {locale === Config.defaultLanguage && (
-            <LinkButton
-              href="/terms-and-conditions/create"
-              className="h-12 w-full md:w-auto md:ms-6"
-            >
-              <span className="hidden xl:block">
-                + {t('text-add-terms-conditions')}
-              </span>
-              <span className="xl:hidden">+ {t('form:button-label-add')}</span>
-            </LinkButton>
-          )}
-        </div>
-      </Card>
-      <TermsAndConditionsLists
-        termsAndConditions={termsAndConditions}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <TermsSummaryStrip
+        totalTerms={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('text-terms-conditions')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Search
+              onSearch={handleSearch}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
+            />
+            {locale === Config.defaultLanguage ? (
+              <LinkActionButton
+                href={Routes.termsAndCondition.create}
+                variant="primary"
+                size="sm"
+                className="w-full shrink-0 justify-center sm:w-auto"
+              >
+                <span className="hidden xl:block">
+                  + {t('text-add-terms-conditions')}
+                </span>
+                <span className="xl:hidden">+ {t('form:button-label-add')}</span>
+              </LinkActionButton>
+            ) : null}
+          </div>
+        }
+      >
+        <TermsAndConditionsLists
+          termsAndConditions={termsAndConditions}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 

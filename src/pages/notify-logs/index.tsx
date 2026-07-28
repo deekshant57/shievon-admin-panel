@@ -1,6 +1,7 @@
-import Card from '@/components/common/card';
 import Select from '@/components/ui/select/select';
 import Layout from '@/components/layouts/admin';
+import DataPanel from '@/components/page/data-panel';
+import NotifyLogsSummaryStrip from '@/components/notify-logs/notify-logs-summary-strip';
 import { useState } from 'react';
 import ErrorMessage from '@/components/ui/error-message';
 import { Routes } from '@/config/routes';
@@ -24,7 +25,6 @@ import cn from 'classnames';
 import { ActionMeta } from 'react-select';
 import { SortOrder } from '@/types';
 import NotFound from '@/components/ui/not-found';
-import PageHeading from '@/components/common/page-heading';
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -242,15 +242,19 @@ export default function NotifyLogsPage() {
   if (error) return <ErrorMessage message={error.message} />;
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('form:form-title-all-notifications')} />
-        </div>
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <NotifyLogsSummaryStrip
+        totalLogs={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
+      />
 
-        <div className="flex w-full flex-col items-center space-y-4 ms-auto md:w-2/3 md:flex-row md:space-y-0 xl:w-3/4 2xl:w-2/5">
+      <DataPanel
+        className="mb-0"
+        title={t('form:form-title-all-notifications')}
+        toolbarLayout="stacked"
+        toolbar={
           <NotificationFilter
-            className="md:ms-6"
+            className="w-full"
             onTargetFilter={(target: any) => {
               setTarget(target?.value!);
               setPage(1);
@@ -262,19 +266,19 @@ export default function NotifyLogsPage() {
             showTargetFilter
             // showReadStatusFilter
           />
+        }
+      >
+        <div className="space-y-3.5 p-5 md:p-8">
+          {notifyLogs ? (
+            notifyLogs?.map((item: any) => {
+              return <NotifyLogItem item={item} key={item.id} />;
+            })
+          ) : (
+            <NotFound text="text-no-log-found" className="mx-auto w-7/12" />
+          )}
         </div>
-      </Card>
-
-      <div className={`space-y-3.5`}>
-        {notifyLogs ? (
-          notifyLogs?.map((item: any) => {
-            return <NotifyLogItem item={item} key={item.id} />;
-          })
-        ) : (
-          <NotFound text="text-no-log-found" className="mx-auto w-7/12" />
-        )}
-      </div>
-    </>
+      </DataPanel>
+    </div>
   );
 }
 

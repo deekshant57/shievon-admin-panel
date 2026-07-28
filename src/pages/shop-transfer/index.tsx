@@ -1,8 +1,8 @@
-import Card from '@/components/common/card';
-import PageHeading from '@/components/common/page-heading';
 import Search from '@/components/common/search';
 import Layout from '@/components/layouts/admin';
+import DataPanel from '@/components/page/data-panel';
 import OwnershipTransferLists from '@/components/ownership-transfer/ownership-transfer-list';
+import ShopTransferSummaryStrip from '@/components/ownership-transfer/shop-transfer-summary-strip';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
 import { useOwnerShipTransfersQuery } from '@/data/ownership-transfer';
@@ -54,29 +54,38 @@ export default function ShopTransferRequestPage() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title="Shop Ownership Transfer Request List" />
-        </div>
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <ShopTransferSummaryStrip
+        totalRequests={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
+      />
 
-        <div className="flex w-full flex-col items-center space-y-4 ms-auto md:w-2/3 md:flex-row md:space-y-0 xl:w-3/4 2xl:w-1/2">
+      <DataPanel
+        className="mb-0"
+        title="Shop Ownership Transfer Request List"
+        toolbarLayout="stacked"
+        toolbar={
           <Search
             onSearch={handleSearch}
             placeholderText="Search by request tracker"
+            debounceMs={400}
+            variant="hybrid"
+            size="sm"
+            className="w-full"
           />
-        </div>
-      </Card>
-      <OwnershipTransferLists
-        userRole={role}
-        user={user}
-        ownershipTransfer={ownershipTransfer}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
-      />
-    </>
+        }
+      >
+        <OwnershipTransferLists
+          userRole={role}
+          user={user}
+          ownershipTransfer={ownershipTransfer}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 

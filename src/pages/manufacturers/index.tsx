@@ -1,10 +1,10 @@
-import Card from '@/components/common/card';
 import Layout from '@/components/layouts/admin';
 import Search from '@/components/common/search';
 import ManufacturerList from '@/components/manufacturer/manufacturer-list';
-import LinkButton from '@/components/ui/link-button';
+import ManufacturersSummaryStrip from '@/components/manufacturer/manufacturers-summary-strip';
+import LinkActionButton from '@/components/ui/link-action-button';
+import DataPanel from '@/components/page/data-panel';
 import { useState } from 'react';
-
 import { LIMIT } from '@/utils/constants';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
@@ -17,7 +17,6 @@ import { SortOrder } from '@/types';
 import { useManufacturersQuery } from '@/data/manufacturer';
 import { useRouter } from 'next/router';
 import { Config } from '@/config';
-import PageHeading from '@/components/common/page-heading';
 
 export default function Manufacturers() {
   const { locale } = useRouter();
@@ -47,39 +46,48 @@ export default function Manufacturers() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center xl:flex-row">
-        <div className="mb-4 md:w-1/3 xl:mb-0">
-          <PageHeading title={t('common:text-manufacturers-publications')} />
-        </div>
-
-        <div className="flex w-full flex-col items-center space-y-4 ms-auto md:flex-row md:space-y-0 xl:w-2/3">
-          <Search
-            onSearch={handleSearch}
-            placeholderText={t('form:input-placeholder-search-name')}
-          />
-
-          {locale === Config.defaultLanguage && (
-            <LinkButton
-              href={`${Routes.manufacturer.create}`}
-              className="h-12 w-full md:w-auto md:ms-6"
-            >
-              <span>
-                + {t('form:button-label-add-manufacturer-publication')}
-              </span>
-            </LinkButton>
-          )}
-        </div>
-      </Card>
-
-      <ManufacturerList
-        manufacturers={manufacturers}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <ManufacturersSummaryStrip
+        totalManufacturers={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('common:text-manufacturers-publications')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Search
+              onSearch={handleSearch}
+              placeholderText={t('form:input-placeholder-search-name')}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
+            />
+            {locale === Config.defaultLanguage ? (
+              <LinkActionButton
+                href={`${Routes.manufacturer.create}`}
+                variant="primary"
+                size="sm"
+                className="w-full shrink-0 justify-center sm:w-auto"
+              >
+                + {t('form:button-label-add-manufacturer-publication')}
+              </LinkActionButton>
+            ) : null}
+          </div>
+        }
+      >
+        <ManufacturerList
+          manufacturers={manufacturers}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 Manufacturers.authenticate = {

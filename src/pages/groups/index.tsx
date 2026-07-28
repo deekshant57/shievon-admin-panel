@@ -1,10 +1,10 @@
-import Card from '@/components/common/card';
-import PageHeading from '@/components/common/page-heading';
 import Search from '@/components/common/search';
 import TypeList from '@/components/group/group-list';
+import GroupsSummaryStrip from '@/components/group/groups-summary-strip';
 import Layout from '@/components/layouts/admin';
+import DataPanel from '@/components/page/data-panel';
 import ErrorMessage from '@/components/ui/error-message';
-import LinkButton from '@/components/ui/link-button';
+import LinkActionButton from '@/components/ui/link-action-button';
 import Loader from '@/components/ui/loader/loader';
 import { Config } from '@/config';
 import { Routes } from '@/config/routes';
@@ -15,6 +15,7 @@ import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+
 export default function TypesPage() {
   const { locale } = useRouter();
   const { t } = useTranslation();
@@ -32,35 +33,47 @@ export default function TypesPage() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('common:sidebar-nav-item-groups')} />
-        </div>
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <GroupsSummaryStrip
+        totalGroups={types?.length}
+        matchingResults={types?.length}
+      />
 
-        <div className="flex w-full flex-col items-center space-y-4 ms-auto md:flex-row md:space-y-0 xl:w-1/2">
-          <Search
-            onSearch={handleSearch}
-            placeholderText={t('form:input-placeholder-search-name')}
-          />
-
-          {locale === Config.defaultLanguage && (
-            <LinkButton
-              href={Routes.type.create}
-              className="h-12 w-full md:w-auto md:ms-6"
-            >
-              <span className="block md:hidden xl:block">
-                + {t('form:button-label-add-type')}
-              </span>
-              <span className="hidden md:block xl:hidden">
-                + {t('form:button-label-add')}
-              </span>
-            </LinkButton>
-          )}
-        </div>
-      </Card>
-      <TypeList types={types} />
-    </>
+      <DataPanel
+        className="mb-0"
+        title={t('common:sidebar-nav-item-groups')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Search
+              onSearch={handleSearch}
+              placeholderText={t('form:input-placeholder-search-name')}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
+            />
+            {locale === Config.defaultLanguage ? (
+              <LinkActionButton
+                href={Routes.type.create}
+                variant="primary"
+                size="sm"
+                className="w-full shrink-0 justify-center sm:w-auto"
+              >
+                <span className="block md:hidden xl:block">
+                  + {t('form:button-label-add-type')}
+                </span>
+                <span className="hidden md:block xl:hidden">
+                  + {t('form:button-label-add')}
+                </span>
+              </LinkActionButton>
+            ) : null}
+          </div>
+        }
+      >
+        <TypeList types={types} />
+      </DataPanel>
+    </div>
   );
 }
 

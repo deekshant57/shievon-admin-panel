@@ -1,12 +1,13 @@
-import Card from '@/components/common/card';
-import PageHeading from '@/components/common/page-heading';
 import Search from '@/components/common/search';
 import CouponList from '@/components/coupon/coupon-list';
+import CouponsSummaryStrip from '@/components/coupon/coupons-summary-strip';
 import Layout from '@/components/layouts/admin';
+import DataPanel from '@/components/page/data-panel';
 import ErrorMessage from '@/components/ui/error-message';
-import LinkButton from '@/components/ui/link-button';
+import LinkActionButton from '@/components/ui/link-action-button';
 import Loader from '@/components/ui/loader/loader';
 import { Config } from '@/config';
+import { Routes } from '@/config/routes';
 import { useCouponsQuery } from '@/data/coupon';
 import { SortOrder } from '@/types';
 import { adminOnly } from '@/utils/auth-utils';
@@ -44,36 +45,48 @@ export default function Coupons() {
   }
 
   return (
-    <>
-      <Card className="flex flex-col items-center mb-8 md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('form:input-label-coupons')} />
-        </div>
-
-        <div className="flex flex-col items-center w-full space-y-4 ms-auto md:w-3/4 md:flex-row md:space-y-0 xl:w-1/2">
-          <Search
-            onSearch={handleSearch}
-            placeholderText={t('form:input-placeholder-search-code')}
-          />
-
-          {locale === Config.defaultLanguage && (
-            <LinkButton
-              href="/coupons/create"
-              className="w-full h-12 md:w-auto md:ms-6"
-            >
-              <span>+ {t('form:button-label-add-coupon')}</span>
-            </LinkButton>
-          )}
-        </div>
-      </Card>
-      <CouponList
-        coupons={coupons}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <CouponsSummaryStrip
+        totalCoupons={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('form:input-label-coupons')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Search
+              onSearch={handleSearch}
+              placeholderText={t('form:input-placeholder-search-code')}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
+            />
+            {locale === Config.defaultLanguage ? (
+              <LinkActionButton
+                href={Routes.coupon.create}
+                variant="primary"
+                size="sm"
+                className="w-full shrink-0 justify-center sm:w-auto"
+              >
+                + {t('form:button-label-add-coupon')}
+              </LinkActionButton>
+            ) : null}
+          </div>
+        }
+      >
+        <CouponList
+          coupons={coupons}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 

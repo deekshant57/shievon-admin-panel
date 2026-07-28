@@ -1,10 +1,11 @@
-import Card from '@/components/common/card';
 import ShopLayout from '@/components/layouts/shop';
+import { DashboardShell } from '@/components/dashboard/layout';
+import DataPanel from '@/components/page/data-panel';
 import { useState, useEffect, useRef } from 'react';
 import Search from '@/components/common/search';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
-import LinkButton from '@/components/ui/link-button';
+import LinkActionButton from '@/components/ui/link-action-button';
 import { Permission, SortOrder } from '@/types';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -18,10 +19,10 @@ import { useRouter } from 'next/router';
 import { useShopQuery } from '@/data/shop';
 import { useStoreNoticesQuery } from '@/data/store-notice';
 import StoreNoticeList from '@/components/store-notice/store-notice-list';
+import StoreNoticesSummaryStrip from '@/components/store-notice/store-notices-summary-strip';
 import { Config } from '@/config';
 import { Routes } from '@/config/routes';
 import { useMeQuery } from '@/data/user';
-import PageHeading from '@/components/common/page-heading';
 
 export default function StoreNotices() {
   const router = useRouter();
@@ -92,39 +93,51 @@ export default function StoreNotices() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('form:input-label-store-notices')} />
-        </div>
-
-        <div className="flex w-full flex-col items-center space-y-4 ms-auto md:w-2/3 md:flex-row md:space-y-0 xl:w-3/4 2xl:w-1/2">
-          <Search
-            onSearch={handleSearch}
-            placeholderText={t('form:input-placeholder-search-notice')}
-          />
-
-          {locale === Config.defaultLanguage && !isSuperAdmin && (
-            <LinkButton
-              href={`/${shop}/store-notices/create`}
-              className="h-12 w-full md:w-auto md:ms-6"
-            >
-              <span className="hidden xl:block">
-                + {t('form:button-label-add-store-notice')}
-              </span>
-              <span className="xl:hidden">+ {t('form:button-label-add')}</span>
-            </LinkButton>
-          )}
-        </div>
-      </Card>
-      <StoreNoticeList
-        storeNotices={storeNotices}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <DashboardShell>
+      <StoreNoticesSummaryStrip
+        totalNotices={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('form:input-label-store-notices')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Search
+              onSearch={handleSearch}
+              placeholderText={t('form:input-placeholder-search-notice')}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
+            />
+            {locale === Config.defaultLanguage && !isSuperAdmin ? (
+              <LinkActionButton
+                href={`/${shop}/store-notices/create`}
+                variant="primary"
+                size="sm"
+                className="w-full shrink-0 justify-center sm:w-auto"
+              >
+                <span className="hidden xl:block">
+                  + {t('form:button-label-add-store-notice')}
+                </span>
+                <span className="xl:hidden">+ {t('form:button-label-add')}</span>
+              </LinkActionButton>
+            ) : null}
+          </div>
+        }
+      >
+        <StoreNoticeList
+          storeNotices={storeNotices}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </DashboardShell>
   );
 }
 

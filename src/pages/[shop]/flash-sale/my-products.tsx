@@ -1,8 +1,9 @@
-import Card from '@/components/common/card';
-import PageHeading from '@/components/common/page-heading';
 import Search from '@/components/common/search';
 import FlashSaleProductListForVendor from '@/components/flash-sale/flash-sale-product-list-for-vendor';
+import FlashSalesSummaryStrip from '@/components/flash-sale/flash-sales-summary-strip';
 import ShopLayout from '@/components/layouts/shop';
+import { DashboardShell } from '@/components/dashboard/layout';
+import DataPanel from '@/components/page/data-panel';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
 import { Routes } from '@/config/routes';
@@ -76,23 +77,33 @@ export default function VendorFlashSalePage() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center xl:flex-row">
-        <div className="mb-4 md:w-1/3 xl:mb-0">
-          <PageHeading title={t('form:form-title-my-products-flash-sales')} />
-        </div>
-
-        <div className="flex w-full flex-col items-center space-y-4 ms-auto md:flex-row md:space-y-0 xl:w-2/4">
-          <Search onSearch={handleSearch} />
-        </div>
-      </Card>
-
-      <FlashSaleProductListForVendor
-        products={products}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
+    <DashboardShell>
+      <FlashSalesSummaryStrip
+        totalCampaigns={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('form:form-title-my-products-flash-sales')}
+        toolbarLayout="stacked"
+        toolbar={
+          <Search
+            onSearch={handleSearch}
+            debounceMs={400}
+            variant="hybrid"
+            size="sm"
+            className="w-full"
+          />
+        }
+      >
+        <FlashSaleProductListForVendor
+          products={products}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+        />
+      </DataPanel>
+    </DashboardShell>
   );
 }
 VendorFlashSalePage.authenticate = {

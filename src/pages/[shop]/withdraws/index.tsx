@@ -1,11 +1,13 @@
-import Card from '@/components/common/card';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import WithdrawList from '@/components/withdraw/withdraw-list';
-import LinkButton from '@/components/ui/link-button';
+import WithdrawsSummaryStrip from '@/components/withdraw/withdraws-summary-strip';
+import LinkActionButton from '@/components/ui/link-action-button';
 import ShopLayout from '@/components/layouts/shop';
+import { DashboardShell } from '@/components/dashboard/layout';
+import DataPanel from '@/components/page/data-panel';
 import { useRouter } from 'next/router';
 import {
   adminAndOwnerOnly,
@@ -19,7 +21,6 @@ import { useState, useEffect, useRef } from 'react';
 import { SortOrder } from '@/types';
 import { Routes } from '@/config/routes';
 import { useMeQuery } from '@/data/user';
-import PageHeading from '@/components/common/page-heading';
 
 export default function WithdrawsPage() {
   const router = useRouter();
@@ -85,28 +86,36 @@ export default function WithdrawsPage() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center justify-between md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('common:sidebar-nav-item-withdraws')} />
-        </div>
-
-        <LinkButton
-          href={`/${shop}/withdraws/create`}
-          className="h-12 w-full md:w-auto md:ms-auto"
-        >
-          <span>+ {t('form:button-label-add-withdraw')}</span>
-        </LinkButton>
-      </Card>
-
-      <WithdrawList
-        withdraws={withdraws}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <DashboardShell>
+      <WithdrawsSummaryStrip
+        totalWithdraws={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('common:sidebar-nav-item-withdraws')}
+        toolbarLayout="stacked"
+        toolbar={
+          <LinkActionButton
+            href={`/${shop}/withdraws/create`}
+            variant="primary"
+            size="sm"
+            className="w-full justify-center sm:w-auto sm:ms-auto"
+          >
+            + {t('form:button-label-add-withdraw')}
+          </LinkActionButton>
+        }
+      >
+        <WithdrawList
+          withdraws={withdraws}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </DashboardShell>
   );
 }
 WithdrawsPage.authenticate = {

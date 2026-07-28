@@ -1,8 +1,8 @@
-import Card from '@/components/common/card';
-import PageHeading from '@/components/common/page-heading';
 import Search from '@/components/common/search';
 import OwnerLayout from '@/components/layouts/owner';
+import DataPanel from '@/components/page/data-panel';
 import OwnershipTransferLists from '@/components/ownership-transfer/ownership-transfer-list';
+import ShopTransferSummaryStrip from '@/components/ownership-transfer/shop-transfer-summary-strip';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
 import { useOwnerShipTransfersQuery } from '@/data/ownership-transfer';
@@ -63,21 +63,28 @@ export default function ShopTransferRequestVendorPage() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col">
-        <div className="flex w-full flex-col items-center md:flex-row">
-          <div className="mb-4 md:mb-0 md:w-1/4">
-            <PageHeading title="Shop Ownership Transfer Request List" />
-          </div>
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <ShopTransferSummaryStrip
+        totalRequests={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
+      />
 
-          <div className="flex w-full flex-col items-center space-y-4 ms-auto md:flex-row md:space-y-0 xl:w-3/4">
+      <DataPanel
+        className="mb-0"
+        title="Shop Ownership Transfer Request List"
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
             <Search
               onSearch={handleSearch}
               placeholderText="Search by Request Tracker"
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 lg:flex-1"
             />
-
             <BasicFilter
-              className="md:ms-6"
+              className="w-full shrink-0 lg:w-56"
               filterOptions={[
                 { name: 'Request from', value: 'from' },
                 { name: 'Request to', value: 'to' },
@@ -90,19 +97,19 @@ export default function ShopTransferRequestVendorPage() {
               defaultValue={[{ name: 'Request from', value: 'from' }]}
             />
           </div>
-        </div>
-      </Card>
-
-      <OwnershipTransferLists
-        userRole={role}
-        user={user}
-        ownershipTransfer={ownershipTransfer}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
-      />
-    </>
+        }
+      >
+        <OwnershipTransferLists
+          userRole={role}
+          user={user}
+          ownershipTransfer={ownershipTransfer}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 

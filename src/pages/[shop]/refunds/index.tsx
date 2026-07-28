@@ -1,5 +1,6 @@
-import Card from '@/components/common/card';
 import ShopLayout from '@/components/layouts/shop';
+import { DashboardShell } from '@/components/dashboard/layout';
+import DataPanel from '@/components/page/data-panel';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
 import { useTranslation } from 'next-i18next';
@@ -14,12 +15,12 @@ import { LIMIT } from '@/utils/constants';
 import { useShopQuery } from '@/data/shop';
 import { useRefundsQuery } from '@/data/refund';
 import RefundList from '@/components/refund/refund-list';
+import RefundsSummaryStrip from '@/components/refund/refunds-summary-strip';
 import { useRouter } from 'next/router';
 import { useState, useEffect, useRef } from 'react';
 import { SortOrder } from '@/types';
 import { Routes } from '@/config/routes';
 import { useMeQuery } from '@/data/user';
-import PageHeading from '@/components/common/page-heading';
 
 export default function RefundsPage() {
   const router = useRouter();
@@ -27,7 +28,6 @@ export default function RefundsPage() {
   const { data: me } = useMeQuery();
   const {
     query: { shop },
-    locale,
   } = useRouter();
   const { t } = useTranslation();
   const [page, setPage] = useState(1);
@@ -85,21 +85,25 @@ export default function RefundsPage() {
     setPage(current);
   }
 
-  return (
-    <>
-      <Card className="mb-8 flex flex-col items-center justify-between md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('common:sidebar-nav-item-refunds')} />
-        </div>
-      </Card>
+  const total = Array.isArray(data) ? undefined : data?.total;
 
-      <RefundList
-        refunds={data}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
-      />
-    </>
+  return (
+    <DashboardShell>
+      <RefundsSummaryStrip totalRefunds={total} matchingResults={total} />
+
+      <DataPanel
+        className="mb-0"
+        title={t('common:sidebar-nav-item-refunds')}
+        toolbarLayout="stacked"
+      >
+        <RefundList
+          refunds={data}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </DashboardShell>
   );
 }
 RefundsPage.authenticate = {

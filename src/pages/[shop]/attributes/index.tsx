@@ -1,12 +1,15 @@
-import Card from '@/components/common/card';
 import AttributeList from '@/components/attribute/attribute-list';
+import AttributesSummaryStrip from '@/components/attribute/attributes-summary-strip';
 import ErrorMessage from '@/components/ui/error-message';
-import LinkButton from '@/components/ui/link-button';
+import LinkActionButton from '@/components/ui/link-action-button';
+import ActionButton from '@/components/ui/action-button';
 import Loader from '@/components/ui/loader/loader';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import ShopLayout from '@/components/layouts/shop';
-import router, { useRouter } from 'next/router';
+import { DashboardShell } from '@/components/dashboard/layout';
+import DataPanel from '@/components/page/data-panel';
+import { useRouter } from 'next/router';
 import {
   adminOnly,
   adminOwnerAndStaffOnly,
@@ -18,13 +21,9 @@ import { useState, useEffect, useRef } from 'react';
 import { SortOrder } from '@/types';
 import { useModalAction } from '@/components/ui/modal/modal.context';
 import { MoreIcon } from '@/components/icons/more-icon';
-import Button from '@/components/ui/button';
 import { useAttributesQuery } from '@/data/attributes';
-import { Config } from '@/config';
 import { useMeQuery } from '@/data/user';
 import { Routes } from '@/config/routes';
-import PageHeading from '@/components/common/page-heading';
-import cn from 'classnames';
 
 export default function AttributePage() {
   const router = useRouter();
@@ -91,41 +90,55 @@ export default function AttributePage() {
   if (error) return <ErrorMessage message={error.message} />;
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center justify-between md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('common:sidebar-nav-item-attributes')} />
-        </div>
-
-        <div className="flex w-full flex-col items-center ms-auto md:w-3/4 md:flex-row xl:w-2/4">
-          <LinkButton
-            href={`/${shop}/attributes/create`}
-            className="mt-5 h-12 w-full md:mt-0 md:w-auto md:ms-auto"
-          >
-            <span>
-              + {t('form:button-label-add')} {t('common:attribute')}
-            </span>
-          </LinkButton>
-
-          <Button onClick={handleImportModal} className="mt-5 w-full md:hidden">
-            {t('common:text-export-import')}
-          </Button>
-          <button
-            onClick={handleImportModal}
-            className={cn(
-              'hidden h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-50 transition duration-300 ms-6 hover:bg-gray-100 md:flex'
-            )}
-          >
-            <MoreIcon className="w-3.5 text-body" />
-          </button>
-        </div>
-      </Card>
-      <AttributeList
-        attributes={attributes}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <DashboardShell>
+      <AttributesSummaryStrip
+        totalAttributes={attributes?.length}
+        matchingResults={attributes?.length}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('common:sidebar-nav-item-attributes')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end sm:gap-3">
+            <LinkActionButton
+              href={`/${shop}/attributes/create`}
+              variant="primary"
+              size="sm"
+              className="col-span-2 w-full justify-center sm:col-span-1 sm:w-auto"
+            >
+              + {t('form:button-label-add')} {t('common:attribute')}
+            </LinkActionButton>
+            <ActionButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleImportModal}
+              className="col-span-2 w-full justify-center sm:hidden"
+            >
+              {t('common:text-export-import')}
+            </ActionButton>
+            <ActionButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleImportModal}
+              className="hidden w-auto justify-center sm:inline-flex"
+              aria-label={t('common:text-export-import')}
+            >
+              <MoreIcon className="h-3.5 w-3.5" />
+            </ActionButton>
+          </div>
+        }
+      >
+        <AttributeList
+          attributes={attributes}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </DashboardShell>
   );
 }
 AttributePage.authenticate = {

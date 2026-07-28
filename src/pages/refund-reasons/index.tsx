@@ -1,9 +1,10 @@
-import Card from '@/components/common/card';
 import Search from '@/components/common/search';
 import Layout from '@/components/layouts/admin';
+import DataPanel from '@/components/page/data-panel';
 import RefundReasonList from '@/components/refund-reason/refund-reason-list';
+import RefundReasonsSummaryStrip from '@/components/refund-reason/refund-reasons-summary-strip';
 import ErrorMessage from '@/components/ui/error-message';
-import LinkButton from '@/components/ui/link-button';
+import LinkActionButton from '@/components/ui/link-action-button';
 import Loader from '@/components/ui/loader/loader';
 import { Config } from '@/config';
 import { Routes } from '@/config/routes';
@@ -46,39 +47,48 @@ export default function RefundReasons() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center xl:flex-row">
-        <div className="mb-4 md:w-1/4 xl:mb-0">
-          <h1 className="before:content-'' relative text-lg font-semibold text-heading before:absolute before:-top-0.5 before:h-8 before:rounded-tr-md before:rounded-br-md before:bg-accent ltr:before:-left-8 rtl:before:-right-8 xl:before:w-1">
-            {t('common:text-refund-reasons')}
-          </h1>
-        </div>
-
-        <div className="flex w-full flex-col items-center space-y-4 ms-auto md:flex-row md:space-y-0 xl:w-2/3 2xl:w-2/4">
-          <Search
-            onSearch={handleSearch}
-            placeholderText={t('form:input-placeholder-search-name')}
-          />
-
-          {locale === Config.defaultLanguage && (
-            <LinkButton
-              href={`${Routes.refundReasons.create}`}
-              className="h-12 w-full md:w-auto md:ms-6"
-            >
-              <span>+ {t('form:button-label-add-refund-reason')}</span>
-            </LinkButton>
-          )}
-        </div>
-      </Card>
-
-      <RefundReasonList
-        refundReasons={refundReasons}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <RefundReasonsSummaryStrip
+        totalReasons={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('common:text-refund-reasons')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Search
+              onSearch={handleSearch}
+              placeholderText={t('form:input-placeholder-search-name')}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
+            />
+            {locale === Config.defaultLanguage ? (
+              <LinkActionButton
+                href={`${Routes.refundReasons.create}`}
+                variant="primary"
+                size="sm"
+                className="w-full shrink-0 justify-center sm:w-auto"
+              >
+                + {t('form:button-label-add-refund-reason')}
+              </LinkActionButton>
+            ) : null}
+          </div>
+        }
+      >
+        <RefundReasonList
+          refundReasons={refundReasons}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 RefundReasons.authenticate = {

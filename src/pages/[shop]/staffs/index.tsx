@@ -1,11 +1,13 @@
-import Card from '@/components/common/card';
-import LinkButton from '@/components/ui/link-button';
+import LinkActionButton from '@/components/ui/link-action-button';
 import Loader from '@/components/ui/loader/loader';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import ShopLayout from '@/components/layouts/shop';
+import { DashboardShell } from '@/components/dashboard/layout';
+import DataPanel from '@/components/page/data-panel';
 import { useRouter } from 'next/router';
 import StaffList from '@/components/shop/staff-list';
+import StaffsSummaryStrip from '@/components/shop/staffs-summary-strip';
 import {
   adminAndOwnerOnly,
   adminOnly,
@@ -19,7 +21,6 @@ import { useState } from 'react';
 import { SortOrder } from '@/types';
 import { Routes } from '@/config/routes';
 import { useMeQuery } from '@/data/user';
-import PageHeading from '@/components/common/page-heading';
 
 export default function StaffsPage() {
   const router = useRouter();
@@ -71,27 +72,36 @@ export default function StaffsPage() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-row items-center justify-between">
-        <div className="md:w-1/4">
-          <PageHeading title={t('form:text-staff')} />
-        </div>
-
-        <div className="flex w-3/4 items-center ms-auto xl:w-2/4">
-          <LinkButton href={`/${shop}/staffs/create`} className="h-12 ms-auto">
-            <span>+ {t('form:button-label-add-staff')}</span>
-          </LinkButton>
-        </div>
-      </Card>
-
-      <StaffList
-        staffs={staffs}
-        onPagination={handlePagination}
-        paginatorInfo={paginatorInfo}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <DashboardShell>
+      <StaffsSummaryStrip
+        totalStaffs={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('form:text-staff')}
+        toolbarLayout="stacked"
+        toolbar={
+          <LinkActionButton
+            href={`/${shop}/staffs/create`}
+            variant="primary"
+            size="sm"
+            className="w-full justify-center sm:w-auto sm:ms-auto"
+          >
+            + {t('form:button-label-add-staff')}
+          </LinkActionButton>
+        }
+      >
+        <StaffList
+          staffs={staffs}
+          onPagination={handlePagination}
+          paginatorInfo={paginatorInfo}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </DashboardShell>
   );
 }
 StaffsPage.authenticate = {

@@ -1,6 +1,8 @@
 import QuestionList from '@/components/question/question-list';
-import Card from '@/components/common/card';
-import Layout from '@/components/layouts/shop';
+import QuestionsSummaryStrip from '@/components/question/questions-summary-strip';
+import ShopLayout from '@/components/layouts/shop';
+import { DashboardShell } from '@/components/dashboard/layout';
+import DataPanel from '@/components/page/data-panel';
 import { useState, useEffect, useRef } from 'react';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
@@ -18,7 +20,6 @@ import { useRouter } from 'next/router';
 import { useShopQuery } from '@/data/shop';
 import { Routes } from '@/config/routes';
 import { useMeQuery } from '@/data/user';
-import PageHeading from '@/components/common/page-heading';
 
 export default function Questions() {
   const [page, setPage] = useState(1);
@@ -77,27 +78,33 @@ export default function Questions() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col">
-        <div className="flex w-full flex-col items-center md:flex-row">
-          <PageHeading title={t('common:sidebar-nav-item-questions')} />
-        </div>
-      </Card>
-      <QuestionList
-        questions={questions}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <DashboardShell>
+      <QuestionsSummaryStrip
+        totalQuestions={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('common:sidebar-nav-item-questions')}
+        toolbarLayout="stacked"
+      >
+        <QuestionList
+          questions={questions}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </DashboardShell>
   );
 }
 
 Questions.authenticate = {
   permissions: adminAndOwnerOnly,
 };
-Questions.Layout = Layout;
+Questions.Layout = ShopLayout;
 
 export const getServerSideProps = async ({ locale }: any) => ({
   props: {

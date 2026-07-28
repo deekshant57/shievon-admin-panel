@@ -1,10 +1,10 @@
-import Card from '@/components/common/card';
-import PageHeading from '@/components/common/page-heading';
 import Search from '@/components/common/search';
 import FlashSaleLists from '@/components/flash-sale/flash-sale-list';
+import FlashSalesSummaryStrip from '@/components/flash-sale/flash-sales-summary-strip';
 import Layout from '@/components/layouts/admin';
+import DataPanel from '@/components/page/data-panel';
 import ErrorMessage from '@/components/ui/error-message';
-import LinkButton from '@/components/ui/link-button';
+import LinkActionButton from '@/components/ui/link-action-button';
 import Loader from '@/components/ui/loader/loader';
 import { Config } from '@/config';
 import { Routes } from '@/config/routes';
@@ -19,7 +19,6 @@ import { useState } from 'react';
 export default function FlashSales() {
   const { t } = useTranslation();
   const { locale } = useRouter();
-  // const [message, setMessage] = useState([]);
   const [orderBy, setOrder] = useState('created_at');
   const [sortedBy, setColumn] = useState<SortOrder>(SortOrder.Desc);
   const [searchTerm, setSearchTerm] = useState('');
@@ -46,36 +45,50 @@ export default function FlashSales() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/4">
-          <PageHeading title={t('form:form-title-flash-sale-campaigns')} />
-        </div>
-
-        <div className="flex w-full flex-col items-center space-y-4 ms-auto md:w-2/3 md:flex-row md:space-y-0 xl:w-3/4 2xl:w-1/2">
-          <Search onSearch={handleSearch} />
-
-          {locale === Config.defaultLanguage && (
-            <LinkButton
-              href={Routes?.flashSale?.create}
-              className="h-12 w-full md:w-auto md:ms-6"
-            >
-              <span className="hidden xl:block">
-                + {t('text-non-translated-title')} {t('text-campaign')}
-              </span>
-              <span className="xl:hidden">+ {t('form:button-label-add')}</span>
-            </LinkButton>
-          )}
-        </div>
-      </Card>
-      <FlashSaleLists
-        flashSale={flashSale}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <FlashSalesSummaryStrip
+        totalCampaigns={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('form:form-title-flash-sale-campaigns')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Search
+              onSearch={handleSearch}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
+            />
+            {locale === Config.defaultLanguage ? (
+              <LinkActionButton
+                href={Routes?.flashSale?.create}
+                variant="primary"
+                size="sm"
+                className="w-full shrink-0 justify-center sm:w-auto"
+              >
+                <span className="hidden xl:block">
+                  + {t('text-non-translated-title')} {t('text-campaign')}
+                </span>
+                <span className="xl:hidden">+ {t('form:button-label-add')}</span>
+              </LinkActionButton>
+            ) : null}
+          </div>
+        }
+      >
+        <FlashSaleLists
+          flashSale={flashSale}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 

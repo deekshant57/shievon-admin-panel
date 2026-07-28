@@ -1,6 +1,7 @@
 import QuestionList from '@/components/question/question-list';
-import Card from '@/components/common/card';
+import QuestionsSummaryStrip from '@/components/question/questions-summary-strip';
 import Layout from '@/components/layouts/admin';
+import DataPanel from '@/components/page/data-panel';
 import { useState } from 'react';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
@@ -9,7 +10,6 @@ import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useQuestionsQuery } from '@/data/question';
 import { adminOnly } from '@/utils/auth-utils';
-import PageHeading from '@/components/common/page-heading';
 
 export default function Questions() {
   const [page, setPage] = useState(1);
@@ -32,20 +32,26 @@ export default function Questions() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col">
-        <div className="flex w-full items-center">
-          <PageHeading title={t('common:sidebar-nav-item-questions')} />
-        </div>
-      </Card>
-      <QuestionList
-        questions={questions}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <QuestionsSummaryStrip
+        totalQuestions={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('common:sidebar-nav-item-questions')}
+        toolbarLayout="stacked"
+      >
+        <QuestionList
+          questions={questions}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 

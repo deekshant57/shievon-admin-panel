@@ -1,6 +1,8 @@
 import ReviewList from '@/components/reviews/review-list';
-import Card from '@/components/common/card';
-import Layout from '@/components/layouts/shop';
+import ReviewsSummaryStrip from '@/components/reviews/reviews-summary-strip';
+import ShopLayout from '@/components/layouts/shop';
+import { DashboardShell } from '@/components/dashboard/layout';
+import DataPanel from '@/components/page/data-panel';
 import { useState, useEffect, useRef } from 'react';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
@@ -18,7 +20,6 @@ import { useShopQuery } from '@/data/shop';
 import { useRouter } from 'next/router';
 import { Routes } from '@/config/routes';
 import { useMeQuery } from '@/data/user';
-import PageHeading from '@/components/common/page-heading';
 
 export default function Reviews() {
   const router = useRouter();
@@ -81,26 +82,32 @@ export default function Reviews() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col">
-        <div className="flex w-full flex-col items-center md:flex-row">
-          <PageHeading title={t('form:input-label-reviews')} />
-        </div>
-      </Card>
-      <ReviewList
-        reviews={reviews}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <DashboardShell>
+      <ReviewsSummaryStrip
+        totalReviews={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('form:input-label-reviews')}
+        toolbarLayout="stacked"
+      >
+        <ReviewList
+          reviews={reviews}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </DashboardShell>
   );
 }
 Reviews.authenticate = {
   permissions: adminAndOwnerOnly,
 };
-Reviews.Layout = Layout;
+Reviews.Layout = ShopLayout;
 
 export const getServerSideProps = async ({ locale }: any) => ({
   props: {

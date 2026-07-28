@@ -107,17 +107,37 @@ export default function CreateOrUpdateServiceOfferingForm({
     [types],
   )
 
+  const initialServiceCategoryId = useMemo(() => {
+    const raw =
+      (initialValues as any)?.serviceCategoryId ??
+      (initialValues as any)?.service_category_id ??
+      (initialValues as any)?.serviceCategory?.id ??
+      (initialValues as any)?.service_category?.id ??
+      null
+    if (raw == null) return null
+    const n = Number(raw)
+    return Number.isNaN(n) ? null : n
+  }, [initialValues])
+
   const initialServiceCategoryChain = useMemo(() => {
-    const leaf = (initialValues as any)?.serviceCategory ?? null
-    if (!leaf) return []
+    const leaf =
+      (initialValues as any)?.serviceCategory ??
+      (initialValues as any)?.service_category ??
+      null
+    if (!leaf) {
+      // Leaf id only — cascader rebuilds the full path once options load.
+      return initialServiceCategoryId != null
+        ? [{ id: initialServiceCategoryId }]
+        : []
+    }
     const chain: any[] = []
     let current: any = leaf
     while (current) {
       chain.push({ id: current.id, name: current.name, slug: current.slug })
-      current = current.parent ?? null
+      current = current.parent ?? current.parentCategory ?? null
     }
     return chain.reverse().slice(0, 4)
-  }, [initialValues])
+  }, [initialValues, initialServiceCategoryId])
 
   const {
     register,
@@ -151,10 +171,7 @@ export default function CreateOrUpdateServiceOfferingForm({
               : (initialValues?.salePrice as number | undefined),
           image: (initialValues as any)?.image ?? null,
           gallery: (initialValues as any)?.gallery ?? [],
-          service_category_id:
-            (initialValues as any)?.serviceCategoryId ??
-            (initialValues as any)?.serviceCategory?.id ??
-            null,
+          service_category_id: initialServiceCategoryId,
           service_primary_category:
             (initialServiceCategoryChain as any[])[0] ?? null,
           service_secondary_category:

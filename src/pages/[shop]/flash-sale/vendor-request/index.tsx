@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import PageHeading from '@/components/common/page-heading';
-import Card from '@/components/common/card';
 import Search from '@/components/common/search';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
-import LinkButton from '@/components/ui/link-button';
+import LinkActionButton from '@/components/ui/link-action-button';
+import DataPanel from '@/components/page/data-panel';
+import { DashboardShell } from '@/components/dashboard/layout';
+import FlashSalesSummaryStrip from '@/components/flash-sale/flash-sales-summary-strip';
 import { LIMIT } from '@/utils/constants';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import ShopLayout from '@/components/layouts/shop';
 import {
-  adminAndOwnerOnly,
   adminOnly,
   adminOwnerAndStaffOnly,
   getAuthCredentials,
@@ -74,34 +74,48 @@ export default function FlashSaleVendorRequestLists() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center xl:flex-row">
-        <div className="mb-4 md:w-1/3 xl:mb-0">
-          <PageHeading title="Lists of created flash sale requests." />
-        </div>
-
-        <div className="flex w-full flex-col items-center space-y-4 ms-auto md:flex-row md:space-y-0 xl:w-2/4">
-          <Search onSearch={handleSearch} />
-        </div>
-        {locale === Config.defaultLanguage && (
-          <LinkButton
-            href={`/${shop}/flash-sale/vendor-request/create`}
-            className="h-12 w-full md:w-auto md:ms-6"
-          >
-            <span className="hidden xl:block">+ Create Request</span>
-            <span className="xl:hidden">+ {t('form:button-label-add')}</span>
-          </LinkButton>
-        )}
-      </Card>
-
-      <FlashSaleRequestLists
-        flashSaleRequests={flashSaleRequests}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <DashboardShell>
+      <FlashSalesSummaryStrip
+        totalCampaigns={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title="Lists of created flash sale requests."
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Search
+              onSearch={handleSearch}
+              debounceMs={400}
+              variant="hybrid"
+              size="sm"
+              className="w-full min-w-0 sm:flex-1"
+            />
+            {locale === Config.defaultLanguage ? (
+              <LinkActionButton
+                href={`/${shop}/flash-sale/vendor-request/create`}
+                variant="primary"
+                size="sm"
+                className="w-full shrink-0 justify-center sm:w-auto"
+              >
+                <span className="hidden xl:block">+ Create Request</span>
+                <span className="xl:hidden">+ {t('form:button-label-add')}</span>
+              </LinkActionButton>
+            ) : null}
+          </div>
+        }
+      >
+        <FlashSaleRequestLists
+          flashSaleRequests={flashSaleRequests}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </DashboardShell>
   );
 }
 FlashSaleVendorRequestLists.authenticate = {

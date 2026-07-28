@@ -1,6 +1,7 @@
-import Card from '@/components/common/card';
 import Search from '@/components/common/search';
-import LinkButton from '@/components/ui/link-button';
+import DataPanel from '@/components/page/data-panel';
+import { DashboardShell } from '@/components/dashboard/layout';
+import FlashSalesSummaryStrip from '@/components/flash-sale/flash-sales-summary-strip';
 import { useState, useEffect, useRef } from 'react';
 import { LIMIT } from '@/utils/constants';
 import ErrorMessage from '@/components/ui/error-message';
@@ -17,12 +18,10 @@ import {
 } from '@/utils/auth-utils';
 import { useRouter } from 'next/router';
 import { SortOrder } from '@/types';
-import { Config } from '@/config';
 import { useMeQuery } from '@/data/user';
 import { useShopQuery } from '@/data/shop';
 import { useFlashSalesQuery } from '@/data/flash-sale';
 import VendorFlashSaleLists from '@/components/flash-sale/flash-sale-list-for-vendors';
-import PageHeading from '@/components/common/page-heading';
 
 export default function VendorFlashSalePage() {
   const router = useRouter();
@@ -90,25 +89,35 @@ export default function VendorFlashSalePage() {
   }
 
   return (
-    <>
-      <Card className="mb-8 flex flex-col items-center xl:flex-row">
-        <div className="mb-4 md:w-1/3 xl:mb-0">
-          <PageHeading title={t('form:form-title-currently-flash-sales')} />
-        </div>
-
-        <div className="flex w-full flex-col items-center space-y-4 ms-auto md:flex-row md:space-y-0 xl:w-2/4">
-          <Search onSearch={handleSearch} />
-        </div>
-      </Card>
-
-      <VendorFlashSaleLists
-        flashSale={flashSale}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <DashboardShell>
+      <FlashSalesSummaryStrip
+        totalCampaigns={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('form:form-title-currently-flash-sales')}
+        toolbarLayout="stacked"
+        toolbar={
+          <Search
+            onSearch={handleSearch}
+            debounceMs={400}
+            variant="hybrid"
+            size="sm"
+            className="w-full"
+          />
+        }
+      >
+        <VendorFlashSaleLists
+          flashSale={flashSale}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </DashboardShell>
   );
 }
 VendorFlashSalePage.authenticate = {

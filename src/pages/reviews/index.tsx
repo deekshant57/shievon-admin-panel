@@ -1,6 +1,7 @@
 import ReviewList from '@/components/reviews/review-list';
-import Card from '@/components/common/card';
+import ReviewsSummaryStrip from '@/components/reviews/reviews-summary-strip';
 import Layout from '@/components/layouts/admin';
+import DataPanel from '@/components/page/data-panel';
 import { useState } from 'react';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
@@ -9,7 +10,6 @@ import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useReviewsQuery } from '@/data/review';
 import { adminOnly } from '@/utils/auth-utils';
-import PageHeading from '@/components/common/page-heading';
 
 export default function Reviews() {
   const [page, setPage] = useState(1);
@@ -30,20 +30,26 @@ export default function Reviews() {
     setPage(current);
   }
   return (
-    <>
-      <Card className="mb-8 flex flex-col">
-        <div className="flex w-full items-center">
-          <PageHeading title={t('form:input-label-reviews')} />
-        </div>
-      </Card>
-      <ReviewList
-        reviews={reviews}
-        paginatorInfo={paginatorInfo}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <ReviewsSummaryStrip
+        totalReviews={paginatorInfo?.total}
+        matchingResults={paginatorInfo?.total}
       />
-    </>
+
+      <DataPanel
+        className="mb-0"
+        title={t('form:input-label-reviews')}
+        toolbarLayout="stacked"
+      >
+        <ReviewList
+          reviews={reviews}
+          paginatorInfo={paginatorInfo}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 Reviews.authenticate = {

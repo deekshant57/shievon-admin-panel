@@ -1,7 +1,8 @@
-import Card from '@/components/common/card';
 import Layout from '@/components/layouts/admin';
+import DataPanel from '@/components/page/data-panel';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
+import Select from '@/components/ui/select/select';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { adminOnly } from '@/utils/auth-utils';
@@ -9,11 +10,9 @@ import { useState } from 'react';
 import { SortOrder } from '@/types';
 import { useRefundsQuery } from '@/data/refund';
 import RefundList from '@/components/refund/refund-list';
+import RefundsSummaryStrip from '@/components/refund/refunds-summary-strip';
 import { useRouter } from 'next/router';
-import Label from '@/components/ui/label';
-import Select from '@/components/ui/select/select';
 import { useRefundReasonsQuery } from '@/data/refund-reason';
-import PageHeading from '@/components/common/page-heading';
 
 export default function RefundsPage() {
   const { locale } = useRouter();
@@ -41,36 +40,42 @@ export default function RefundsPage() {
     setPage(current);
   }
 
-  return (
-    <>
-      <Card className="mb-8 flex flex-col items-center justify-between md:flex-row">
-        <div className="mb-4 md:mb-0 md:w-1/2">
-          <PageHeading title={t('common:sidebar-nav-item-refunds')} />
-        </div>
-        <div className="w-full md:w-1/2">
-          <Select
-            options={refundReasons}
-            getOptionLabel={(option: any) => option.name}
-            getOptionValue={(option: any) => option.slug}
-            placeholder={t('common:filter-by-reason-placeholder')}
-            isLoading={isLoading}
-            isSearchable={false}
-            onChange={(reason: any) => {
-              setReason(reason?.slug!);
-              setPage(1);
-            }}
-            isClearable={true}
-          />
-        </div>
-      </Card>
+  const total = Array.isArray(data) ? undefined : data?.total;
 
-      <RefundList
-        refunds={data}
-        onPagination={handlePagination}
-        onOrder={setOrder}
-        onSort={setColumn}
-      />
-    </>
+  return (
+    <div className="min-w-0 max-w-full space-y-6 overflow-hidden">
+      <RefundsSummaryStrip totalRefunds={total} matchingResults={total} />
+
+      <DataPanel
+        className="mb-0"
+        title={t('common:sidebar-nav-item-refunds')}
+        toolbarLayout="stacked"
+        toolbar={
+          <div className="w-full md:max-w-sm md:ms-auto">
+            <Select
+              options={refundReasons}
+              getOptionLabel={(option: any) => option.name}
+              getOptionValue={(option: any) => option.slug}
+              placeholder={t('common:filter-by-reason-placeholder')}
+              isLoading={isLoading}
+              isSearchable={false}
+              onChange={(reason: any) => {
+                setReason(reason?.slug!);
+                setPage(1);
+              }}
+              isClearable={true}
+            />
+          </div>
+        }
+      >
+        <RefundList
+          refunds={data}
+          onPagination={handlePagination}
+          onOrder={setOrder}
+          onSort={setColumn}
+        />
+      </DataPanel>
+    </div>
   );
 }
 RefundsPage.authenticate = {
