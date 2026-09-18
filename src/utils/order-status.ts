@@ -20,22 +20,63 @@ export const ORDER_STATUS = [
     status: 'order-ready-for-pickup',
     serial: 5,
   },
+  {
+    name: 'text-order-ready-for-delivery',
+    status: 'order-ready-for-delivery',
+    serial: 5,
+  },
   { name: 'text-order-refunded', status: 'order-refunded', serial: 5 },
   { name: 'text-order-failed', status: 'order-failed', serial: 5 },
 ];
 
+/** Legacy strip without delivery logistics (used when fulfillment UI is not active). */
+export const LEGACY_ORDER_PROGRESS = [
+  ORDER_STATUS[0], // pending
+  ORDER_STATUS[1], // processing
+  ORDER_STATUS[4], // completed
+];
+
+const LEGACY_TERMINAL_STATUSES = new Set([
+  'order-cancelled',
+  'order-refunded',
+  'order-failed',
+  'order-ready-for-pickup',
+  'order-ready-for-delivery',
+  'order-at-local-facility',
+  'order-out-for-delivery',
+]);
+
+/**
+ * Legacy progress for unpaid / non-fulfillment orders.
+ * Never invents "Out for delivery" for pickup or service orders.
+ */
 export const filterOrderStatus = (
-  orderStatus: any[],
+  orderStatus: typeof ORDER_STATUS,
   paymentStatus: PaymentStatus,
-  currentStatusIndex: number
+  currentStatusIndex: number,
 ) => {
-  if ([PaymentStatus.SUCCESS, PaymentStatus.COD].includes(paymentStatus)) {
-    return currentStatusIndex > 4
-      ? [...orderStatus.slice(0, 4), orderStatus[currentStatusIndex]]
-      : orderStatus.slice(0, 5);
+  const current = orderStatus[currentStatusIndex];
+  const isPaid = [PaymentStatus.SUCCESS, PaymentStatus.COD].includes(
+    paymentStatus,
+  );
+
+  // Paid orders normally use the fulfillment UI. If we still land here,
+  // keep a simple strip — never show delivery steps unless status is already there.
+  if (
+    current &&
+    LEGACY_TERMINAL_STATUSES.has(current.status) &&
+    current.status !== 'order-completed'
+  ) {
+    return [
+      LEGACY_ORDER_PROGRESS[0],
+      LEGACY_ORDER_PROGRESS[1],
+      { ...current, serial: 3 },
+    ];
   }
 
-  return currentStatusIndex > 4
-    ? [...orderStatus.slice(0, 2), orderStatus[currentStatusIndex]]
-    : orderStatus.slice(0, 5);
+  if (!isPaid) {
+    return LEGACY_ORDER_PROGRESS;
+  }
+
+  return LEGACY_ORDER_PROGRESS;
 };

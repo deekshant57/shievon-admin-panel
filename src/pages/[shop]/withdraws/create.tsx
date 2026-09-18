@@ -1,52 +1,50 @@
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import CreateOrUpdateWithdrawForm from '@/components/withdraw/withdraw-form';
 import ShopLayout from '@/components/layouts/shop';
 import {
-  adminAndOwnerOnly,
   adminOnly,
   getAuthCredentials,
   hasAccess,
 } from '@/utils/auth-utils';
 import { Routes } from '@/config/routes';
-import { useShopQuery } from '@/data/shop';
-import { useMeQuery } from '@/data/user';
 import { useRouter } from 'next/router';
+import { useEffect, useRef } from 'react';
+import Loader from '@/components/ui/loader/loader';
 
-export default function CreateWithdrawPage() {
+/**
+ * Legacy per-shop create URL.
+ * Admin create-payout now lives at /withdraws/create (global hub with shop picker).
+ * Keep this route as a redirect so old bookmarks still work.
+ */
+export default function CreateWithdrawPageRedirect() {
   const { t } = useTranslation();
   const router = useRouter();
   const {
     query: { shop },
-  } = useRouter();
+  } = router;
   const { permissions } = getAuthCredentials();
-  const { data: me } = useMeQuery();
-  const { data: shopData } = useShopQuery({
-    slug: shop as string,
-  });
-  const shopId = shopData?.id!;
-  if (
-    !hasAccess(adminOnly, permissions) &&
-    !me?.shops?.map((shop) => shop.id).includes(shopId) &&
-    me?.managed_shop?.id != shopId
-  ) {
-    router.replace(Routes.dashboard);
-  }
-  return (
-    <>
-      <div className="flex border-b border-dashed border-border-base pb-5 md:pb-7">
-        <h1 className="text-lg font-semibold text-heading">
-          {t('form:form-title-create-withdraw')}
-        </h1>
-      </div>
-      <CreateOrUpdateWithdrawForm />
-    </>
-  );
+  const hasRedirectedRef = useRef(false);
+  const isAdmin = hasAccess(adminOnly, permissions);
+
+  useEffect(() => {
+    if (hasRedirectedRef.current || !router.isReady) return;
+    hasRedirectedRef.current = true;
+
+    if (!isAdmin) {
+      router.replace(shop ? `/${shop}${Routes.withdraw.list}` : Routes.dashboard);
+      return;
+    }
+
+    const qs = shop ? `?shop=${encodeURIComponent(String(shop))}` : '';
+    router.replace(`${Routes.withdraw.create}${qs}`);
+  }, [isAdmin, router, shop]);
+
+  return <Loader text={t('common:text-loading')} />;
 }
-CreateWithdrawPage.authenticate = {
-  permissions: adminAndOwnerOnly,
+CreateWithdrawPageRedirect.authenticate = {
+  permissions: adminOnly,
 };
-CreateWithdrawPage.Layout = ShopLayout;
+CreateWithdrawPageRedirect.Layout = ShopLayout;
 
 export const getServerSideProps = async ({ locale }: any) => ({
   props: {

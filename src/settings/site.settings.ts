@@ -328,6 +328,12 @@ export const siteSettings = {
             label: 'text-transactions',
             icon: 'TransactionsIcon',
           },
+          {
+            href: Routes.deliveryIssues.list,
+            label: 'Delivery issues',
+            icon: 'ShippingsIcon',
+            permission: adminOnly,
+          },
           // {
           //   href: '',
           //   label: 'Order tracking',
@@ -778,28 +784,21 @@ export const siteSettings = {
       },
 
       /*
-       * Hidden in vendor portal:
-       * - Financial Management (and its sections)
+       * Financial — settlements / payouts
        */
-      // financial: {
-      //   href: '',
-      //   label: 'text-financial-management',
-      //   icon: 'WithdrawIcon',
-      //   childMenu: [
-      //     {
-      //       href: (shop: string) => `/${shop}${Routes.withdraw.list}`,
-      //       label: 'sidebar-nav-item-withdraws',
-      //       icon: 'AttributeIcon',
-      //       permissions: adminAndOwnerOnly,
-      //     },
-      //     {
-      //       href: (shop: string) => `/${shop}${Routes.refund.list}`,
-      //       label: 'sidebar-nav-item-refunds',
-      //       icon: 'RefundsIcon',
-      //       permissions: adminOwnerAndStaffOnly,
-      //     },
-      //   ],
-      // },
+      financial: {
+        href: '',
+        label: 'text-financial-management',
+        icon: 'WithdrawIcon',
+        childMenu: [
+          {
+            href: (shop: string) => `/${shop}${Routes.withdraw.list}`,
+            label: 'sidebar-nav-item-withdraws',
+            icon: 'AttributeIcon',
+            permissions: adminAndOwnerOnly,
+          },
+        ],
+      },
 
       order: {
         href: '',
@@ -1108,28 +1107,21 @@ export const siteSettings = {
       },
 
       /*
-       * Hidden in vendor portal:
-       * - Financial Management (and its sections)
+       * Financial — settlements / payouts
        */
-      // financial: {
-      //   href: '',
-      //   label: 'text-financial-management',
-      //   icon: 'WithdrawIcon',
-      //   childMenu: [
-      //     // {
-      //     //   href: (shop: string) => `/${shop}${Routes.withdraw.list}`,
-      //     //   label: 'sidebar-nav-item-withdraws',
-      //     //   icon: 'AttributeIcon',
-      //     //   permissions: adminAndOwnerOnly,
-      //     // },
-      //     {
-      //       href: (shop: string) => `/${shop}${Routes.refund.list}`,
-      //       label: 'sidebar-nav-item-refunds',
-      //       icon: 'RefundsIcon',
-      //       permissions: adminOwnerAndStaffOnly,
-      //     },
-      //   ],
-      // },
+      financial: {
+        href: '',
+        label: 'text-financial-management',
+        icon: 'WithdrawIcon',
+        childMenu: [
+          {
+            href: (shop: string) => `/${shop}${Routes.withdraw.list}`,
+            label: 'sidebar-nav-item-withdraws',
+            icon: 'AttributeIcon',
+            permissions: adminAndOwnerOnly,
+          },
+        ],
+      },
 
       /*
        * Hidden in vendor portal:

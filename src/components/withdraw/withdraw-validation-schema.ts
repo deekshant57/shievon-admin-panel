@@ -5,6 +5,8 @@ export const withdrawValidationSchema = yup.object().shape({
     .number()
     .typeError('form:error-amount-must-number')
     .positive('form:error-amount-must-positive')
+    .min(500, 'form:error-min-payout-amount')
     .required('form:error-amount-required'),
-  payment_method: yup.string().required('form:error-payment-required'),
+  note: yup.string().nullable().optional(),
+  balance_kind: yup.string().nullable().optional(),
 });

@@ -1,5 +1,6 @@
 import Pagination from '@/components/ui/pagination';
 import { Table } from '@/components/ui/table';
+import TruncatedId from '@/components/ui/truncated-id';
 import ActionButtons from '@/components/common/action-buttons';
 import dayjs from 'dayjs';
 import { MappedPaginatorInfo, Product, Review, SortOrder } from '@/types';
@@ -84,7 +85,7 @@ const ReviewList = ({
       align: alignLeft,
       width: 120,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: t('table:table-item-product'),

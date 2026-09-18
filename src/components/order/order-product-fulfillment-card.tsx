@@ -14,15 +14,18 @@ import {
   useUnableToFulfillProductLineMutation,
 } from '@/data/order';
 import {
-  canConfirmPickup,
+  canConfirmPickupForOrder,
   canMarkLineReady,
   canMarkProductLinesReady,
   canUnableToFulfillProduct,
-  getActiveProductFulfillmentLines,
   getFulfillmentStatusBadgeColor,
   getFulfillmentStatusLabelKey,
+  getProductFulfillmentDisplayLines,
+  getProductLineDisplayStatus,
   getProductNameForLine,
   getRemainingPickupQty,
+  isDeliveryOrder,
+  isOrderOpenForFulfillmentActions,
 } from '@/utils/order-fulfillment';
 import UnableToFulfillModal from '@/components/order/unable-to-fulfill-modal';
 import ConfirmPickupModal from '@/components/order/confirm-pickup-modal';
@@ -37,9 +40,10 @@ export default function OrderProductFulfillmentCard({
   const { t } = useTranslation();
   const { alignLeft, alignRight } = useIsRTL();
   const lines = useMemo(
-    () => getActiveProductFulfillmentLines(order),
+    () => getProductFulfillmentDisplayLines(order),
     [order],
   );
+  const actionsEnabled = isOrderOpenForFulfillmentActions(order);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [unableTarget, setUnableTarget] = useState<string | null>(null);
   const [confirmTarget, setConfirmTarget] =
@@ -52,9 +56,9 @@ export default function OrderProductFulfillmentCard({
   const { mutate: unableToFulfill, isLoading: markingUnable } =
     useUnableToFulfillProductLineMutation();
 
-  const selectableLineIds = lines
-    .filter((line) => canMarkLineReady(line))
-    .map((line) => line.id);
+  const selectableLineIds = actionsEnabled
+    ? lines.filter((line) => canMarkLineReady(order, line)).map((line) => line.id)
+    : [];
   const allSelected =
     selectableLineIds.length > 0 &&
     selectableLineIds.every((id) => selectedIds.includes(id));
@@ -116,28 +120,34 @@ export default function OrderProductFulfillmentCard({
     );
   }
 
+  const isDelivery = isDeliveryOrder(order);
+
   const columns = [
-    {
-      title: (
-        <Checkbox
-          name="select-all-product-lines"
-          checked={allSelected}
-          disabled={!selectableLineIds.length}
-          onChange={toggleSelectAll}
-        />
-      ),
-      dataIndex: 'id',
-      key: 'select',
-      width: 48,
-      render: (_id: string, line: ProductFulfillmentLine) => (
-        <Checkbox
-          name={`select-line-${line.id}`}
-          checked={selectedIds.includes(line.id)}
-          disabled={!canMarkLineReady(line)}
-          onChange={() => toggleLineSelection(line.id)}
-        />
-      ),
-    },
+    ...(actionsEnabled
+      ? [
+          {
+            title: (
+              <Checkbox
+                name="select-all-product-lines"
+                checked={allSelected}
+                disabled={!selectableLineIds.length}
+                onChange={toggleSelectAll}
+              />
+            ),
+            dataIndex: 'id',
+            key: 'select',
+            width: 48,
+            render: (_id: string, line: ProductFulfillmentLine) => (
+              <Checkbox
+                name={`select-line-${line.id}`}
+                checked={selectedIds.includes(line.id)}
+                disabled={!canMarkLineReady(order, line)}
+                onChange={() => toggleLineSelection(line.id)}
+              />
+            ),
+          },
+        ]
+      : []),
     {
       title: t('table:table-item-products'),
       dataIndex: 'id',
@@ -149,97 +159,125 @@ export default function OrderProductFulfillmentCard({
         </span>
       ),
     },
-    {
-      title: t('table:table-item-picked-quantity'),
-      dataIndex: 'quantity',
-      key: 'quantity',
-      align: alignRight,
-      render: (_quantity: number, line: ProductFulfillmentLine) => (
-        <span>
-          {line.picked_up_quantity ?? 0} / {line.quantity ?? 0}
-        </span>
-      ),
-    },
+    ...(isDelivery
+      ? []
+      : [
+          {
+            title: t('table:table-item-picked-quantity'),
+            dataIndex: 'quantity',
+            key: 'quantity',
+            align: alignRight,
+            render: (_quantity: number, line: ProductFulfillmentLine) => (
+              <span>
+                {line.picked_up_quantity ?? 0} / {line.quantity ?? 0}
+              </span>
+            ),
+          },
+        ]),
     {
       title: t('table:table-item-fulfillment'),
       dataIndex: 'fulfillment_status',
       key: 'fulfillment_status',
       align: alignLeft,
-      render: (status: string | null | undefined) => (
-        <Badge
-          text={t(getFulfillmentStatusLabelKey(status))}
-          color={getFulfillmentStatusBadgeColor(status)}
-        />
-      ),
-    },
-    {
-      title: t('table:table-item-actions'),
-      dataIndex: 'id',
-      key: 'actions',
-      align: alignRight,
-      render: (_id: string, line: ProductFulfillmentLine) => {
-        const remainingQty = getRemainingPickupQty(line);
-
+      render: (_status: string | null | undefined, line: ProductFulfillmentLine) => {
+        const displayStatus = getProductLineDisplayStatus(line);
         return (
-          <div className="flex flex-wrap justify-end gap-2">
-            {canConfirmPickup(line) ? (
-              <Button
-                size="small"
-                loading={confirmingPickup && confirmTarget?.id === line.id}
-                onClick={() => {
-                  if (remainingQty > 1) {
-                    setConfirmTarget(line);
-                    return;
-                  }
-                  confirmPickup({
-                    id: order.id,
-                    itemId: line.id,
-                  });
-                }}
-              >
-                {t('form:button-confirm-pickup')}
-              </Button>
-            ) : null}
-            {canUnableToFulfillProduct(line) ? (
-              <Button
-                size="small"
-                variant="outline"
-                onClick={() => setUnableTarget(line.id)}
-              >
-                {t('form:button-unable-to-fulfill')}
-              </Button>
-            ) : null}
-          </div>
+          <Badge
+            text={t(getFulfillmentStatusLabelKey(displayStatus))}
+            color={getFulfillmentStatusBadgeColor(displayStatus)}
+          />
         );
       },
     },
+    ...(actionsEnabled
+      ? [
+          {
+            title: t('table:table-item-actions'),
+            dataIndex: 'id',
+            key: 'actions',
+            align: alignRight,
+            render: (_id: string, line: ProductFulfillmentLine) => {
+              const remainingQty = getRemainingPickupQty(line);
+
+              return (
+                <div className="flex flex-wrap justify-end gap-2">
+                  {canConfirmPickupForOrder(order, line) ? (
+                    <Button
+                      size="small"
+                      loading={
+                        confirmingPickup && confirmTarget?.id === line.id
+                      }
+                      onClick={() => {
+                        if (remainingQty > 1) {
+                          setConfirmTarget(line);
+                          return;
+                        }
+                        confirmPickup({
+                          id: order.id,
+                          itemId: line.id,
+                        });
+                      }}
+                    >
+                      {t('form:button-confirm-pickup')}
+                    </Button>
+                  ) : null}
+                  {canUnableToFulfillProduct(order, line) ? (
+                    <Button
+                      size="small"
+                      variant="outline"
+                      onClick={() => setUnableTarget(line.id)}
+                    >
+                      {t('form:button-unable-to-fulfill')}
+                    </Button>
+                  ) : null}
+                </div>
+              );
+            },
+          },
+        ]
+      : []),
   ];
 
   return (
     <>
       <OrderFulfillmentPanel
-        title={t('common:text-product-pickup-track')}
+        title={
+          isDelivery
+            ? t('common:text-product-delivery-track')
+            : t('common:text-product-pickup-track')
+        }
         description={t('common:text-fulfillment-status')}
+        meta={
+          isDelivery && actionsEnabled ? (
+            <p className="text-sm text-body">
+              {t('common:text-delivery-vendor-action-hint')}
+            </p>
+          ) : undefined
+        }
         toolbar={
-          <>
-            <Button
-              size="small"
-              loading={markingReady}
-              disabled={!canMarkProductLinesReady(order)}
-              onClick={handleMarkAllReady}
-            >
-              {t('form:button-mark-all-ready')}
-            </Button>
-            <Button
-              size="small"
-              variant="outline"
-              loading={markingReady}
-              disabled={!selectedIds.length || !canMarkProductLinesReady(order)}
-              onClick={handleMarkSelectedReady}
-            >
-              {t('form:button-mark-ready')}
-            </Button>
-          </>
+          actionsEnabled ? (
+            <>
+              <Button
+                size="small"
+                loading={markingReady}
+                disabled={!canMarkProductLinesReady(order)}
+                onClick={handleMarkAllReady}
+              >
+                {t('form:button-mark-all-ready')}
+              </Button>
+              <Button
+                size="small"
+                variant="outline"
+                loading={markingReady}
+                disabled={
+                  !selectedIds.length || !canMarkProductLinesReady(order)
+                }
+                onClick={handleMarkSelectedReady}
+              >
+                {t('form:button-mark-ready')}
+              </Button>
+            </>
+          ) : undefined
         }
       >
         <Table

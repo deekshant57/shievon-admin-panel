@@ -1,5 +1,6 @@
 import Pagination from '@/components/ui/pagination';
 import { Table } from '@/components/ui/table';
+import TruncatedId from '@/components/ui/truncated-id';
 import { getIcon } from '@/utils/get-icon';
 import * as categoriesIcon from '@/components/icons/category';
 import { SortOrder } from '@/types';
@@ -18,8 +19,10 @@ import {
   useProgressiveColumns,
 } from '@/components/page/progressive-columns';
 import { siteSettings } from '@/settings/site.settings';
+import { Switch } from '@headlessui/react';
+import { useToggleCategoryServiceabilityMutation } from '@/data/category';
 
-const PRIMARY_COLUMN_KEYS = ['id', 'name', 'type', 'actions'];
+const PRIMARY_COLUMN_KEYS = ['id', 'name', 'type', 'serviceable', 'actions'];
 
 export type IProps = {
   categories: Category[] | undefined;
@@ -39,6 +42,8 @@ const CategoryList = ({
   const { t } = useTranslation();
   const rowExpandable = (record: any) => record.children?.length;
   const { alignLeft, alignRight } = useIsRTL();
+  const { mutate: toggleServiceability, isLoading: toggling } =
+    useToggleCategoryServiceabilityMutation();
   const [sortingObj, setSortingObj] = useState<{
     sort: SortOrder;
     column: string | null;
@@ -70,9 +75,7 @@ const CategoryList = ({
         key: 'id',
         align: alignLeft,
         width: 90,
-        render: (id: number) => (
-          <span className="whitespace-nowrap text-body">#{id}</span>
-        ),
+        render: (id: number) => <TruncatedId id={id} />,
       },
       {
         title: (
@@ -90,12 +93,17 @@ const CategoryList = ({
         align: alignLeft,
         width: 260,
         onHeaderCell: () => onHeaderClick('name'),
-        render: (name: string, { image }: { image: any }) => {
+        render: (name: string, record: Category) => {
+          const isOff =
+            record.is_serviceable === false ||
+            record.type?.is_serviceable === false;
           return (
-            <div className="flex min-w-0 items-center">
+            <div
+              className={`flex min-w-0 items-center ${isOff ? 'opacity-50' : ''}`}
+            >
               <div className="relative aspect-square h-10 w-10 shrink-0 overflow-hidden rounded-md border border-border/60 bg-muted/30 me-2.5">
                 <Image
-                  src={image?.thumbnail ?? siteSettings.product.placeholder}
+                  src={record.image?.thumbnail ?? siteSettings.product.placeholder}
                   alt={name}
                   fill
                   priority={true}
@@ -105,6 +113,54 @@ const CategoryList = ({
               <span className="truncate font-medium" title={name}>
                 {name}
               </span>
+            </div>
+          );
+        },
+      },
+      {
+        title: t('table:table-item-serviceable'),
+        dataIndex: 'is_serviceable',
+        key: 'serviceable',
+        align: 'center' as const,
+        width: 130,
+        render: (_: boolean, record: Category) => {
+          const typeNotServiceable = record.type?.is_serviceable === false;
+          const checked = record.is_serviceable !== false;
+          return (
+            <div className="flex items-center justify-center" title={
+              typeNotServiceable
+                ? t('common:text-parent-type-not-serviceable')
+                : ''
+            }>
+              <Switch
+                checked={checked}
+                onChange={() =>
+                  toggleServiceability({
+                    id: record.id,
+                    is_serviceable: !checked,
+                  })
+                }
+                disabled={toggling || typeNotServiceable}
+                className={`${
+                  checked && !typeNotServiceable ? 'bg-accent' : 'bg-gray-300'
+                } relative inline-flex h-6 w-11 items-center rounded-full focus:outline-none ${
+                  toggling || typeNotServiceable
+                    ? 'cursor-not-allowed opacity-60'
+                    : ''
+                }`}
+                dir="ltr"
+              >
+                <span className="sr-only">
+                  {t('table:table-item-serviceable')}
+                </span>
+                <span
+                  className={`${
+                    checked && !typeNotServiceable
+                      ? 'translate-x-6'
+                      : 'translate-x-1'
+                  } inline-block h-4 w-4 transform rounded-full bg-light transition-transform`}
+                />
+              </Switch>
             </div>
           );
         },
@@ -180,7 +236,7 @@ const CategoryList = ({
         ),
       },
     ],
-    [alignLeft, alignRight, sortingObj.column, sortingObj.sort, t],
+    [alignLeft, alignRight, sortingObj.column, sortingObj.sort, t, toggling, toggleServiceability],
   );
 
   const secondaryOptions = useMemo(

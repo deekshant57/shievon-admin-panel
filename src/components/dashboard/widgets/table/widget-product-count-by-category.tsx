@@ -1,4 +1,5 @@
 import { Table } from '@/components/ui/table';
+import TruncatedId from '@/components/ui/truncated-id';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import cn from 'classnames';
@@ -23,7 +24,7 @@ const ProductCountByCategory = ({ products, title, className }: IProps) => {
       key: 'category_id',
       align: alignLeft,
       width: 120,
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: t('table:table-item-category-name'),

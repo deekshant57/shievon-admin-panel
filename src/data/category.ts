@@ -81,6 +81,19 @@ export const useUpdateCategoryMutation = () => {
   });
 };
 
+export const useToggleCategoryServiceabilityMutation = () => {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  return useMutation(categoryClient.toggleServiceability, {
+    onSuccess: () => {
+      toast.success(t('common:successfully-updated'));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(API_ENDPOINTS.CATEGORIES);
+    },
+  });
+};
+
 export const useCategoryQuery = ({ slug, language }: GetParams) => {
   const { data, error, isLoading } = useQuery<Category, Error>(
     [API_ENDPOINTS.CATEGORIES, { slug, language }],

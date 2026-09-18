@@ -125,6 +125,7 @@ type BannerInput = {
 type FormValues = {
   name: string;
   slug?: string | null;
+  is_serviceable: boolean;
   sort_order: number;
   icon?: any;
   /** Type icon image (uploaded attachment). Sent as image_id on create/update. */
@@ -159,6 +160,7 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
     resolver: yupResolver(typeValidationSchema),
     defaultValues: {
       ...initialValues,
+      is_serviceable: initialValues?.is_serviceable !== false,
       sort_order: initialValues?.sort_order ?? 0,
       type_image: initialValues?.image ?? null,
       promotional_sliders: initialValues?.promotional_sliders ?? initialValues?.settings?.promotional_sliders ?? [],
@@ -289,6 +291,7 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
       language: router.locale,
       name: values.name!,
       slug: values.slug!,
+      is_serviceable: values.is_serviceable,
       sort_order:
         Number.isFinite(values.sort_order) && values.sort_order >= 0
           ? Math.trunc(values.sort_order)
@@ -456,6 +459,15 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
             disabled
           />
         )}
+        <div className="mb-5">
+          <SwitchInput
+            name="is_serviceable"
+            control={control}
+            label={t('form:input-label-serviceable')}
+            toolTipText={t('form:input-tooltip-type-serviceable')}
+          />
+        </div>
+
         <Input
           label="Sort Order"
           type="number"

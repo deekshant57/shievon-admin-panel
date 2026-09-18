@@ -72,18 +72,12 @@ export default function ServicesPage() {
         limit: 20,
         page,
         shop_id: numericShopId as any,
+        type_id: type?.id ? Number(type.id) : undefined,
         search: searchTerm,
         status: '',
       } as any,
       { enabled: Boolean(numericShopId) },
     )
-
-  const filteredServiceOfferings = useMemo(() => {
-    if (!type?.id) return serviceOfferings
-    return (serviceOfferings ?? []).filter(
-      (s: any) => Number(s?.typeId) === Number(type.id),
-    )
-  }, [serviceOfferings, type?.id])
 
   useEffect(() => {
     if (hasRedirectedRef.current) return
@@ -195,7 +189,7 @@ export default function ServicesPage() {
         }
       >
         <ServiceList
-          serviceOfferings={filteredServiceOfferings}
+          serviceOfferings={serviceOfferings}
           paginatorInfo={paginatorInfo}
           onPagination={handlePagination}
           onOrder={() => {}}

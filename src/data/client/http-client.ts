@@ -134,6 +134,11 @@ export class HttpClient {
     return response.data.data;
   }
 
+  static async patch<T>(url: string, data: unknown): Promise<T> {
+    const response = await Axios.patch<ApiResponse<T>>(url, data);
+    return response.data.data;
+  }
+
   static async delete<T>(url: string): Promise<T> {
     const response = await Axios.delete<ApiResponse<T>>(url);
     return response.data.data;

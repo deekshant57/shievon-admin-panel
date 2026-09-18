@@ -112,6 +112,19 @@ export const useDeleteServiceCategoryMutation = () => {
   })
 }
 
+export const useToggleServiceCategoryServiceabilityMutation = () => {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  return useMutation(serviceCategoryClient.toggleServiceability, {
+    onSuccess: () => {
+      toast.success(t('common:successfully-updated'))
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(API_ENDPOINTS.SERVICE_CATEGORIES)
+    },
+  })
+}
+
 export const useServiceCategoryQuery = ({
   param,
   enabled = true,

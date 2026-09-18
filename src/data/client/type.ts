@@ -12,4 +12,7 @@ export const typeClient = {
       search: HttpClient.formatSearchParams({ name }),
     });
   },
+  toggleServiceability: ({ id, is_serviceable }: { id: string; is_serviceable: boolean }) => {
+    return HttpClient.put<Type>(`${API_ENDPOINTS.TYPES}/${id}`, { is_serviceable });
+  },
 };

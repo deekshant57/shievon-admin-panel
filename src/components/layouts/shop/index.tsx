@@ -1,8 +1,11 @@
 import AppShell from '@/components/layouts/app-shell';
 import SidebarItem from '@/components/layouts/navigation/sidebar-item';
+import Alert from '@/components/ui/alert';
 import { siteSettings } from '@/settings/site.settings';
 import { useSettingsQuery } from '@/data/settings';
+import { useShopQuery } from '@/data/shop';
 import { adminOnly, getAuthCredentials, hasAccess } from '@/utils/auth-utils';
+import { getServiceStatus } from '@/utils/serviceability';
 import { miniSidebarInitialValue, RESPONSIVE_WIDTH } from '@/utils/constants';
 import { cn } from '@/lib/utils';
 import { useAtom } from 'jotai';
@@ -134,9 +137,63 @@ const SideBarGroup = () => {
   );
 };
 
+/**
+ * Vendor shop banners for accepting-orders / operating hours.
+ *
+ * Inputs (only):
+ * - is_active → inactive shops show nothing here
+ * - is_serviceable → manual closed banner when false
+ * - settings.serviceSchedule + timezone → schedule warning when accepting is ON
+ *   but "now" (shop TZ, else local) is outside today's enabled window
+ *
+ * Do not use timings.open / timings.close — display-only.
+ */
+const ServiceabilityBanner = () => {
+  const { t } = useTranslation();
+  const {
+    query: { shop: shopSlug },
+  } = useRouter();
+
+  const { data: shopData } = useShopQuery(
+    { slug: shopSlug?.toString() ?? '' },
+    { enabled: !!shopSlug },
+  );
+
+  if (!shopData?.is_active) return null;
+
+  const status = getServiceStatus(
+    shopData.is_serviceable,
+    shopData.settings?.serviceSchedule,
+    shopData.timezone,
+  );
+
+  if (status === 'closed_manual') {
+    return (
+      <Alert
+        message={t('common:text-shop-not-serviceable-banner')}
+        variant="error"
+        className="mb-4"
+      />
+    );
+  }
+
+  if (status === 'closed_schedule') {
+    return (
+      <Alert
+        message={t('common:text-shop-closed-schedule-banner')}
+        variant="warning"
+        className="mb-4"
+      />
+    );
+  }
+
+  return null;
+};
+
 const ShopLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
     <AppShell sidebar={<SideBarGroup />} variant="shop">
+      <ServiceabilityBanner />
       {children}
     </AppShell>
   );

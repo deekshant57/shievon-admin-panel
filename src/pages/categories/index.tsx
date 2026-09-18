@@ -1,6 +1,9 @@
 import CategoryList from '@/components/category/category-list';
 import CategoriesSummaryStrip from '@/components/category/categories-summary-strip';
 import TypeFilter from '@/components/category/type-filter';
+import ServiceabilityFilter, {
+  ServiceabilityFilterOption,
+} from '@/components/filters/serviceability-filter';
 import Layout from '@/components/layouts/admin';
 import DataPanel from '@/components/page/data-panel';
 import Search from '@/components/common/search';
@@ -21,6 +24,7 @@ export default function Categories() {
   const { locale } = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [type, setType] = useState('');
+  const [isServiceable, setIsServiceable] = useState<boolean | undefined>();
   const [page, setPage] = useState(1);
   const { t } = useTranslation();
   const [orderBy, setOrder] = useState('created_at');
@@ -34,6 +38,7 @@ export default function Categories() {
     sortedBy,
     parent: 'all',
     language: locale,
+    is_serviceable: isServiceable,
   });
 
   if (loading) return <Loader text={t('common:text-loading')} />;
@@ -74,6 +79,15 @@ export default function Categories() {
               className="w-full shrink-0 lg:w-56"
               onTypeFilter={(selectedType: Type) => {
                 setType(selectedType?.slug ?? '');
+                setPage(1);
+              }}
+            />
+            <ServiceabilityFilter
+              className="w-full shrink-0 lg:w-52"
+              onServiceabilityFilter={(
+                option: ServiceabilityFilterOption | null,
+              ) => {
+                setIsServiceable(option?.value);
                 setPage(1);
               }}
             />

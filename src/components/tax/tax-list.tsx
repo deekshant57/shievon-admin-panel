@@ -1,4 +1,5 @@
 import { AlignType, Table } from '@/components/ui/table';
+import TruncatedId from '@/components/ui/truncated-id';
 import ActionButtons from '@/components/common/action-buttons';
 import { SortOrder, Tax } from '@/types';
 import { Routes } from '@/config/routes';
@@ -54,9 +55,9 @@ const TaxList = ({ taxes, onSort, onOrder }: IProps) => {
       dataIndex: 'id',
       key: 'id',
       align: alignLeft,
-      width: 130,
+      width: 120,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: (

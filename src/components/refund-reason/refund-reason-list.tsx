@@ -1,6 +1,7 @@
 import LanguageSwitcher from '@/components/ui/lang-action/action';
 import Pagination from '@/components/ui/pagination';
 import { AlignType, Table } from '@/components/ui/table';
+import TruncatedId from '@/components/ui/truncated-id';
 import TitleWithSort from '@/components/ui/title-with-sort';
 import { Routes } from '@/config/routes';
 import { MappedPaginatorInfo, RefundReason, SortOrder } from '@/types';
@@ -67,7 +68,7 @@ const RefundReasonList = ({
       align: alignLeft,
       width: 120,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: (

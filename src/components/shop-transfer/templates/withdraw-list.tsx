@@ -9,6 +9,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import TruncatedId from '@/components/ui/truncated-id';
 import { useTranslation } from 'next-i18next';
 
 type IProps = {
@@ -28,7 +29,7 @@ const WithdrawList = ({ data, url, permission }: IProps) => {
       key: 'shop_id',
       align: alignLeft as AlignType,
       width: 170,
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: t('table:table-item-amount'),

@@ -20,6 +20,7 @@ import { NoDataFound } from '@/components/icons/no-data-found';
 import { siteSettings } from '@/settings/site.settings';
 import { useRouter } from 'next/router';
 import TitleWithSort from '@/components/ui/title-with-sort';
+import TruncatedId from '@/components/ui/truncated-id';
 import QuestionCard from './question-card';
 import { LikeIcon } from '@/components/icons/like-icon';
 import { DislikeIcon } from '@/components/icons/dislike-icon';
@@ -87,7 +88,7 @@ const QuestionList = ({
       align: alignLeft,
       width: 120,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: t('table:table-item-image'),

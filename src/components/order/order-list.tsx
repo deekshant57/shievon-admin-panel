@@ -16,7 +16,7 @@ import { NoDataFound } from '@/components/icons/no-data-found';
 import { useRouter } from 'next/router';
 import StatusColor from '@/components/order/status-color';
 import Badge from '@/components/ui/badge/badge';
-import { getListFulfillmentBadge } from '@/utils/order-fulfillment';
+import { getListFulfillmentBadge, getFulfillmentModeBadge } from '@/utils/order-fulfillment';
 import { ChatIcon } from '@/components/icons/chat';
 import { useCreateConversations } from '@/data/conversations';
 import { SUPER_ADMIN } from '@/utils/constants';
@@ -203,6 +203,19 @@ const OrderList = ({
       render: (order_status: string) => (
         <Badge text={t(order_status)} color={StatusColor(order_status)} />
       ),
+    },
+    {
+      title: t('table:table-item-fulfillment-mode'),
+      dataIndex: 'fulfillment_mode',
+      key: 'fulfillment_mode',
+      align: 'center',
+      render: (_: string | undefined, order: Order) => {
+        const badge = getFulfillmentModeBadge(order);
+        if (!badge) {
+          return <span className="text-body/60">—</span>;
+        }
+        return <Badge text={t(badge.label)} color={badge.color} />;
+      },
     },
     {
       title: t('table:table-item-fulfillment'),

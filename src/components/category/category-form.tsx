@@ -36,6 +36,7 @@ import OpenAIButton from '@/components/openAI/openAI.button';
 import { join, split } from 'lodash';
 import { formatSlug } from '@/utils/use-slug';
 import StickyFooterPanel from '@/components/ui/sticky-footer-panel';
+import SwitchInput from '@/components/ui/switch-input';
 import { CategoryDetailSuggestion } from '@/components/category/category-ai-prompt';
 
 export const updatedIcons = categoryIcons.map((item: any) => {
@@ -130,6 +131,7 @@ function SelectCategories({
 type FormValues = {
   name: string;
   slug: string;
+  is_serviceable: boolean;
   details: string;
   parent: any;
   image: any;
@@ -141,6 +143,7 @@ const defaultValues = {
   image: [],
   name: '',
   slug: '',
+  is_serviceable: true,
   details: '',
   parent: '',
   icon: '',
@@ -176,6 +179,7 @@ export default function CreateOrUpdateCategoriesForm({
     defaultValues: initialValues
       ? {
           ...initialValues,
+          is_serviceable: initialValues?.is_serviceable !== false,
           icon: initialValues?.icon
             ? categoryIcons.find(
                 (singleIcon) => singleIcon.value === initialValues?.icon!,
@@ -246,6 +250,7 @@ export default function CreateOrUpdateCategoriesForm({
       language: router.locale,
       name: values.name,
       slug: resolvedSlug,
+      is_serviceable: values.is_serviceable,
       details: values.details,
       icon: values.icon?.value || '',
       // Backend expects parent_id (not parent object) for hierarchy linkage.
@@ -300,6 +305,15 @@ export default function CreateOrUpdateCategoriesForm({
           variant="outline"
           className="mb-5"
         />
+
+        <div className="mb-5">
+          <SwitchInput
+            name="is_serviceable"
+            control={control}
+            label={t('form:input-label-serviceable')}
+            toolTipText={t('form:input-tooltip-category-serviceable')}
+          />
+        </div>
 
         {isSlugEditable ? (
           <div className="relative mb-5">

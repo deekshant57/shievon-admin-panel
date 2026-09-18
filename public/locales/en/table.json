@@ -99,5 +99,7 @@
   "table-item-coupon-amount": "Coupon Amount",
   "table-item-minimum-cart-amount": "Minimum Cart Amount",
   "table-item-fulfillment": "Fulfillment",
-  "table-item-picked-quantity": "Picked / Ordered"
+  "table-item-fulfillment-mode": "Mode",
+  "table-item-picked-quantity": "Picked / Ordered",
+  "table-item-serviceable": "Serviceable"
 }

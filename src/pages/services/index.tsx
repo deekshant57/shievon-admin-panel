@@ -57,16 +57,10 @@ export default function ServicesPage() {
       limit: 20,
       page,
       shop_id: numericShopId as any,
+      type_id: type?.id ? Number(type.id) : undefined,
       search: searchTerm,
       status: '',
     })
-
-  const filteredServiceOfferings = useMemo(() => {
-    if (!type?.id) return serviceOfferings
-    return (serviceOfferings ?? []).filter(
-      (service) => Number(service?.typeId) === Number(type.id),
-    )
-  }, [serviceOfferings, type?.id])
 
   if (loading || loadingShops) return <Loader text={t('common:text-loading')} />
   if (error) return <ErrorMessage message={error.message} />
@@ -167,7 +161,7 @@ export default function ServicesPage() {
         }
       >
         <ServiceList
-          serviceOfferings={filteredServiceOfferings}
+          serviceOfferings={serviceOfferings}
           paginatorInfo={paginatorInfo}
           onPagination={handlePagination}
           onOrder={() => {}}

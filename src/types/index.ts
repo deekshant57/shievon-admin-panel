@@ -115,6 +115,7 @@ export enum OrderStatus {
   PENDING = 'order-pending',
   PROCESSING = 'order-processing',
   READY_FOR_PICKUP = 'order-ready-for-pickup',
+  READY_FOR_DELIVERY = 'order-ready-for-delivery',
   COMPLETED = 'order-completed',
   CANCELLED = 'order-cancelled',
   REFUNDED = 'order-refunded',
@@ -123,9 +124,64 @@ export enum OrderStatus {
   OUT_FOR_DELIVERY = 'order-out-for-delivery',
 }
 
+export type FulfillmentMode = 'pickup' | 'delivery';
+
+export type DeliveryShipmentStatus =
+  | 'pending_dispatch'
+  | 'pending'
+  | 'accepted'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
+  | 'aborted'
+  | 'fallback_pickup';
+
+export interface DeliveryPilot {
+  name: string;
+  phone: string;
+}
+
+export interface DeliveryPilotLocation {
+  latitude: number;
+  longitude: number;
+  updated_at: string;
+}
+
+export interface OrderDelivery {
+  id?: string;
+  order_id?: string;
+  shop_id?: number;
+  partner?: string;
+  external_order_id?: string;
+  shipment_status?: DeliveryShipmentStatus | string;
+  partner_status?: string | null;
+  vehicle_type_id?: string;
+  goods_types?: string[];
+  estimated_fare?: number | null;
+  actual_fare?: number | null;
+  distance_km?: number | null;
+  estimated_duration_min?: number | null;
+  pilot?: DeliveryPilot | null;
+  pilot_location?: DeliveryPilotLocation | null;
+  vehicle_number?: string | null;
+  dispatch_at?: string | null;
+  fallback_to_pickup_at?: string | null;
+  attempt_count?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type FulfillmentCapability = 'delivery' | 'appointment';
+
 export type ProductFulfillmentStatus =
   | 'preparing'
   | 'ready_for_pickup'
+  | 'ready_for_delivery'
+  | 'rider_requested'
+  | 'rider_assigned'
+  | 'out_for_delivery'
+  | 'delivered'
+  | 'delivery_failed'
   | 'picked_up'
   | 'unable_to_fulfill';
 
@@ -138,6 +194,7 @@ export type ServiceBookingStatus =
 export interface ProductFulfillmentLine {
   id: string;
   fulfillment_status?: string | null;
+  fulfillment_capability?: FulfillmentCapability | string | null;
   quantity?: number;
   picked_up_quantity?: number;
   ready_for_pickup_at?: string | null;
@@ -172,9 +229,11 @@ export interface OrderItem {
   quantity?: number;
   picked_up_quantity?: number;
   fulfillment_status?: string | null;
+  fulfillment_capability?: FulfillmentCapability | string | null;
   item_kind?: 'product' | 'service';
   name?: string;
   unit_price?: number;
+  product?: { id?: string; name?: string } | null;
 }
 
 export enum FlashSaleType {
@@ -370,6 +429,7 @@ export interface Type {
   name: string;
   icon: string;
   slug: string;
+  is_serviceable?: boolean;
   /** Display order in UI (ascending). */
   sort_order?: number;
   /** Type icon image (from attachment). Use image_id on create/update. */
@@ -392,6 +452,7 @@ export interface CreateTypePayload {
   slug?: string;
   icon?: string;
   language?: string;
+  is_serviceable?: boolean;
   /** Display order in UI (ascending). */
   sort_order?: number;
   settings?: TypeSettingsInput;
@@ -410,6 +471,7 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
+  is_serviceable?: boolean;
   translated_languages: string[];
   parent?: number;
   /** Present on list responses for cascader filtering */
@@ -527,12 +589,20 @@ export interface IImage {
   original: string;
 }
 
+export interface ServiceScheduleEntry {
+  day: number; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  enabled: boolean;
+  open: string; // "HH:mm" 24-hour format
+  close: string; // "HH:mm" 24-hour format
+}
+
 export interface Shop {
   id?: string;
   owner_id?: number;
   owner?: User;
   staffs?: User[];
   is_active?: boolean;
+  is_serviceable?: boolean;
   orders_count?: number;
   products_count?: number;
   balance?: Balance;
@@ -544,6 +614,7 @@ export interface Shop {
   address?: UserAddress;
   settings?: ShopSettings;
   timings?: { open?: string; close?: string };
+  timezone?: string;
   created_at?: string;
   updated_at?: string;
   ownership_history?: {
@@ -562,18 +633,134 @@ export interface Balance {
   payment_info?: PaymentInfo;
 }
 
+export type PaymentInfoVerificationStatus =
+  | 'unverified'
+  | 'pending'
+  | 'verified'
+  | 'failed';
+
 export interface PaymentInfo {
-  account: number;
-  name: string;
-  email: string;
-  bank: string;
+  account?: string | number;
+  name?: string;
+  email?: string;
+  bank?: string;
+  ifsc?: string;
+  upi?: string;
+  verification_status?: PaymentInfoVerificationStatus;
 }
 
 export interface PaymentInfoInput {
-  account: number;
-  name: string;
-  email: string;
-  bank: string;
+  account?: string | number;
+  name?: string;
+  email?: string;
+  bank?: string;
+  ifsc?: string;
+  upi?: string;
+}
+
+export interface VendorSettlementSummary {
+  shop_id?: number | string;
+  received?: number;
+  total_earnings?: number;
+  pending?: number;
+  todays_collection?: number;
+  total_collection?: number;
+  withdrawn_amount?: number;
+  current_balance?: number;
+  settlement_eta_message?: string;
+  payment_info?: PaymentInfo;
+  on_hold?: boolean;
+}
+
+export type SettlementBlockReason =
+  | 'BELOW_MINIMUM'
+  | 'BANK_INCOMPLETE'
+  | 'BANK_UNVERIFIED'
+  | 'ALREADY_QUEUED'
+  | 'ON_HOLD'
+  | 'NO_PENDING';
+
+export interface SettlementDeskBankInfo {
+  verification_status?: PaymentInfoVerificationStatus;
+  incomplete?: boolean;
+  name?: string;
+  bank?: string;
+  ifsc?: string;
+  masked_account?: string;
+}
+
+export interface SettlementDeskOpenPayout {
+  id: string;
+  amount: number;
+  status?: string;
+  status_key?: string;
+}
+
+export interface SettlementDeskRow {
+  shop_id: number | string;
+  shop_name: string;
+  shop_slug: string;
+  pending: number;
+  received?: number;
+  total_earnings?: number;
+  todays_collection?: number;
+  total_collection?: number;
+  settlement_eta_message?: string;
+  bank?: SettlementDeskBankInfo | null;
+  open_payout?: SettlementDeskOpenPayout | null;
+  on_hold?: boolean;
+  can_queue: boolean;
+  block_reason?: SettlementBlockReason | null;
+  min_payout_amount?: number;
+}
+
+export interface SettlementDeskMeta {
+  ready_count?: number;
+  attention_count?: number;
+  queued_count?: number;
+  total_pending_ready?: number;
+}
+
+export interface SettlementDeskQueryOptions {
+  tab?: 'ready' | 'attention' | 'all';
+  search?: string;
+  page?: number;
+  limit?: number;
+  min_pending?: number;
+}
+
+export interface SettlementDeskPaginator {
+  data: SettlementDeskRow[];
+  meta?: SettlementDeskMeta;
+  // loose paginator fields from API
+  current_page?: number;
+  last_page?: number;
+  per_page?: number;
+  total?: number;
+  paginator?: Record<string, unknown>;
+}
+
+export interface BatchWithdrawItemInput {
+  shop_id: number;
+  amount: number;
+  note?: string | null;
+}
+
+export interface BatchWithdrawFailedItem {
+  shop_id?: number | string;
+  id?: string;
+  code?: string;
+  message?: string;
+}
+
+export interface BatchQueueWithdrawsResponse {
+  created: Withdraw[];
+  failed: BatchWithdrawFailedItem[];
+}
+
+export interface BatchMarkPaidWithdrawsResponse {
+  updated: Withdraw[];
+  failed: BatchWithdrawFailedItem[];
 }
 
 export interface BalanceInput {
@@ -594,6 +781,7 @@ export interface ShopSettings {
   location: Location;
   website: string;
   timings?: { open?: string; close?: string };
+  serviceSchedule?: ServiceScheduleEntry[];
   notifications: {
     email: string;
     enable: boolean;
@@ -907,6 +1095,8 @@ export interface Order {
   closed_at?: string | null;
   can_show_ready_for_pickup?: boolean;
   customer_status_label?: string;
+  fulfillment_mode?: FulfillmentMode;
+  deliveries?: OrderDelivery[];
   product_fulfillment?: ProductFulfillment;
   service_fulfillment?: ServiceFulfillment | null;
   items?: OrderItem[];
@@ -1468,6 +1658,7 @@ export interface CreateCategoryInput {
   name: string;
   slug?: string;
   language?: string;
+  is_serviceable?: boolean;
   type_id?: number;
   parent_id?: number | null;
   details?: string;
@@ -1476,17 +1667,23 @@ export interface CreateCategoryInput {
   icon?: string;
 }
 
+export type WithdrawBalanceKind = 'product' | 'service';
+
 export interface CreateWithdrawInput {
   amount: number;
   shop_id: number;
   payment_method?: string;
   details?: string;
   note?: string;
+  balance_kind?: WithdrawBalanceKind;
 }
 
 export interface ApproveWithdrawInput {
   id: string;
-  status: WithdrawStatus;
+  /** Optional UTR / transfer reference for Mark paid */
+  note?: string;
+  /** @deprecated API Mark paid ignores status transitions other than approve */
+  status?: WithdrawStatus | string;
 }
 
 // -> TODO: Simplify this
@@ -1599,12 +1796,16 @@ export interface CreateManufacturerInput {
 export interface Withdraw {
   id?: string;
   amount?: number;
-  status?: WithdrawStatus;
+  status?: WithdrawStatus | string;
+  /** Display-friendly status from API (e.g. Pending / Approved) */
+  status_key?: string;
   shop_id?: number;
   shop?: Shop;
   payment_method?: string;
   details?: string;
   note?: string;
+  balance_kind?: WithdrawBalanceKind;
+  settlement_eta_message?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -2168,6 +2369,7 @@ export interface ShopSettingsInput {
   contact?: string;
   location?: LocationInput;
   website?: string;
+  serviceSchedule?: ServiceScheduleEntry[];
   isShopUnderMaintenance?: string;
   shopMaintenance: shopMaintenanceInput;
 }
@@ -2182,6 +2384,7 @@ export interface ShopInput {
   cover_image_id?: number | null;
   /** Sent on update; attachment id or null. */
   logo_id?: number | null;
+  is_serviceable?: boolean;
   address?: UserAddressInput;
   settings?: ShopSettingsInput;
   timings?: { open: string; close: string };
@@ -2358,6 +2561,8 @@ export interface CategoryQueryOptions extends QueryOptions {
   self: string;
   /** Filter by type id (backend GET /categories); when set, backend can filter by type_id directly */
   type_id?: number;
+  /** Filter by serviceability (backend GET /categories) */
+  is_serviceable?: boolean;
 }
 
 export interface ConversationQueryOptions extends QueryOptions {
@@ -2516,12 +2721,15 @@ export interface CreateServiceOfferingInput {
 }
 
 export interface ServiceOfferingQueryOptions extends QueryOptions {
-  shop_id: number | string
+  shop_id?: number | string
+  type_id?: number | string
   service_location_id?: number
   service_category_id?: number
   offering_type_id?: number
   status?: string
   search?: string
+  orderBy?: string
+  sortedBy?: string
 }
 
 export interface ServiceOfferingPaginator
@@ -2536,6 +2744,7 @@ export interface ServiceCategory {
   level?: number
   sortOrder?: number
   isActive?: boolean
+  isServiceable?: boolean
   createdAt?: string
   updatedAt?: string
   parent?: ServiceCategory | null
@@ -2548,6 +2757,7 @@ export interface CreateServiceCategoryInput {
   parent_id?: number | null
   sort_order?: number
   is_active?: boolean
+  is_serviceable?: boolean
 }
 
 export interface ServiceCategoryQueryOptions {
@@ -2555,6 +2765,10 @@ export interface ServiceCategoryQueryOptions {
   page?: number
   parent_id?: number
   search?: string
+  /** Filter by serviceability (backend GET /service-categories) */
+  is_serviceable?: boolean
+  /** Filter by active flag (backend GET /service-categories) */
+  is_active?: boolean
 }
 
 /** Nested list payload from GET /service-categories (before normalizing to PaginatorInfo) */

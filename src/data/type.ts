@@ -116,6 +116,19 @@ export const useUpdateServiceTypeMutation = () => {
   });
 };
 
+export const useToggleTypeServiceabilityMutation = () => {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  return useMutation(typeClient.toggleServiceability, {
+    onSuccess: () => {
+      toast.success(t('common:successfully-updated'));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(API_ENDPOINTS.TYPES);
+    },
+  });
+};
+
 export const useTypeQuery = ({
   slug,
   language,

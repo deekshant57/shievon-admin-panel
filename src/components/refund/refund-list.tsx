@@ -4,6 +4,7 @@ import { SortOrder } from '@/types';
 import { useTranslation } from 'next-i18next';
 import { useState } from 'react';
 import TitleWithSort from '@/components/ui/title-with-sort';
+import TruncatedId from '@/components/ui/truncated-id';
 import Pagination from '@/components/ui/pagination';
 import { useRouter } from 'next/router';
 import dayjs from 'dayjs';
@@ -74,7 +75,7 @@ const RefundList = ({ refunds, onSort, onOrder, onPagination }: IProps) => {
       align: alignLeft,
       width: 120,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: t('common:text-reason'),

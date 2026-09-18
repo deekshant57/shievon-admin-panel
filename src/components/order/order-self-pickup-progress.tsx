@@ -2,7 +2,7 @@ import ProgressBox from '@/components/ui/progress-box/progress-box';
 import { Order } from '@/types';
 import {
   getSelfPickupProgressIndex,
-  SELF_PICKUP_PROGRESS_STEPS,
+  getSelfPickupProgressSteps,
 } from '@/utils/order-fulfillment';
 
 type OrderSelfPickupProgressProps = {
@@ -12,14 +12,17 @@ type OrderSelfPickupProgressProps = {
 export default function OrderSelfPickupProgress({
   order,
 }: OrderSelfPickupProgressProps) {
+  const steps = getSelfPickupProgressSteps(order);
   const filledIndex = getSelfPickupProgressIndex(order);
-  const currentStep = SELF_PICKUP_PROGRESS_STEPS[filledIndex];
+  const currentStep = steps[filledIndex];
 
   return (
-    <ProgressBox
-      data={SELF_PICKUP_PROGRESS_STEPS}
-      status={currentStep?.status ?? 'confirmed'}
-      filledIndex={filledIndex}
-    />
+    <div className="w-full min-w-0">
+      <ProgressBox
+        data={steps}
+        status={currentStep?.status ?? 'confirmed'}
+        filledIndex={filledIndex}
+      />
+    </div>
   );
 }

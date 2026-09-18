@@ -199,9 +199,10 @@ export function getProductDefaultValues(
     type: normalizedType,
     author: normalizedAuthor,
     video: normalizedVideo,
-    // Category cascader uses primary_category (and deeper levels); set leaf from first category so it pre-fills
-    primary_category:
-      normalizedCategories.length > 0 ? normalizedCategories[0] : null,
+    // Cascader resolves leaf → L1..L4 after the category tree loads.
+    // Do NOT put the leaf into primary_category (that shows leaf name in the
+    // top select whose options are only Men/Women/Kids).
+    primary_category: null,
     secondary_category: null,
     tertiary_category: null,
     quaternary_category: null,

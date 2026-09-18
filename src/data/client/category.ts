@@ -13,6 +13,9 @@ export const categoryClient = {
   ...crudFactory<Category, QueryOptions, CreateCategoryInput>(
     API_ENDPOINTS.CATEGORIES
   ),
+  toggleServiceability: ({ id, is_serviceable }: { id: string; is_serviceable: boolean }) => {
+    return HttpClient.put<Category>(`${API_ENDPOINTS.CATEGORIES}/${id}`, { is_serviceable });
+  },
   paginated: async ({
     type,
     name,

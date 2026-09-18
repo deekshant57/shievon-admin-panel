@@ -6,6 +6,7 @@ import LanguageSwitcher from '@/components/ui/lang-action/action';
 import Pagination from '@/components/ui/pagination';
 import { Table } from '@/components/ui/table';
 import TitleWithSort from '@/components/ui/title-with-sort';
+import TruncatedId from '@/components/ui/truncated-id';
 import { Routes } from '@/config/routes';
 import { MappedPaginatorInfo, SortOrder, StoreNotice } from '@/types';
 import { useIsRTL } from '@/utils/locals';
@@ -86,7 +87,7 @@ const StoreNoticeList = ({
       align: alignLeft,
       width: 100,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: (

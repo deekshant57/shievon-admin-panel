@@ -1,3 +1,4 @@
+import TruncatedId from '@/components/ui/truncated-id'
 import Pagination from '@/components/ui/pagination'
 import Image from 'next/image'
 import { Table } from '@/components/ui/table'
@@ -92,8 +93,8 @@ const ServiceList = ({
       dataIndex: 'id',
       key: 'id',
       align: alignLeft,
-      width: 180,
-      render: (id: string) => `#${t('table:table-item-id')}: ${id}`,
+      width: 120,
+      render: (id: string) => <TruncatedId id={id} />,
     },
     {
       title: (
@@ -125,13 +126,20 @@ const ServiceList = ({
               sizes="(max-width: 768px) 100vw"
             />
           </div>
-          <div className="flex flex-col">
-            <span className="truncate font-medium">{name}</span>
-            <span className="truncate whitespace-nowrap pt-1 pb-0.5 text-[13px] text-body/80">
-              {(record as any)?.type?.name ?? ''}
-            </span>
-          </div>
+          <span className="truncate font-medium">{name}</span>
         </div>
+      ),
+    },
+    {
+      title: t('table:table-item-group'),
+      dataIndex: 'type',
+      key: 'type',
+      align: alignLeft,
+      width: 140,
+      render: (type: any) => (
+        <span className="truncate whitespace-nowrap" title={type?.name}>
+          {type?.name ?? '-'}
+        </span>
       ),
     },
     {
@@ -211,7 +219,7 @@ const ServiceList = ({
           )}
           data={serviceOfferings}
           rowKey="id"
-          scroll={{ x: 900 }}
+          scroll={{ x: 1050 }}
         />
 
       {!!paginatorInfo?.total && (

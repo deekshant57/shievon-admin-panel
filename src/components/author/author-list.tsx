@@ -4,6 +4,7 @@ import { useTranslation } from 'next-i18next';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import TitleWithSort from '@/components/ui/title-with-sort';
+import TruncatedId from '@/components/ui/truncated-id';
 import { Switch } from '@headlessui/react';
 import { Attachment, SortOrder } from '@/types';
 import { useUpdateAuthorMutationInList } from '@/data/author';
@@ -72,7 +73,7 @@ const AuthorList = ({
       align: alignLeft,
       width: 150,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: (

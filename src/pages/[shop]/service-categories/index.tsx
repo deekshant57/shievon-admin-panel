@@ -1,6 +1,9 @@
 import ShopLayout from '@/components/layouts/shop'
 import DataPanel from '@/components/page/data-panel'
 import Search from '@/components/common/search'
+import ServiceabilityFilter, {
+  ServiceabilityFilterOption,
+} from '@/components/filters/serviceability-filter'
 import LinkActionButton from '@/components/ui/link-action-button'
 import ErrorMessage from '@/components/ui/error-message'
 import Loader from '@/components/ui/loader/loader'
@@ -21,6 +24,7 @@ export default function ShopServiceCategoriesPage() {
   const { locale } = router
 
   const [searchTerm, setSearchTerm] = useState('')
+  const [isServiceable, setIsServiceable] = useState<boolean | undefined>()
   const [page, setPage] = useState(1)
 
   const { serviceCategories, paginatorInfo, loading, error } =
@@ -28,6 +32,7 @@ export default function ShopServiceCategoriesPage() {
       limit: 20,
       page,
       search: searchTerm,
+      is_serviceable: isServiceable,
     })
 
   if (loading) return <Loader text={t('common:text-loading')} />
@@ -60,6 +65,15 @@ export default function ShopServiceCategoriesPage() {
               variant="hybrid"
               size="sm"
               className="w-full min-w-0 sm:flex-1"
+            />
+            <ServiceabilityFilter
+              className="w-full shrink-0 sm:w-52"
+              onServiceabilityFilter={(
+                option: ServiceabilityFilterOption | null,
+              ) => {
+                setIsServiceable(option?.value)
+                setPage(1)
+              }}
             />
             {locale === Config.defaultLanguage && (
               <LinkActionButton

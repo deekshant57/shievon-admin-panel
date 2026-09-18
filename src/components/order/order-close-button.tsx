@@ -46,7 +46,7 @@ export default function OrderCloseButton({ order }: OrderCloseButtonProps) {
             : t('common:text-close-order-not-ready')}
       </p>
       {!canClose && disabledReason ? (
-        <Tooltip content={disabledReason}>
+        <Tooltip content={t(`common:${disabledReason}`)}>
           <span className="inline-flex sm:ms-auto">{button}</span>
         </Tooltip>
       ) : (

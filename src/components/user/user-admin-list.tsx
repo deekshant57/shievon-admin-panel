@@ -16,6 +16,7 @@ import { useIsRTL } from '@/utils/locals';
 import { useState } from 'react';
 import { NoDataFound } from '@/components/icons/no-data-found';
 import TitleWithSort from '@/components/ui/title-with-sort';
+import TruncatedId from '@/components/ui/truncated-id';
 import Badge from '../ui/badge/badge';
 import Avatar from '../common/avatar';
 
@@ -78,7 +79,7 @@ const AdminsList = ({
       align: alignLeft,
       width: 150,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: (

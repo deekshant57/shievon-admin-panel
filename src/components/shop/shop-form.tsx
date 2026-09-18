@@ -13,9 +13,15 @@ import { Config } from '@/config';
 import { useSettingsQuery } from '@/data/settings';
 import { useCreateShopMutation, useUpdateShopMutation } from '@/data/shop';
 import {
+  useUpdateSettlementPaymentInfoMutation,
+  useVerifySettlementPaymentInfoMutation,
+  useVendorSettlementQuery,
+} from '@/data/vendor-settlement';
+import {
   BalanceInput,
   IImage,
   ItemProps,
+  ServiceScheduleEntry,
   Shop,
   ShopSettings,
   ShopSocialInput,
@@ -41,10 +47,14 @@ import { formatSlug } from '@/utils/use-slug';
 import StickyFooterPanel from '@/components/ui/sticky-footer-panel';
 import { siteSettings, socialIcon } from '@/settings/site.settings';
 import { ShopDescriptionSuggestion } from '@/components/shop/shop-ai-prompt';
+import ServiceScheduleForm from '@/components/shop/service-schedule-form';
 import PhoneNumberInput from '@/components/ui/phone-input';
 import DatePicker from '@/components/ui/date-picker';
+import { getDefaultSchedule } from '@/utils/serviceability';
 import { addDays, addMinutes, isSameDay, isToday } from 'date-fns';
-
+import Badge from '@/components/ui/badge/badge';
+import Button from '@/components/ui/button';
+import { resolveBankVerificationStatus } from '@/utils/bank-verification';
 // const socialIcon = [
 //   {
 //     value: 'FacebookIcon',
@@ -95,7 +105,7 @@ type FormValues = {
   logo: any;
   balance: BalanceInput;
   address: UserAddressInput;
-  settings: ShopSettings;
+  settings: ShopSettings & { serviceSchedule?: ServiceScheduleEntry[] };
   timings: { open: string; close: string };
   isShopUnderMaintenance?: boolean;
 };
@@ -130,8 +140,17 @@ const resolveAttachmentIdForUpdate = (
 };
 
 const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
+  const { t } = useTranslation();
   const { mutate: createShop, isLoading: creating } = useCreateShopMutation();
   const { mutate: updateShop, isLoading: updating } = useUpdateShopMutation();
+  const { mutate: updatePaymentInfo, isLoading: savingPayment } =
+    useUpdateSettlementPaymentInfoMutation();
+  const { mutate: verifyPaymentInfo, isLoading: verifying } =
+    useVerifySettlementPaymentInfoMutation();
+  const { settlement } = useVendorSettlementQuery(initialValues?.id, {
+    enabled: Boolean(initialValues?.id),
+    retry: false,
+  });
   // const { permissions } = getAuthCredentials();
   // let permission = hasAccess(adminAndOwnerOnly, permissions);
   const { permissions } = getAuthCredentials();
@@ -156,8 +175,22 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
               open: initialValues?.timings?.open ?? '09:00',
               close: initialValues?.timings?.close ?? '18:00',
             },
+            balance: {
+              id: initialValues?.balance?.id,
+              payment_info: {
+                name: initialValues?.balance?.payment_info?.name ?? '',
+                email: initialValues?.balance?.payment_info?.email ?? '',
+                bank: initialValues?.balance?.payment_info?.bank ?? '',
+                account: initialValues?.balance?.payment_info?.account ?? '',
+                ifsc: initialValues?.balance?.payment_info?.ifsc ?? '',
+              },
+            },
             settings: {
               ...initialValues?.settings,
+              serviceSchedule:
+                initialValues?.settings?.serviceSchedule?.length
+                  ? initialValues.settings.serviceSchedule
+                  : getDefaultSchedule(),
               socials: initialValues?.settings?.socials
                 ? initialValues?.settings?.socials.map((social: any) => ({
                     icon: updatedIcons?.find(
@@ -195,6 +228,9 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
       : {
           defaultValues: {
             timings: { open: '09:00', close: '18:00' },
+            settings: {
+              serviceSchedule: getDefaultSchedule(),
+            } as any,
             address: {
               country: '',
               city: '',
@@ -204,9 +240,22 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
             },
           },
         }),
-    // @ts-ignore
-    resolver: yupResolver(shopValidationSchema),
+    resolver: yupResolver(shopValidationSchema) as any,
   });
+
+  // Prefer settlement payment_info (includes IFSC + verification) when available
+  useEffect(() => {
+    const payment = settlement?.payment_info;
+    if (!payment) return;
+    if (payment.name != null) setValue('balance.payment_info.name', payment.name);
+    if (payment.email != null)
+      setValue('balance.payment_info.email', payment.email);
+    if (payment.bank != null) setValue('balance.payment_info.bank', payment.bank);
+    if (payment.account != null)
+      setValue('balance.payment_info.account', String(payment.account));
+    if (payment.ifsc != null) setValue('balance.payment_info.ifsc', payment.ifsc);
+  }, [settlement?.payment_info, setValue]);
+
   const router = useRouter();
 
   const { openModal } = useModalAction();
@@ -245,8 +294,6 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
   const isMaintenanceMode = watch('settings.isShopUnderMaintenance');
 
   const today = new Date();
-
-  const { t } = useTranslation();
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -331,6 +378,7 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
         ...(normalizedLat !== undefined ? { lat: normalizedLat } : {}),
         ...(normalizedLng !== undefined ? { lng: normalizedLng } : {}),
       },
+      serviceSchedule: values?.settings?.serviceSchedule,
       socials: values?.settings?.socials
         ? values?.settings?.socials?.map((social: any) => ({
             icon: social?.icon?.value,
@@ -339,17 +387,24 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
         : [],
       shopMaintenance: values?.settings?.shopMaintenance,
     };
+    if (initialValues && values?.settings?.serviceSchedule) {
+      console.log(
+        `[ServiceSchedule] Shop ${initialValues.id} schedule updated at ${new Date().toISOString()}`,
+        JSON.stringify(values.settings.serviceSchedule),
+      );
+    }
     if (initialValues) {
       const { cover_image, logo, address: _address, settings: _settings, ...restValues } = values;
+      const paymentInfo = values.balance?.payment_info;
       const payload = {
         id: initialValues?.id as string,
         ...restValues,
         address: normalizedAddress,
         settings,
         timings: values.timings,
+        // Keep balance id for BC; settlement payment-info is source of truth for bank fields
         balance: {
           id: initialValues.balance?.id,
-          ...values.balance,
         },
       } as any;
 
@@ -367,6 +422,20 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
       }
 
       updateShop(payload);
+
+      if (paymentInfo && initialValues.id) {
+        updatePaymentInfo({
+          shopId: initialValues.id,
+          name: paymentInfo.name,
+          email: paymentInfo.email,
+          bank: paymentInfo.bank,
+          account:
+            paymentInfo.account != null
+              ? String(paymentInfo.account)
+              : undefined,
+          ifsc: paymentInfo.ifsc,
+        });
+      }
     } else {
       const { cover_image, logo, address: _address, settings: _settings, ...restValues } = values;
       createShop({
@@ -500,29 +569,124 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
         title={t('form:shop-payment-info')}
         details={t('form:payment-info-helper-text')}
       >
-        <Input
-          label={t('form:input-label-account-holder-name')}
-          {...register('balance.payment_info.name')}
-          variant="outline"
-          className="mb-5"
-        />
-        <Input
-          label={t('form:input-label-account-holder-email')}
-          {...register('balance.payment_info.email')}
-          variant="outline"
-          className="mb-5"
-        />
-        <Input
-          label={t('form:input-label-bank-name')}
-          {...register('balance.payment_info.bank')}
-          variant="outline"
-          className="mb-5"
-        />
-        <Input
-          label={t('form:input-label-account-number')}
-          {...register('balance.payment_info.account')}
-          variant="outline"
-        />
+        {(() => {
+          const verificationStatus = resolveBankVerificationStatus({
+            settlement,
+            shopPaymentInfo: initialValues?.balance?.payment_info,
+          });
+
+          if (typeof window !== 'undefined') {
+            // eslint-disable-next-line no-console
+            console.info('[bank-verify] edit-shop status', {
+              shopId: initialValues?.id,
+              fromSettlement:
+                settlement?.payment_info?.verification_status ?? null,
+              fromShopBalance:
+                initialValues?.balance?.payment_info?.verification_status ??
+                null,
+              resolved: verificationStatus,
+              hasSettlement: Boolean(settlement),
+            });
+          }
+
+          const paymentWatch = watch('balance.payment_info');
+          const canVerify = Boolean(
+            initialValues?.id &&
+              verificationStatus !== 'verified' &&
+              paymentWatch?.name?.toString().trim() &&
+              paymentWatch?.bank?.toString().trim() &&
+              paymentWatch?.account != null &&
+              String(paymentWatch.account).trim() &&
+              paymentWatch?.ifsc?.toString().trim(),
+          );
+          const statusLabel =
+            verificationStatus === 'verified'
+              ? t('common:text-bank-verified') || 'Verified'
+              : verificationStatus === 'pending'
+                ? t('common:text-bank-pending') || 'Pending'
+                : verificationStatus === 'failed'
+                  ? t('common:text-bank-failed') || 'Failed'
+                  : t('common:text-bank-unverified') || 'Unverified';
+          const statusColor =
+            verificationStatus === 'verified'
+              ? 'bg-green-500 bg-opacity-10 text-green-600'
+              : verificationStatus === 'failed'
+                ? 'bg-red-500 bg-opacity-10 text-red-500'
+                : 'bg-yellow-500 bg-opacity-10 text-yellow-700';
+
+          return (
+            <>
+              {initialValues?.id ? (
+                <div className="mb-5 flex flex-wrap items-center gap-3">
+                  <Badge text={statusLabel} color={statusColor} />
+                  {verificationStatus !== 'verified' ? (
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="small"
+                        loading={verifying}
+                        disabled={!canVerify || verifying || savingPayment}
+                        onClick={() => {
+                          if (!initialValues?.id) return;
+                          verifyPaymentInfo(initialValues.id);
+                        }}
+                      >
+                        {t('form:button-label-verify-bank') || 'Verify bank'}
+                      </Button>
+                      {!canVerify ? (
+                        <span className="text-xs text-muted-foreground">
+                          {t('form:text-verify-bank-hint') ||
+                            'Fill name, bank, account and IFSC, then save before verifying.'}
+                        </span>
+                      ) : null}
+                    </>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">
+                      {t('form:text-bank-already-verified') ||
+                        'Bank account verified. No further action needed.'}
+                    </span>
+                  )}
+                </div>
+              ) : null}
+              <Input
+                label={t('form:input-label-account-holder-name')}
+                {...register('balance.payment_info.name')}
+                variant="outline"
+                className="mb-5"
+                error={t(errors.balance?.payment_info?.name?.message!)}
+              />
+              <Input
+                label={t('form:input-label-account-holder-email')}
+                {...register('balance.payment_info.email')}
+                variant="outline"
+                className="mb-5"
+                error={t(errors.balance?.payment_info?.email?.message!)}
+              />
+              <Input
+                label={t('form:input-label-bank-name')}
+                {...register('balance.payment_info.bank')}
+                variant="outline"
+                className="mb-5"
+                error={t(errors.balance?.payment_info?.bank?.message!)}
+              />
+              <Input
+                label={t('form:input-label-account-number')}
+                {...register('balance.payment_info.account')}
+                variant="outline"
+                className="mb-5"
+                error={t(errors.balance?.payment_info?.account?.message!)}
+              />
+              <Input
+                label={t('form:input-label-ifsc') || 'IFSC'}
+                {...register('balance.payment_info.ifsc')}
+                variant="outline"
+                className="mb-5"
+                error={t(errors.balance?.payment_info?.ifsc?.message!)}
+              />
+            </>
+          );
+        })()}
       </FormSection>
 
       <FormSection
@@ -701,6 +865,16 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
             )}
           </div>
         </div>
+      </FormSection>
+
+      <FormSection
+        title={t('form:operating-hours-title')}
+        details={t('form:operating-hours-help-text')}
+      >
+        <ServiceScheduleForm
+          control={control}
+          setValue={setValue}
+        />
       </FormSection>
 
       <FormSection
@@ -912,8 +1086,8 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
             type="submit"
             variant="primary"
             size="sm"
-            loading={creating || updating}
-            disabled={creating || updating}
+            loading={creating || updating || savingPayment}
+            disabled={creating || updating || savingPayment}
             className="w-full sm:w-auto"
           >
             {initialValues

@@ -16,6 +16,8 @@ export const serviceCategoryClient = {
         search: params.search,
         page: params.page,
         limit: params.limit,
+        is_serviceable: params.is_serviceable,
+        is_active: params.is_active,
       },
     )
   },
@@ -47,6 +49,13 @@ export const serviceCategoryClient = {
   delete: ({ id }: { id: number }) => {
     return HttpClient.delete<ServiceCategory>(
       `${API_ENDPOINTS.SERVICE_CATEGORIES}/${id}`,
+    )
+  },
+
+  toggleServiceability: ({ id, is_serviceable }: { id: number; is_serviceable: boolean }) => {
+    return HttpClient.put<ServiceCategory>(
+      `${API_ENDPOINTS.SERVICE_CATEGORIES}/${id}`,
+      { is_serviceable },
     )
   },
 }

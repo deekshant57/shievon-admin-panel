@@ -1,4 +1,5 @@
 import ActionButtons from '@/components/common/action-buttons';
+import TruncatedId from '@/components/ui/truncated-id';
 import { NoDataFound } from '@/components/icons/no-data-found';
 import LanguageSwitcher from '@/components/ui/lang-action/action';
 import Pagination from '@/components/ui/pagination';
@@ -81,7 +82,7 @@ const FlashSaleLists = ({
       align: alignLeft,
       width: 120,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: (

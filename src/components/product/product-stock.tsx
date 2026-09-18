@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { Table } from '@/components/ui/table';
+import TruncatedId from '@/components/ui/truncated-id';
 import usePrice from '@/utils/use-price';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import utc from 'dayjs/plugin/utc';
@@ -42,8 +43,8 @@ const LowStockProduct = ({
       dataIndex: 'id',
       key: 'id',
       align: alignLeft,
-      width: 140,
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      width: 120,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: t('table:table-item-product'),

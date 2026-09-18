@@ -18,15 +18,19 @@ export const serviceOfferingClient = {
 
   paginated: ({
     shop_id,
+    type_id,
     search,
     service_category_id,
     service_location_id,
     offering_type_id,
     status,
+    orderBy,
+    sortedBy,
     ...params
   }: Partial<ServiceOfferingQueryOptions>) => {
     return HttpClient.get<ServiceOfferingPaginator>(API_ENDPOINTS.SERVICE_OFFERINGS, {
       shop_id,
+      type_id,
       page: params.page,
       limit: params.limit,
       search,
@@ -34,6 +38,8 @@ export const serviceOfferingClient = {
       service_location_id,
       offering_type_id,
       status,
+      orderBy,
+      sortedBy,
     })
   },
 

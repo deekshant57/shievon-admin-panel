@@ -4,7 +4,13 @@ import { Order } from '@/types';
 import cn from 'classnames';
 import StatusColor from '@/components/order/status-color';
 import Badge from '@/components/ui/badge/badge';
-import { hasFulfillmentFlow } from '@/utils/order-fulfillment';
+import {
+  hasFulfillmentFlow,
+  getFulfillmentModeBadge,
+  isAppointmentOnlyOrder,
+  isAwaitingPayment,
+  isDeliveryOrder,
+} from '@/utils/order-fulfillment';
 
 interface OrderViewHeaderProps {
   order: Order;
@@ -30,8 +36,21 @@ export default function OrderViewHeader({
 }: OrderViewHeaderProps) {
   const { t } = useTranslation('common');
   const showFulfillmentMeta = hasFulfillmentFlow(order);
-  const pickupAvailableAt = formatPickupDate(order.pickup_available_at);
-  const preferredPickupTime = formatPickupDate(order.preferred_pickup_time);
+  const fulfillmentModeBadge = getFulfillmentModeBadge(order);
+  const showPickupTiming =
+    showFulfillmentMeta &&
+    !isDeliveryOrder(order) &&
+    !isAppointmentOnlyOrder(order);
+  const pickupAvailableAt = showPickupTiming
+    ? formatPickupDate(order.pickup_available_at)
+    : null;
+  const preferredPickupTime = showPickupTiming
+    ? formatPickupDate(order.preferred_pickup_time)
+    : null;
+  // Prefer BE label; unpaid fallback only if label missing during rollout.
+  const customerStatusLabel =
+    order.customer_status_label ||
+    (isAwaitingPayment(order) ? t('payment-pending') : null);
 
   return (
     <div className={cn('rounded-t-xl bg-gray-50', wrapperClassName)}>
@@ -44,6 +63,13 @@ export default function OrderViewHeader({
             <div className="text-2xl font-bold tracking-tight text-heading">
               {order.tracking_number}
             </div>
+            {fulfillmentModeBadge ? (
+              <Badge
+                text={t(fulfillmentModeBadge.label)}
+                color={fulfillmentModeBadge.color}
+                className="mt-2"
+              />
+            ) : null}
           </div>
         ) : null}
 
@@ -71,18 +97,18 @@ export default function OrderViewHeader({
               color={StatusColor(order?.payment_status)}
             />
           </div>
-          {order.customer_status_label ? (
+          {customerStatusLabel ? (
             <div>
               <span className="mb-2 block text-sm font-semibold text-body lg:mb-0 lg:inline-block lg:ltr:mr-4 lg:rtl:ml-4">
                 {t('text-customer-status')} :
               </span>
-              <Badge text={order.customer_status_label} />
+              <Badge text={customerStatusLabel} />
             </div>
           ) : null}
         </div>
       </div>
 
-      {showFulfillmentMeta ? (
+      {showPickupTiming && (pickupAvailableAt || preferredPickupTime) ? (
         <div className="mt-4 grid gap-2 border-t border-border-200 pt-4 text-sm text-body sm:grid-cols-2">
           {pickupAvailableAt ? (
             <p>

@@ -54,4 +54,7 @@ export const shopClient = {
   transferShopOwnership: (variables: TransferShopOwnershipInput) => {
     return HttpClient.post<any>(API_ENDPOINTS.TRANSFER_SHOP_OWNERSHIP, variables);
   },
+  toggleServiceability: ({ id, is_serviceable }: { id: string; is_serviceable: boolean }) => {
+    return HttpClient.put<Shop>(`${API_ENDPOINTS.SHOPS}/${id}`, { is_serviceable });
+  },
 };

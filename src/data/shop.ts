@@ -89,6 +89,30 @@ export const useTransferShopOwnershipMutation = () => {
   });
 };
 
+export const useToggleServiceabilityMutation = () => {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  return useMutation(shopClient.toggleServiceability, {
+    onSuccess: (_data, variables) => {
+      const status = variables.is_serviceable ? 'open' : 'closed';
+      console.log(
+        `[Serviceability] Shop ${variables.id} toggled to ${status} at ${new Date().toISOString()}`,
+      );
+      toast.success(
+        variables.is_serviceable
+          ? t('common:shop-now-accepting-orders')
+          : t('common:shop-stopped-accepting-orders'),
+      );
+    },
+    onError: () => {
+      toast.error(t('common:something-went-wrong'));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(API_ENDPOINTS.SHOPS);
+    },
+  });
+};
+
 export const useShopQuery = ({ slug }: { slug: string }, options?: any) => {
   return useQuery<Shop, Error>(
     [API_ENDPOINTS.SHOPS, { slug }],

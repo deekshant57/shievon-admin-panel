@@ -1,4 +1,5 @@
 import { Table } from '@/components/ui/table';
+import TruncatedId from '@/components/ui/truncated-id';
 import ActionButtons from '@/components/common/action-buttons';
 import { useTranslation } from 'next-i18next';
 import { useIsRTL } from '@/utils/locals';
@@ -91,8 +92,8 @@ const WithdrawTable = ({
       dataIndex: 'shop_id',
       key: 'shop_id',
       align: alignLeft,
-      width: 190,
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      width: 120,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: t('table:table-item-shop'),

@@ -5,6 +5,7 @@ import { useIsRTL } from '@/utils/locals';
 import { SortOrder } from '@/types';
 import { useState } from 'react';
 import TitleWithSort from '@/components/ui/title-with-sort';
+import TruncatedId from '@/components/ui/truncated-id';
 import { MappedPaginatorInfo, Tag } from '@/types';
 import { Config } from '@/config';
 import Link from '@/components/ui/link';
@@ -70,7 +71,7 @@ const TagList = ({
       align: alignLeft,
       width: 180,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: (

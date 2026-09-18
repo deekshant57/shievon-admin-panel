@@ -6,44 +6,30 @@ import Loader from '@/components/ui/loader/loader';
 import ErrorMessage from '@/components/ui/error-message';
 import Button from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
-import SelectInput from '@/components/ui/select-input';
-import ValidationError from '@/components/ui/form-validation-error';
 import { useTranslation } from 'next-i18next';
-import { useEffect } from 'react';
 import AdminLayout from '@/components/layouts/admin';
-import { useWithdrawQuery } from '@/data/withdraw';
-import { useApproveWithdrawMutation } from '@/data/withdraw';
+import {
+  useWithdrawQuery,
+  useApproveWithdrawMutation,
+  useDeleteWithdrawMutation,
+} from '@/data/withdraw';
 import Card from '@/components/common/card';
+import TextArea from '@/components/ui/text-area';
+import { useState } from 'react';
 
 type FormValues = {
-  status: any;
+  note: string;
 };
-const WithdrawStatus = [
-  {
-    name: 'Approved',
-    id: 'approved',
-  },
-  {
-    name: 'On Hold',
-    id: 'on_hold',
-  },
-  {
-    name: 'Processing',
-    id: 'processing',
-  },
-  {
-    name: 'Pending',
-    id: 'pending',
-  },
-  {
-    name: 'Rejected',
-    id: 'rejected',
-  },
-];
+
+const normalizeStatus = (status?: string) =>
+  String(status ?? '')
+    .toUpperCase()
+    .replace(/\s+/g, '_');
 
 const Withdraw = () => {
   const router = useRouter();
   const { t } = useTranslation();
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
   const {
     query: { withdrawId },
@@ -55,33 +41,53 @@ const Withdraw = () => {
     isLoading: loading,
   } = useWithdrawQuery({ id: withdrawId as string });
 
-  useEffect(() => {
-    if (withdraw?.status) {
-      setValue(
-        'status',
-        WithdrawStatus?.find((status) => status.id === withdraw?.status)
-      );
-    }
-  }, [withdraw?.status]);
-
   const {
     handleSubmit,
-    control,
-    setValue,
-    formState: { errors },
-  } = useForm<FormValues>();
+    register,
+  } = useForm<FormValues>({
+    defaultValues: { note: '' },
+  });
   const { mutate: approveWithdraw, isLoading: approving } =
     useApproveWithdrawMutation();
+  const { mutate: deleteWithdraw, isLoading: cancelling } =
+    useDeleteWithdrawMutation();
 
-  function handleApproveWithdraw({ status }: any) {
+  const status = normalizeStatus(
+    (withdraw?.status_key as string) || (withdraw?.status as string),
+  );
+  const isPending = status === 'PENDING' || status === '';
+
+  function handleMarkPaid({ note }: FormValues) {
     approveWithdraw({
       id: withdrawId as string,
-      status: status.id,
+      note: note?.trim() || undefined,
     });
+  }
+
+  function handleCancelPayout() {
+    if (!withdrawId) return;
+    deleteWithdraw(
+      { id: withdrawId as string },
+      {
+        onSuccess: () => {
+          router.push('/withdraws');
+        },
+      },
+    );
   }
 
   if (loading) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
+
+  const displayStatus =
+    withdraw?.status_key ||
+    status ||
+    t('common:text-pending');
+
+  const etaMessage =
+    withdraw?.settlement_eta_message ||
+    t('common:text-settlement-eta') ||
+    'Bank transfer may take up to 5 working days.';
 
   return (
     <>
@@ -89,37 +95,8 @@ const Withdraw = () => {
         {t('common:text-withdrawal-info')}
       </h3>
       <Card className="flex flex-col">
-        <div className="flex flex-col items-start md:flex-row">
-          <form
-            onSubmit={handleSubmit(handleApproveWithdraw)}
-            className="mb-5 flex w-full items-start ms-auto md:order-2 md:mb-0 md:w-1/2 md:ps-3"
-          >
-            <div className="z-20 w-full me-5">
-              <SelectInput
-                name="status"
-                control={control}
-                getOptionLabel={(option: any) => option.name}
-                getOptionValue={(option: any) => option.id}
-                options={WithdrawStatus}
-                placeholder={t('form:input-placeholder-order-status')}
-                rules={{
-                  required: 'form:error-status-required',
-                }}
-              />
-
-              <ValidationError message={t(errors?.status?.message)} />
-            </div>
-            <Button loading={approving}>
-              <span className="hidden sm:block">
-                {t('form:button-label-change-status')}
-              </span>
-              <span className="block sm:hidden">
-                {t('form:form:button-label-change')}
-              </span>
-            </Button>
-          </form>
-
-          <div className="w-full md:order-1 md:w-1/2 md:pe-3">
+        <div className="flex flex-col gap-6 md:flex-row">
+          <div className="w-full md:w-1/2">
             <div className="mb-2 flex items-center justify-start">
               <div className="flex w-4/12 flex-shrink-0 justify-between text-sm text-body me-5">
                 <span>{t('common:text-amount')}</span>
@@ -134,28 +111,71 @@ const Withdraw = () => {
 
             <div className="mb-2 flex items-center">
               <div className="flex w-4/12 flex-shrink-0 justify-between text-sm text-body me-5">
-                <span>{t('common:text-payment-method')}</span>
-                <span>:</span>
-              </div>
-              <span className="w-full text-sm font-semibold text-heading">
-                {withdraw?.payment_method ?? 'N/A'}
-              </span>
-            </div>
-
-            <div className="flex items-center">
-              <div className="flex w-4/12 flex-shrink-0 justify-between text-sm text-body me-5">
                 <span>{t('common:text-status')}</span>
                 <span>:</span>
               </div>
               <span className="w-full text-sm font-semibold text-heading">
-                {
-                  WithdrawStatus?.find(
-                    (status) => status.id === withdraw?.status
-                  )?.name
-                }
+                {displayStatus}
               </span>
             </div>
+
+            {withdraw?.balance_kind ? (
+              <div className="mb-2 flex items-center">
+                <div className="flex w-4/12 flex-shrink-0 justify-between text-sm text-body me-5">
+                  <span>{t('common:text-balance-kind') || 'Balance kind'}</span>
+                  <span>:</span>
+                </div>
+                <span className="w-full text-sm font-semibold text-heading capitalize">
+                  {withdraw.balance_kind}
+                </span>
+              </div>
+            ) : null}
+
+            <p className="mt-4 text-xs text-muted-foreground">{etaMessage}</p>
           </div>
+
+          {isPending ? (
+            <form
+              onSubmit={handleSubmit(handleMarkPaid)}
+              className="flex w-full flex-col gap-4 md:w-1/2"
+            >
+              <TextArea
+                label={
+                  t('form:input-label-utr-note') ||
+                  'UTR / transfer reference (optional)'
+                }
+                {...register('note')}
+                variant="outline"
+              />
+              <div className="flex flex-wrap gap-3">
+                <Button loading={approving} disabled={approving || cancelling}>
+                  {t('form:button-label-mark-paid') || 'Mark paid'}
+                </Button>
+                {!confirmCancel ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={approving || cancelling}
+                    onClick={() => setConfirmCancel(true)}
+                  >
+                    {t('form:button-label-cancel-payout') || 'Cancel payout'}
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    loading={cancelling}
+                    disabled={approving || cancelling}
+                    onClick={handleCancelPayout}
+                    className="border-red-300 text-red-600 hover:bg-red-50"
+                  >
+                    {t('form:button-label-confirm-cancel-payout') ||
+                      'Confirm cancel'}
+                  </Button>
+                )}
+              </div>
+            </form>
+          ) : null}
         </div>
       </Card>
 
@@ -165,7 +185,6 @@ const Withdraw = () => {
             <div className="mb-2 text-sm font-semibold text-heading">
               <span>{t('common:text-details')} :</span>
             </div>
-
             <span className="text-sm text-body">{withdraw?.details}</span>
           </Card>
         )}
@@ -175,7 +194,6 @@ const Withdraw = () => {
             <div className="mb-2 text-sm font-semibold text-heading">
               <span>{t('common:text-note')} :</span>
             </div>
-
             <span className="text-sm text-body">{withdraw?.note}</span>
           </Card>
         )}

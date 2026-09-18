@@ -14,7 +14,6 @@ import Loader from '@/components/ui/loader/loader';
 import { useModalAction } from '@/components/ui/modal/modal.context';
 import { Config } from '@/config';
 import { Routes } from '@/config/routes';
-import ClothingImportAnnouncement from '@/components/product/clothing-import-announcement';
 import ProductBulkImportMenu from '@/components/product/product-bulk-import-menu';
 import { useProductsQuery } from '@/data/product';
 import { useShopQuery } from '@/data/shop';
@@ -271,11 +270,6 @@ export default function ProductsPage() {
           onSort={setColumn}
         />
       </DataPanel>
-
-      <ClothingImportAnnouncement
-        shop={shop as string}
-        canShow={canImportClothing}
-      />
     </DashboardShell>
   );
 }

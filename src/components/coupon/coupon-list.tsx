@@ -1,6 +1,7 @@
 import Pagination from '@/components/ui/pagination';
 import Image from 'next/image';
 import { Table } from '@/components/ui/table';
+import TruncatedId from '@/components/ui/truncated-id';
 import { SortOrder } from '@/types';
 import { siteSettings } from '@/settings/site.settings';
 import usePrice from '@/utils/use-price';
@@ -88,7 +89,7 @@ const CouponList = ({
       align: alignLeft,
       width: 120,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: t('table:table-item-banner'),

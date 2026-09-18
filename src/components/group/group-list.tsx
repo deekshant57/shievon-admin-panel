@@ -1,4 +1,5 @@
 import { Table } from '@/components/ui/table';
+import TruncatedId from '@/components/ui/truncated-id';
 import { Type } from '@/types';
 import { getIcon } from '@/utils/get-icon';
 import * as typeIcons from '@/components/icons/type';
@@ -7,6 +8,8 @@ import { useIsRTL } from '@/utils/locals';
 import { Routes } from '@/config/routes';
 import LanguageSwitcher from '@/components/ui/lang-action/action';
 import { NoDataFound } from '@/components/icons/no-data-found';
+import { Switch } from '@headlessui/react';
+import { useToggleTypeServiceabilityMutation } from '@/data/type';
 
 export type IProps = {
   types: Type[] | undefined;
@@ -16,6 +19,8 @@ export type IProps = {
 const TypeList = ({ types, routes = Routes.type }: IProps) => {
   const { t } = useTranslation();
   const { alignLeft, alignRight } = useIsRTL();
+  const { mutate: toggleServiceability, isLoading: toggling } =
+    useToggleTypeServiceabilityMutation();
 
   const columns = [
     {
@@ -23,8 +28,8 @@ const TypeList = ({ types, routes = Routes.type }: IProps) => {
       dataIndex: 'id',
       key: 'id',
       align: alignLeft,
-      width: 150,
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      width: 120,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: t('table:table-homepage-name'),
@@ -32,7 +37,47 @@ const TypeList = ({ types, routes = Routes.type }: IProps) => {
       dataIndex: 'name',
       key: 'name',
       align: alignLeft,
-      render: (name: any) => <span className="whitespace-nowrap">{name}</span>,
+      render: (name: any, record: Type) => (
+        <span
+          className={`whitespace-nowrap ${
+            record.is_serviceable === false ? 'opacity-50' : ''
+          }`}
+        >
+          {name}
+        </span>
+      ),
+    },
+    {
+      title: t('table:table-item-serviceable'),
+      dataIndex: 'is_serviceable',
+      key: 'is_serviceable',
+      align: 'center',
+      width: 130,
+      render: (is_serviceable: boolean, record: Type) => (
+        <Switch
+          checked={is_serviceable !== false}
+          onChange={() =>
+            toggleServiceability({
+              id: record.id,
+              is_serviceable: is_serviceable === false,
+            })
+          }
+          disabled={toggling}
+          className={`${
+            is_serviceable !== false ? 'bg-accent' : 'bg-gray-300'
+          } relative inline-flex h-6 w-11 items-center rounded-full focus:outline-none ${
+            toggling ? 'cursor-not-allowed opacity-60' : ''
+          }`}
+          dir="ltr"
+        >
+          <span className="sr-only">{t('table:table-item-serviceable')}</span>
+          <span
+            className={`${
+              is_serviceable !== false ? 'translate-x-6' : 'translate-x-1'
+            } inline-block h-4 w-4 transform rounded-full bg-light transition-transform`}
+          />
+        </Switch>
+      ),
     },
     {
       title: 'Sort Order',

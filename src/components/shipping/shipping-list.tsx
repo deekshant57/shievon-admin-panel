@@ -1,4 +1,5 @@
 import { Table } from '@/components/ui/table';
+import TruncatedId from '@/components/ui/truncated-id';
 import ActionButtons from '@/components/common/action-buttons';
 import { Routes } from '@/config/routes';
 import { Shipping, SortOrder } from '@/types';
@@ -55,9 +56,9 @@ const ShippingList = ({ shippings, onSort, onOrder }: IProps) => {
       dataIndex: 'id',
       key: 'id',
       align: alignLeft,
-      width: 150,
+      width: 120,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: (

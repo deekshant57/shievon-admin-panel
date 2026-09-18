@@ -9,15 +9,17 @@ import { TrashIcon } from '@/components/icons/trash';
 import { WalletPointsIcon } from '@/components/icons/wallet-point';
 import Link from '@/components/ui/link';
 import { useModalAction } from '@/components/ui/modal/modal.context';
+import { useApproveShopMutation } from '@/data/shop';
 import { getAuthCredentials } from '@/utils/auth-utils';
 import { STAFF, SUPER_ADMIN } from '@/utils/constants';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
 import { Routes } from '@/config/routes';
-import { approveModalInitialValues } from '@/utils/constants';
-import { useAtom } from 'jotai';
 import { ExternalLinkIcon } from '@/components/icons/external-link';
 import { Tooltip } from '@/components/ui/tooltip';
+
+/** Default commission when approving without the commission popup. */
+const DEFAULT_ADMIN_COMMISSION_RATE = 0;
 
 type Props = {
   id: string;
@@ -80,7 +82,7 @@ const ActionButtons = ({
   const { openModal } = useModalAction();
   const router = useRouter();
   const { role } = getAuthCredentials();
-  const [_, setApproveModal] = useAtom(approveModalInitialValues);
+  const { mutate: approveShop } = useApproveShopMutation();
 
   function handleDelete() {
     openModal(deleteModalView, id);
@@ -108,10 +110,12 @@ const ActionButtons = ({
 
   function handleShopStatus(status: boolean) {
     if (status === true) {
-      openModal('SHOP_APPROVE_VIEW', { id, data });
-      if (Boolean(data?.multiCommission)) {
-        setApproveModal(true);
-      }
+      // Skip commission popup — backend still expects admin_commission_rate on approve.
+      approveShop({
+        id,
+        admin_commission_rate: DEFAULT_ADMIN_COMMISSION_RATE,
+        isCustomCommission: false,
+      });
     } else {
       openModal('SHOP_DISAPPROVE_VIEW', id);
     }

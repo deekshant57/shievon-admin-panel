@@ -60,6 +60,7 @@ export default function OrderDetailsPage() {
     order,
     isLoading: loading,
     error,
+    refetch: refetchOrder,
   } = useOrderQuery({ id: query.orderId as string, language: locale! });
   const { refetch } = useDownloadInvoiceMutation(
     {
@@ -194,11 +195,14 @@ export default function OrderDetailsPage() {
     },
   ];
 
-  const canChangeStatus = ![
-    OrderStatus.FAILED,
-    OrderStatus.CANCELLED,
-    OrderStatus.REFUNDED,
-  ].includes(order?.order_status! as OrderStatus);
+  const canChangeStatus =
+    !showFulfillmentUi &&
+    ![
+      OrderStatus.FAILED,
+      OrderStatus.CANCELLED,
+      OrderStatus.REFUNDED,
+      OrderStatus.COMPLETED,
+    ].includes(order?.order_status! as OrderStatus);
 
   return (
     <div className="min-w-0 max-w-full space-y-6">
@@ -259,7 +263,11 @@ export default function OrderDetailsPage() {
         ) : null}
 
         {showFulfillmentUi ? (
-          <OrderFulfillmentSection order={order} />
+          <OrderFulfillmentSection
+            order={order}
+            shop={order?.shop}
+            refetchOrder={refetchOrder}
+          />
         ) : (
           <div className="my-5 flex items-center justify-center lg:my-8">
             <OrderStatusProgressBox

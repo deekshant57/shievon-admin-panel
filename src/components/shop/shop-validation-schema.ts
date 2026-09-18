@@ -7,28 +7,30 @@ export const shopValidationSchema = yup.object().shape({
   name: yup.string().required('form:error-name-required'),
   balance: yup.object().shape({
     payment_info: yup.object().shape({
-      // Payment info marked as not required - validation commented out
-      // email: yup
-      //   .string()
-      //   .required('form:error-account-holder-email-required')
-      //   .typeError('form:error-email-string')
-      //   .email('form:error-email-format'),
-      // name: yup.string().required('form:error-account-holder-name-required'),
-      // bank: yup.string().required('form:error-bank-name-required'),
-      // account: yup
-      //   .number()
-      //   .positive('form:error-account-number-positive-required')
-      //   .integer('form:error-account-number-integer-required')
-      //   .required('form:error-account-number-required')
-      //   .transform((value) => (isNaN(value) ? undefined : value)),
-      email: yup.string().nullable().optional(),
-      name: yup.string().nullable().optional(),
-      bank: yup.string().nullable().optional(),
+      name: yup
+        .string()
+        .trim()
+        .required('form:error-account-holder-name-required'),
+      email: yup
+        .string()
+        .trim()
+        .required('form:error-account-holder-email-required')
+        .email('form:error-email-format'),
+      bank: yup.string().trim().required('form:error-bank-name-required'),
       account: yup
-        .number()
-        .nullable()
-        .optional()
-        .transform((value) => (isNaN(value) ? undefined : value)),
+        .string()
+        .transform((value) =>
+          value === '' || value == null ? undefined : String(value).trim(),
+        )
+        .required('form:error-account-number-required')
+        .matches(/^\d{9,18}$/, 'form:error-account-number-format'),
+      ifsc: yup
+        .string()
+        .transform((value) =>
+          value ? String(value).trim().toUpperCase() : value,
+        )
+        .required('form:error-ifsc-required')
+        .matches(/^[A-Z]{4}0[A-Z0-9]{6}$/, 'form:error-ifsc-format'),
     }),
   }),
   settings: yup.object().shape({
@@ -104,18 +106,7 @@ export const shopValidationSchema = yup.object().shape({
   }),
   timings: yup.object().shape({
     open: yup.string().required('form:error-opening-time-required'),
-    close: yup
-      .string()
-      .required('form:error-closing-time-required')
-      .test(
-        'close-after-open',
-        'form:error-closing-time-before-opening',
-        function (close) {
-          const { open } = this.parent;
-          if (!open || !close) return true;
-          return close >= open;
-        }
-      ),
+    close: yup.string().required('form:error-closing-time-required'),
   }),
 });
 

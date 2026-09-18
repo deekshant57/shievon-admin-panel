@@ -1,15 +1,17 @@
 import RecentOrders from '@/components/order/recent-orders';
 import PopularProductList from '@/components/product/popular-product-list';
+import SaleHistorySection, {
+  mapSalesSparkline,
+} from '@/components/dashboard/sale-history-section';
 import ErrorMessage from '@/components/ui/error-message';
 import Loader from '@/components/ui/loader/loader';
-import ColumnChart from '@/components/widgets/column-chart';
 import WithdrawTable from '@/components/withdraw/withdraw-table';
 import {
   useAnalyticsQuery,
   usePopularProductsQuery,
   useLowProductStockQuery,
   useProductByCategoryQuery,
-  useTopRatedProductsQuery,
+  // useTopRatedProductsQuery,
 } from '@/data/dashboard';
 import { useOrdersQuery } from '@/data/order';
 import { useWithdrawsQuery } from '@/data/withdraw';
@@ -23,7 +25,6 @@ import Search from '@/components/common/search';
 import {
   DashboardHeader,
   DashboardKpiBento,
-  DashboardSection,
   DashboardShell,
   OrderStatusSection,
   WidgetGrid,
@@ -37,14 +38,15 @@ const ProductCountByCategory = dynamic(
     ),
 );
 
-const TopRatedProducts = dynamic(
-  () => import('@/components/dashboard/widgets/box/widget-top-rate-product'),
-);
+// Not backed by a reliable API yet — temporarily hidden
+// const TopRatedProducts = dynamic(
+//   () => import('@/components/dashboard/widgets/box/widget-top-rate-product'),
+// );
 
 export default function Dashboard() {
   const { t } = useTranslation();
   const { locale } = useRouter();
-  const { data, isLoading: loading } = useAnalyticsQuery();
+  const { data, isLoading: loading, error: analyticsError } = useAnalyticsQuery();
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -71,11 +73,12 @@ export default function Dashboard() {
     error: popularProductError,
   } = usePopularProductsQuery({ limit: 10, language: locale });
 
-  const {
-    data: topRatedProducts,
-    isLoading: topRatedProductsLoading,
-    error: topRatedProductsError,
-  } = useTopRatedProductsQuery({ limit: 10, language: locale });
+  // Not backed by a reliable API yet — temporarily hidden
+  // const {
+  //   data: topRatedProducts,
+  //   isLoading: topRatedProductsLoading,
+  //   error: topRatedProductsError,
+  // } = useTopRatedProductsQuery({ limit: 10, language: locale });
 
   const {
     data: lowStockProduct,
@@ -100,13 +103,6 @@ export default function Dashboard() {
     limit: 10,
   });
 
-  let salesByYear: number[] = Array.from({ length: 12 }, (_) => 0);
-  if (!!data?.totalYearSaleByMonth?.length) {
-    salesByYear = data.totalYearSaleByMonth.map((item: any) =>
-      item.total.toFixed(2),
-    );
-  }
-
   const monthCategories = useMemo(
     () => [
       t('common:january'),
@@ -126,12 +122,8 @@ export default function Dashboard() {
   );
 
   const sparkline = useMemo(
-    () =>
-      salesByYear.map((value, index) => ({
-        label: monthCategories[index]?.slice(0, 3) ?? '',
-        value: Number(value) || 0,
-      })),
-    [monthCategories, salesByYear],
+    () => mapSalesSparkline(data?.totalYearSaleByMonth, monthCategories),
+    [data?.totalYearSaleByMonth, monthCategories],
   );
 
   function handleSearch({ searchText }: { searchText: string }) {
@@ -147,18 +139,18 @@ export default function Dashboard() {
     loading ||
     orderLoading ||
     popularProductLoading ||
-    withdrawLoading ||
-    topRatedProductsLoading
+    withdrawLoading
+    // || topRatedProductsLoading
   ) {
     return <Loader text={t('common:text-loading')} />;
   }
-  if (orderError || popularProductError || topRatedProductsError) {
+  if (orderError || popularProductError /* || topRatedProductsError */) {
     return (
       <ErrorMessage
         message={
           orderError?.message ||
-          popularProductError?.message ||
-          topRatedProductsError?.message
+          popularProductError?.message
+          // || topRatedProductsError?.message
         }
       />
     );
@@ -184,30 +176,11 @@ export default function Dashboard() {
 
       <WidgetGrid>
         <WidgetGridItem span={8}>
-          <DashboardSection
-            title={t('common:sale-history')}
-            contentClassName="!p-0 !pt-0 md:!px-2 md:!pb-2"
-          >
-            <ColumnChart
-              hideHeader
-              colors={['hsl(357,73%,48%)']}
-              series={salesByYear}
-              categories={[
-                t('common:january'),
-                t('common:february'),
-                t('common:march'),
-                t('common:april'),
-                t('common:may'),
-                t('common:june'),
-                t('common:july'),
-                t('common:august'),
-                t('common:september'),
-                t('common:october'),
-                t('common:november'),
-                t('common:december'),
-              ]}
-            />
-          </DashboardSection>
+          <SaleHistorySection
+            salesByMonth={data?.totalYearSaleByMonth}
+            isLoading={loading}
+            error={analyticsError as Error | null}
+          />
         </WidgetGridItem>
 
         <WidgetGridItem span={4}>
@@ -235,7 +208,7 @@ export default function Dashboard() {
           />
         </WidgetGridItem>
 
-        <WidgetGridItem span={6}>
+        <WidgetGridItem span={12}>
           <LowStockProduct
             //@ts-ignore
             products={lowStockProduct}
@@ -253,6 +226,7 @@ export default function Dashboard() {
           />
         </WidgetGridItem>
 
+        {/* Not backed by a reliable API yet — temporarily hidden
         <WidgetGridItem span={6}>
           <TopRatedProducts
             products={topRatedProducts}
@@ -260,6 +234,7 @@ export default function Dashboard() {
             className="h-full"
           />
         </WidgetGridItem>
+        */}
 
         <WidgetGridItem span={7}>
           <ProductCountByCategory

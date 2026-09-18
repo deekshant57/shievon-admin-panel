@@ -11,6 +11,7 @@ import Link from '@/components/ui/link';
 import Pagination from '@/components/ui/pagination';
 import { AlignType, Table } from '@/components/ui/table';
 import TitleWithSort from '@/components/ui/title-with-sort';
+import TruncatedId from '@/components/ui/truncated-id';
 import { siteSettings } from '@/settings/site.settings';
 import {
   MappedPaginatorInfo,
@@ -82,7 +83,7 @@ const ShopList = ({
         key: 'id',
         align: alignLeft as AlignType,
         width: 100,
-        render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+        render: (id: number) => <TruncatedId id={id} />,
       },
       {
         title: (

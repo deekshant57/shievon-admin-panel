@@ -9,18 +9,23 @@ interface Props {
 }
 
 const OrderStatusProgressBox = ({ paymentStatus, orderStatus }: Props) => {
-  const currentStatusIndex = ORDER_STATUS.findIndex((o) => o.status === orderStatus) ?? 0;
+  const currentStatusIndex =
+    ORDER_STATUS.findIndex((o) => o.status === orderStatus) ?? 0;
   const filterStatus = filterOrderStatus(
     ORDER_STATUS,
     paymentStatus!,
-    currentStatusIndex
+    currentStatusIndex,
+  );
+  const filledIndex = Math.max(
+    0,
+    filterStatus.findIndex((step) => step.status === orderStatus),
   );
 
   return (
     <ProgressBox
       data={filterStatus}
       status={orderStatus!}
-      filledIndex={currentStatusIndex}
+      filledIndex={filledIndex >= 0 ? filledIndex : 0}
     />
   );
 };

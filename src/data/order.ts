@@ -40,22 +40,26 @@ export const useOrdersQuery = (
 export const useOrderQuery = ({
   id,
   language,
+  options,
 }: {
   id: string;
   language: string;
+  options?: Record<string, unknown>;
 }) => {
-  const { data, error, isLoading } = useQuery<Order, Error>(
+  const { data, error, isLoading, refetch } = useQuery<Order, Error>(
     [API_ENDPOINTS.ORDERS, { id, language }],
     () => orderClient.get({ id, language }),
     {
-      enabled: Boolean(id), // Set to true to enable or false to disable
-    }
+      enabled: Boolean(id),
+      ...options,
+    },
   );
 
   return {
     order: data,
     error,
     isLoading,
+    refetch,
   };
 };
 

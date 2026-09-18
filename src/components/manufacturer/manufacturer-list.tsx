@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Pagination from '@/components/ui/pagination';
 import Image from 'next/image';
 import { Table, AlignType } from '@/components/ui/table';
+import TruncatedId from '@/components/ui/truncated-id';
 import { siteSettings } from '@/settings/site.settings';
 import { useTranslation } from 'next-i18next';
 import TitleWithSort from '@/components/ui/title-with-sort';
@@ -76,9 +77,9 @@ const ManufacturerList = ({
       dataIndex: 'id',
       key: 'id',
       align: alignLeft,
-      width: 160,
+      width: 120,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: (

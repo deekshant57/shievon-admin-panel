@@ -1,3 +1,4 @@
+import TruncatedId from '@/components/ui/truncated-id';
 import EmptyState from '@/components/page/empty-state';
 import Pagination from '@/components/ui/pagination';
 import Image from 'next/image';
@@ -77,8 +78,8 @@ const ProductList = ({
       dataIndex: 'id',
       key: 'id',
       align: alignLeft,
-      width: 130,
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      width: 120,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: (

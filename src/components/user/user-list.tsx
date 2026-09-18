@@ -1,6 +1,7 @@
 import Pagination from '@/components/ui/pagination';
 import Image from 'next/image';
 import { Table } from '@/components/ui/table';
+import TruncatedId from '@/components/ui/truncated-id';
 import ActionButtons from '@/components/common/action-buttons';
 import { siteSettings } from '@/settings/site.settings';
 import {
@@ -74,9 +75,9 @@ const UserList = ({
       dataIndex: 'id',
       key: 'id',
       align: alignLeft,
-      width: 150,
+      width: 120,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: (

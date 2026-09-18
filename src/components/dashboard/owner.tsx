@@ -1,7 +1,7 @@
-import ColumnChart from '@/components/widgets/column-chart';
-import {
-  useAnalyticsQuery,
-} from '@/data/dashboard';
+import SaleHistorySection, {
+  mapSalesSparkline,
+} from '@/components/dashboard/sale-history-section';
+import { useAnalyticsQuery } from '@/data/dashboard';
 import {
   adminOnly,
   adminAndOwnerOnly,
@@ -15,7 +15,6 @@ import { useMemo } from 'react';
 import {
   DashboardHeader,
   DashboardKpiBento,
-  DashboardSection,
   DashboardShell,
   OrderStatusSection,
   WidgetGrid,
@@ -27,7 +26,7 @@ const ShopList = dynamic(() => import('@/components/dashboard/shops/shops'));
 const OwnerShopLayout = () => {
   const { t } = useTranslation();
   const { permissions } = getAuthCredentials();
-  const { data } = useAnalyticsQuery(true);
+  const { data, isLoading, error } = useAnalyticsQuery(true);
 
   const { price: total_revenue } = usePrice(
     data && {
@@ -45,13 +44,6 @@ const OwnerShopLayout = () => {
       amount: data?.todaysRevenue!,
     },
   );
-
-  let salesByYear: number[] = Array.from({ length: 12 }, (_) => 0);
-  if (!!data?.totalYearSaleByMonth?.length) {
-    salesByYear = data.totalYearSaleByMonth.map((item: any) =>
-      item.total.toFixed(2),
-    );
-  }
 
   const monthCategories = useMemo(
     () => [
@@ -72,12 +64,8 @@ const OwnerShopLayout = () => {
   );
 
   const sparkline = useMemo(
-    () =>
-      salesByYear.map((value, index) => ({
-        label: monthCategories[index]?.slice(0, 3) ?? '',
-        value: Number(value) || 0,
-      })),
-    [monthCategories, salesByYear],
+    () => mapSalesSparkline(data?.totalYearSaleByMonth, monthCategories),
+    [data?.totalYearSaleByMonth, monthCategories],
   );
 
   return (
@@ -101,30 +89,11 @@ const OwnerShopLayout = () => {
       {hasAccess(adminAndOwnerOnly, permissions) ? (
         <WidgetGrid>
           <WidgetGridItem span={12}>
-            <DashboardSection
-              title={t('common:sale-history')}
-              contentClassName="!p-0 !pt-0 md:!px-2 md:!pb-2"
-            >
-              <ColumnChart
-                hideHeader
-                colors={['hsl(357,73%,48%)']}
-                series={salesByYear}
-                categories={[
-                  t('common:january'),
-                  t('common:february'),
-                  t('common:march'),
-                  t('common:april'),
-                  t('common:may'),
-                  t('common:june'),
-                  t('common:july'),
-                  t('common:august'),
-                  t('common:september'),
-                  t('common:october'),
-                  t('common:november'),
-                  t('common:december'),
-                ]}
-              />
-            </DashboardSection>
+            <SaleHistorySection
+              salesByMonth={data?.totalYearSaleByMonth}
+              isLoading={isLoading}
+              error={error as Error | null}
+            />
           </WidgetGridItem>
         </WidgetGrid>
       ) : null}

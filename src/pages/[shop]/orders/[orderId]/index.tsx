@@ -18,22 +18,18 @@ import {
   adminOwnerAndStaffOnly,
   getAuthCredentials,
   hasAccess,
-  adminOnly,
 } from '@/utils/auth-utils';
 import {
-  useDownloadInvoiceMutation,
+  // useDownloadInvoiceMutation,
   useUpdateOrderMutation,
   useOrderQuery,
 } from '@/data/order';
 import { Attachment, OrderStatus, PaymentStatus } from '@/types';
-import { DownloadIcon } from '@/components/icons/download-icon';
+// import { DownloadIcon } from '@/components/icons/download-icon';
 import OrderViewHeader from '@/components/order/order-view-header';
 import OrderFulfillmentSection from '@/components/order/order-fulfillment-section';
 import { ORDER_STATUS } from '@/utils/order-status';
-import {
-  getFulfillmentAdminStatusOptions,
-  hasFulfillmentFlow,
-} from '@/utils/order-fulfillment';
+import { hasFulfillmentFlow } from '@/utils/order-fulfillment';
 import OrderStatusProgressBox from '@/components/order/order-status-progress-box';
 import { Routes } from '@/config/routes';
 import { useShopQuery } from '@/data/shop';
@@ -58,21 +54,23 @@ export default function OrderDetailsPage() {
   });
   const shopId = shopData?.id!;
   const hasRedirectedRef = useRef(false);
-  const { alignLeft, alignRight, isRTL } = useIsRTL();
+  const { alignLeft, alignRight /*, isRTL */ } = useIsRTL();
   const { mutate: updateOrder, isLoading: updating } = useUpdateOrderMutation();
   const {
     order,
     isLoading: loading,
     error,
+    refetch: refetchOrder,
   } = useOrderQuery({ id: query.orderId as string, language: locale! });
-  const { refetch } = useDownloadInvoiceMutation(
-    {
-      order_id: query.orderId as string,
-      language: locale!,
-      isRTL,
-    },
-    { enabled: false },
-  );
+  // Static invoice download — temporarily disabled
+  // const { refetch } = useDownloadInvoiceMutation(
+  //   {
+  //     order_id: query.orderId as string,
+  //     language: locale!,
+  //     isRTL,
+  //   },
+  //   { enabled: false },
+  // );
 
   const {
     handleSubmit,
@@ -83,16 +81,16 @@ export default function OrderDetailsPage() {
     defaultValues: { order_status: order?.order_status ?? '' },
   });
 
-  async function handleDownloadInvoice() {
-    const { data } = await refetch();
+  // async function handleDownloadInvoice() {
+  //   const { data } = await refetch();
 
-    if (data) {
-      const a = document.createElement('a');
-      a.href = data;
-      a.setAttribute('download', 'order-invoice');
-      a.click();
-    }
-  }
+  //   if (data) {
+  //     const a = document.createElement('a');
+  //     a.href = data;
+  //     a.setAttribute('download', 'order-invoice');
+  //     a.click();
+  //   }
+  // }
 
   const ChangeStatus = ({ order_status }: FormValues) => {
     updateOrder({
@@ -130,15 +128,9 @@ export default function OrderDetailsPage() {
     customer_contact: order?.customer_contact as string,
   });
   const showFulfillmentUi = hasFulfillmentFlow(order);
-  const isSuperAdmin = hasAccess(adminOnly, permissions);
-  const showLegacyStatusDropdown = !showFulfillmentUi || isSuperAdmin;
   const legacyStatusOptions = useMemo(() => {
-    if (!showFulfillmentUi || !isSuperAdmin) {
-      return ORDER_STATUS.slice(0, 6);
-    }
-    const allowed = getFulfillmentAdminStatusOptions();
-    return ORDER_STATUS.filter((entry) => allowed.includes(entry.status));
-  }, [showFulfillmentUi, isSuperAdmin]);
+    return ORDER_STATUS.slice(0, 6);
+  }, []);
 
   useEffect(() => {
     if (hasRedirectedRef.current) {
@@ -213,11 +205,12 @@ export default function OrderDetailsPage() {
   ];
 
   const canChangeStatus =
-    showLegacyStatusDropdown &&
+    !showFulfillmentUi &&
     ![
       OrderStatus.FAILED,
       OrderStatus.CANCELLED,
       OrderStatus.REFUNDED,
+      OrderStatus.COMPLETED,
     ].includes(order?.order_status! as OrderStatus);
 
   return (
@@ -227,6 +220,7 @@ export default function OrderDetailsPage() {
         subtitle={t('common:order-details-subtitle')}
         toolbarLayout="stacked"
       >
+        {/* Static invoice download — temporarily disabled
         <ActionButton
           type="button"
           variant="secondary"
@@ -237,6 +231,7 @@ export default function OrderDetailsPage() {
           <DownloadIcon className="h-4 w-4 shrink-0" />
           {t('common:text-download')} {t('common:text-invoice')}
         </ActionButton>
+        */}
       </PageHeader>
 
       <Section className="mb-0 overflow-hidden">
@@ -279,7 +274,11 @@ export default function OrderDetailsPage() {
         ) : null}
 
         {showFulfillmentUi ? (
-          <OrderFulfillmentSection order={order} />
+          <OrderFulfillmentSection
+            order={order}
+            shop={shopData}
+            refetchOrder={refetchOrder}
+          />
         ) : (
           <div className="my-5 flex items-center justify-center lg:my-8">
             <OrderStatusProgressBox

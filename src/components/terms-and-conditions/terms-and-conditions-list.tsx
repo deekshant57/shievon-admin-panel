@@ -6,6 +6,7 @@ import LanguageSwitcher from '@/components/ui/lang-action/action';
 import Pagination from '@/components/ui/pagination';
 import { Table } from '@/components/ui/table';
 import TitleWithSort from '@/components/ui/title-with-sort';
+import TruncatedId from '@/components/ui/truncated-id';
 import { Routes } from '@/config/routes';
 import { NoDataFound } from '@/components/icons/no-data-found';
 import {
@@ -96,7 +97,7 @@ const TermsAndConditionsLists = ({
       align: alignLeft,
       width: 120,
       onHeaderCell: () => onHeaderClick('id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: (

@@ -15,6 +15,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { useState } from 'react';
 import TitleWithSort from '@/components/ui/title-with-sort';
+import TruncatedId from '@/components/ui/truncated-id';
 import { Withdraw, MappedPaginatorInfo } from '@/types';
 import Image from 'next/image';
 import { siteSettings } from '@/settings/site.settings';
@@ -119,7 +120,7 @@ const WithdrawList = ({
       align: alignLeft,
       width: 170,
       onHeaderCell: () => onHeaderClick('shop_id'),
-      render: (id: number) => `#${t('table:table-item-id')}: ${id}`,
+      render: (id: number) => <TruncatedId id={id} />,
     },
     {
       title: t('table:table-item-shop'),
@@ -216,7 +217,10 @@ const WithdrawList = ({
       align: 'center',
       width: 220,
       onHeaderCell: () => onHeaderClick('status'),
-      render: (status: string) => renderStatusBadge(status),
+      render: (_status: string, record: Withdraw) =>
+        renderStatusBadge(
+          String(record?.status_key || record?.status || ''),
+        ),
     },
 
     {

@@ -124,6 +124,9 @@ export const Routes = {
   notifyLogs: {
     ...routesFactory('/notify-logs'),
   },
+  deliveryIssues: {
+    ...routesFactory('/delivery-issues'),
+  },
   faqs: {
     ...routesFactory('/faqs'),
   },

@@ -25,6 +25,7 @@ type FormValues = {
   parent: ServiceCategory | null
   sort_order: number
   is_active: boolean
+  is_serviceable: boolean
 }
 
 const defaultValues: FormValues = {
@@ -33,6 +34,7 @@ const defaultValues: FormValues = {
   parent: null,
   sort_order: 0,
   is_active: true,
+  is_serviceable: true,
 }
 
 type IProps = {
@@ -71,6 +73,7 @@ export default function ServiceCategoryForm({ initialValues }: IProps) {
           parent: initialValues.parent ?? null,
           sort_order: initialValues.sortOrder ?? 0,
           is_active: initialValues.isActive ?? true,
+          is_serviceable: initialValues.isServiceable !== false,
         }
       : defaultValues,
     //@ts-expect-error yup schema output aligns with submit handler
@@ -109,6 +112,7 @@ export default function ServiceCategoryForm({ initialValues }: IProps) {
       parent_id: parentId,
       sort_order: Number(values.sort_order) || 0,
       is_active: values.is_active,
+      is_serviceable: values.is_serviceable,
     }
 
     if (!initialValues?.id) {
@@ -175,10 +179,19 @@ export default function ServiceCategoryForm({ initialValues }: IProps) {
           className="mb-5"
         />
 
+        <div className="mb-5">
+          <SwitchInput
+            name="is_active"
+            control={control}
+            label={t('common:text-active')}
+          />
+        </div>
+
         <SwitchInput
-          name="is_active"
+          name="is_serviceable"
           control={control}
-          label={t('common:text-active')}
+          label={t('form:input-label-serviceable')}
+          toolTipText={t('form:input-tooltip-service-category-serviceable')}
         />
       </FormSection>
 

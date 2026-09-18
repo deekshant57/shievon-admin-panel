@@ -43,7 +43,14 @@ export const API_ENDPOINTS = {
   SHOPS: 'shops',
   MY_SHOPS: 'my-shops',
   WITHDRAWS: 'withdraws',
+  /** @deprecated Prefer POST `${WITHDRAWS}/${id}/approve` */
   APPROVE_WITHDRAW: 'approve-withdraw',
+  VENDOR_SETTLEMENTS: 'vendor-settlements',
+  /** Admin settlements desk feed (V1) */
+  ADMIN_VENDOR_SETTLEMENTS: 'admin/vendor-settlements',
+  WITHDRAWS_BATCH: 'withdraws/batch',
+  WITHDRAWS_MARK_PAID_BATCH: 'withdraws/mark-paid/batch',
+  WITHDRAWS_EXPORT: 'withdraws/export',
   ADD_WALLET_POINTS: 'add-points',
   ADD_LICENSE_KEY_VERIFY: 'license-key/verify',
   REFUNDS: 'refunds',
@@ -126,4 +133,5 @@ export const API_ENDPOINTS = {
   BECAME_SELLER: 'became-seller',
   TRANSFER_SHOP_OWNERSHIP: 'transfer-shop-ownership',
   OWNERSHIP_TRANSFER: 'ownership-transfer',
+  ADMIN_DELIVERY_ISSUES: 'admin/delivery-issues',
 };

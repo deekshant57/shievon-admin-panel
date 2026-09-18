@@ -25,8 +25,8 @@ const Badge: React.FC<BadgeProps> = (props) => {
   return (
     <ShadBadge
       className={cn(
-        'relative whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium',
-        !colorOverride && 'bg-accent text-light hover:bg-accent',
+        'relative whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium shadow-none',
+        !colorOverride && 'bg-accent text-light',
         colorOverride,
         textColorOverride,
         animate && 'animate-pulse',
