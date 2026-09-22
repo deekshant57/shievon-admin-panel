@@ -199,13 +199,9 @@ export function getProductDefaultValues(
     type: normalizedType,
     author: normalizedAuthor,
     video: normalizedVideo,
-    // Cascader resolves leaf → L1..L4 after the category tree loads.
-    // Do NOT put the leaf into primary_category (that shows leaf name in the
-    // top select whose options are only Men/Women/Kids).
-    primary_category: null,
-    secondary_category: null,
-    tertiary_category: null,
-    quaternary_category: null,
+    // Cascader rebuilds L1→leaf after the category tree loads. Leaving these
+    // unset (not null) lets react-hook-form Controller use the hydrated path
+    // as defaultValue instead of wiping it back to null.
     ...(product_type === ProductType.Single && {
       ...(is_digital && {
         digital_file_input: {
@@ -441,8 +437,18 @@ export function getProductInputValues(
     variation_options,
     variations,
     in_flash_sale,
+    // Cascade UI fields — never send to the API
+    primary_category: _primaryCategory,
+    secondary_category: _secondaryCategory,
+    tertiary_category: _tertiaryCategory,
+    quaternary_category: _quaternaryCategory,
     ...simpleValues
-  } = values;
+  } = values as ProductFormValues & {
+    primary_category?: unknown;
+    secondary_category?: unknown;
+    tertiary_category?: unknown;
+    quaternary_category?: unknown;
+  };
   
   // Format image - only include if valid (has thumbnail and original)
   const formattedImage = formatImage(image);

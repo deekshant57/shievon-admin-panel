@@ -57,6 +57,21 @@ export const useUpdateProductMutation = () => {
   const router = useRouter();
   return useMutation(productClient.update, {
     onSuccess: async (data) => {
+      // Seed matching product-detail caches so the edit page remounts with fresh
+      // values (price, sale_price, quantity, etc.) instead of a stale snapshot.
+      if (data?.id || data?.slug) {
+        queryClient.setQueriesData([API_ENDPOINTS.PRODUCTS], (old: any) => {
+          // Skip list/paginator caches
+          if (!old || Array.isArray(old?.data) || old?.data?.data) return old;
+          if (
+            (data.id && old?.id === data.id) ||
+            (data.slug && old?.slug === data.slug)
+          ) {
+            return { ...old, ...data };
+          }
+          return old;
+        });
+      }
       const generateRedirectUrl = router.query.shop
         ? `/${router.query.shop}${Routes.product.list}`
         : Routes.product.list;

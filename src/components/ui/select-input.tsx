@@ -20,6 +20,7 @@ interface SelectInputProps {
   label?: string;
   toolTipText?: string;
   error?: string;
+  onChange?: (value: unknown) => void;
 }
 
 const SelectInput = ({
@@ -38,6 +39,7 @@ const SelectInput = ({
   required,
   toolTipText,
   error,
+  onChange: onChangeProp,
   ...rest
 }: SelectInputProps) => {
   return (
@@ -57,9 +59,13 @@ const SelectInput = ({
         name={name}
         rules={rules}
         {...rest}
-        render={({ field }) => (
+        render={({ field: { onChange, ...field } }) => (
           <Select
             {...field}
+            onChange={(newValue: unknown) => {
+              onChange(newValue);
+              onChangeProp?.(newValue);
+            }}
             getOptionLabel={getOptionLabel}
             getOptionValue={getOptionValue}
             placeholder={placeholder}

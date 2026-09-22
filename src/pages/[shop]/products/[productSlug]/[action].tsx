@@ -101,7 +101,10 @@ export default function UpdateProductPage() {
           {t('form:form-title-edit-product')}
         </h1>
       </div>
-      <CreateOrUpdateProductForm key={product?.id ?? 'new'} initialValues={product} />
+      <CreateOrUpdateProductForm
+        key={`${product?.id ?? 'new'}-${(product as any)?.updated_at ?? ''}`}
+        initialValues={product}
+      />
     </>
   );
 }

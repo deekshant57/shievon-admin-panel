@@ -177,17 +177,40 @@ export default function CreateOrUpdateProductForm({
     formState: { errors },
   } = methods;
 
-  // When editing, reset form when initialValues (API product data) becomes available or when
-  // navigating to a different product. React Hook Form only uses defaultValues on mount, so
-  // prefilled data from the API must be applied via reset when the product loads (e.g. draft).
+  const persistedFieldsRegistered = useRef(false);
+  if (!persistedFieldsRegistered.current) {
+    persistedFieldsRegistered.current = true;
+    // Keep category cascade + EAV values even when their inputs are unmounted.
+    // The form uses shouldUnregister: true (so unused simple/variable fields are
+    // omitted from submit). Without this, edit drops `categories` / `eav_attributes`
+    // because those values are set via defaultValues/setValue, not a mounted input.
+    register('categories' as any, { shouldUnregister: false });
+    register('eav_attributes' as any, { shouldUnregister: false });
+    register('primary_category' as any, { shouldUnregister: false });
+    register('secondary_category' as any, { shouldUnregister: false });
+    register('tertiary_category' as any, { shouldUnregister: false });
+    register('quaternary_category' as any, { shouldUnregister: false });
+  }
+
+  // When editing, reset form when product data loads/refetches (e.g. after Update
+  // navigates back to the same edit URL). RHF only applies defaultValues on mount;
+  // without resetting on updated_at, fields like sale_price stay stuck on the
+  // pre-save cache snapshot while the product id is unchanged.
   useEffect(() => {
     if (initialValues?.id != null) {
       reset(
         getProductDefaultValues(initialValues, isNewTranslation) as Partial<ProductFormValues>,
+        {
+          keepDirtyValues: false,
+        },
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only reset when product id or translation mode changes
-  }, [initialValues?.id, isNewTranslation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    initialValues?.id,
+    (initialValues as any)?.updated_at,
+    isNewTranslation,
+  ]);
 
   const upload_max_filesize =
     (options?.server_info?.upload_max_filesize ?? 0) / 1024;
@@ -484,6 +507,36 @@ export default function CreateOrUpdateProductForm({
       ) : null}
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Controller
+            name={'categories' as any}
+            control={control}
+            shouldUnregister={false}
+            render={() => null}
+          />
+          <Controller
+            name={'eav_attributes' as any}
+            control={control}
+            shouldUnregister={false}
+            render={() => null}
+          />
+          <Controller
+            name={'secondary_category' as any}
+            control={control}
+            shouldUnregister={false}
+            render={() => null}
+          />
+          <Controller
+            name={'tertiary_category' as any}
+            control={control}
+            shouldUnregister={false}
+            render={() => null}
+          />
+          <Controller
+            name={'quaternary_category' as any}
+            control={control}
+            shouldUnregister={false}
+            render={() => null}
+          />
           <ProductFormSection
             title={t('form:featured-image-title')}
             details={featuredImageInformation}

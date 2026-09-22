@@ -92,6 +92,8 @@
   "input-label-inventory": "Inventory",
   "input-label-categories": "Categories",
   "text-select-group-first": "Select a group first to choose categories.",
+  "text-select-category": "Select category",
+  "text-select-sub-category": "Select sub-category",
   "text-loading-saved-category": "Loading saved category",
   "input-label-coupons": "Coupons",
   "input-label-orders": "Orders",

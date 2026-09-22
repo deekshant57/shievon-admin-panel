@@ -40,7 +40,10 @@ export default function UpdateProductPage() {
         </h4>
       </div>
 
-      <CreateOrUpdateProductForm key={product?.id ?? 'new'} initialValues={product} />
+      <CreateOrUpdateProductForm
+        key={`${product?.id ?? 'new'}-${(product as any)?.updated_at ?? ''}`}
+        initialValues={product}
+      />
     </>
   );
 }
