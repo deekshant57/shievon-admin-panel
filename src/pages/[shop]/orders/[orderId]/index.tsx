@@ -218,21 +218,19 @@ export default function OrderDetailsPage() {
       <PageHeader
         title={`${t('form:input-label-order-id')} - ${order?.tracking_number}`}
         subtitle={t('common:order-details-subtitle')}
-        toolbarLayout="stacked"
+      />
+      {/* Static invoice download — temporarily disabled
+      <ActionButton
+        type="button"
+        variant="secondary"
+        size="sm"
+        onClick={handleDownloadInvoice}
+        className="w-full justify-center sm:w-auto"
       >
-        {/* Static invoice download — temporarily disabled
-        <ActionButton
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={handleDownloadInvoice}
-          className="w-full justify-center sm:w-auto"
-        >
-          <DownloadIcon className="h-4 w-4 shrink-0" />
-          {t('common:text-download')} {t('common:text-invoice')}
-        </ActionButton>
-        */}
-      </PageHeader>
+        <DownloadIcon className="h-4 w-4 shrink-0" />
+        {t('common:text-download')} {t('common:text-invoice')}
+      </ActionButton>
+      */}
 
       <Section className="mb-0 overflow-hidden">
         <div className="-mx-6 -mt-6 mb-6 md:-mx-6">

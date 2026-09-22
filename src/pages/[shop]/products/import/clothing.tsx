@@ -45,7 +45,7 @@ function isMissingEndpointError(error: unknown) {
 }
 
 function getJobId(job?: ClothingImportJob) {
-  return job?.id ?? job?.job_id ?? job?.preview_token;
+  return job?.jobId ?? job?.id ?? job?.job_id ?? job?.preview_token;
 }
 
 function getCounts(job?: ClothingImportJob) {
@@ -54,6 +54,10 @@ function getCounts(job?: ClothingImportJob) {
 
 function getRows(job?: ClothingImportJob) {
   return job?.rows ?? job?.row_errors ?? [];
+}
+
+function getFlatErrors(job?: ClothingImportJob) {
+  return job?.errors ?? [];
 }
 
 function getErrors(errors?: ClothingImportError[]) {
@@ -71,7 +75,8 @@ function hasBlockingErrors(job?: ClothingImportJob) {
   return (
     Boolean(counts.invalid_rows && counts.invalid_rows > 0) ||
     Boolean(job?.group_errors?.length) ||
-    getRows(job).some((row) => row.errors?.length)
+    getRows(job).some((row) => row.errors?.length) ||
+    getFlatErrors(job).length > 0
   );
 }
 
@@ -188,6 +193,7 @@ export default function ClothingImportPage() {
   const currentJobId = getJobId(currentJob);
   const counts = getCounts(currentJob);
   const rows = getRows(currentJob);
+  const flatErrors = getFlatErrors(currentJob);
   const currentStatus = String(currentJob?.status ?? '');
   const importCompleted = currentStatus === 'completed';
   const importFailed = ['failed', 'preview_failed'].includes(currentStatus);
@@ -282,6 +288,51 @@ export default function ClothingImportPage() {
       }
     );
   }
+
+  const errorColumns = [
+    {
+      title: t('common:clothing-import-sheet'),
+      dataIndex: 'sheet',
+      key: 'sheet',
+      width: 120,
+      render: (sheet: string) => sheet ?? '-',
+    },
+    {
+      title: t('common:clothing-import-row'),
+      dataIndex: 'row',
+      key: 'row',
+      width: 80,
+      render: (row: number) => row ?? '-',
+    },
+    {
+      title: t('common:clothing-import-parent-sku'),
+      dataIndex: 'parent_sku',
+      key: 'parent_sku',
+      width: 140,
+      render: (parentSku: string) => parentSku ?? '-',
+    },
+    {
+      title: t('common:clothing-import-sku'),
+      dataIndex: 'sku',
+      key: 'sku',
+      width: 140,
+      render: (sku: string) => sku ?? '-',
+    },
+    {
+      title: t('common:clothing-import-code'),
+      dataIndex: 'code',
+      key: 'code',
+      width: 140,
+      render: (code: string) => code ?? '-',
+    },
+    {
+      title: t('common:clothing-import-errors'),
+      dataIndex: 'message',
+      key: 'message',
+      render: (_: unknown, error: ClothingImportError) =>
+        error.message || getErrors([error]),
+    },
+  ];
 
   const rowColumns = [
     {
@@ -678,6 +729,21 @@ export default function ClothingImportPage() {
                 value={counts.variants_to_update}
               />
             </div>
+
+            {flatErrors.length ? (
+              <div className="mb-6">
+                <h3 className="mb-3 font-semibold text-heading">
+                  {t('common:clothing-import-row-errors')}
+                </h3>
+                <Table
+                  columns={errorColumns}
+                  data={flatErrors}
+                  rowKey={(record: ClothingImportError, index) =>
+                    `${record.sku ?? record.row ?? 'error'}-${index}`
+                  }
+                />
+              </div>
+            ) : null}
 
             {currentJob.group_errors?.length ? (
               <div className="mb-6">

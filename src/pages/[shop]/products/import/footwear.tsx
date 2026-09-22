@@ -42,7 +42,7 @@ function isMissingEndpointError(error: unknown) {
 }
 
 function getJobId(job?: FootwearImportJob) {
-  return job?.id ?? job?.job_id ?? job?.preview_token;
+  return job?.jobId ?? job?.id ?? job?.job_id ?? job?.preview_token;
 }
 
 function getCounts(job?: FootwearImportJob) {

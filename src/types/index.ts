@@ -1448,6 +1448,12 @@ export interface ClothingImportError {
   field?: string;
   column?: string;
   message: string;
+  row?: number;
+  sheet?: string;
+  parent_sku?: string;
+  sku?: string;
+  category?: string;
+  code?: string;
 }
 
 export interface ClothingImportRow {
@@ -1480,6 +1486,7 @@ export interface ClothingImportCounts {
 
 export interface ClothingImportJob {
   id?: string | number;
+  jobId?: string | number;
   job_id?: string | number;
   shop_id?: string | number;
   category_id?: string | number;
@@ -1491,9 +1498,11 @@ export interface ClothingImportJob {
   summary?: ClothingImportCounts;
   rows?: ClothingImportRow[];
   row_errors?: ClothingImportRow[];
+  errors?: ClothingImportError[];
   group_errors?: ClothingImportGroupError[];
   error_report_url?: string;
   report_url?: string;
+  report_link?: string;
   message?: string;
   created_at?: string;
   updated_at?: string;
@@ -1550,6 +1559,7 @@ export interface FootwearImportCounts {
 
 export interface FootwearImportJob {
   id?: string | number;
+  jobId?: string | number;
   job_id?: string | number;
   shop_id?: string | number;
   status?: string;

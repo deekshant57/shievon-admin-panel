@@ -1,4 +1,3 @@
-import { DownloadIcon } from '@/components/icons/download-icon';
 import Layout from '@/components/layouts/admin';
 import OrderStatusProgressBox from '@/components/order/order-status-progress-box';
 import OrderViewHeader from '@/components/order/order-view-header';
@@ -14,7 +13,8 @@ import { Table } from '@/components/ui/table';
 import { clearCheckoutAtom } from '@/contexts/checkout';
 import { useCart } from '@/contexts/quick-cart/cart.context';
 import {
-  useDownloadInvoiceMutation,
+  // Static invoice download — temporarily disabled
+  // useDownloadInvoiceMutation,
   useOrderQuery,
   useUpdateOrderMutation,
 } from '@/data/order';
@@ -38,6 +38,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useFormatPhoneNumber } from '@/utils/format-phone-number';
+// import { DownloadIcon } from '@/components/icons/download-icon';
 
 type FormValues = {
   order_status: any;
@@ -45,7 +46,7 @@ type FormValues = {
 export default function OrderDetailsPage() {
   const { t } = useTranslation();
   const { query, locale } = useRouter();
-  const { alignLeft, alignRight, isRTL } = useIsRTL();
+  const { alignLeft, alignRight /*, isRTL */ } = useIsRTL();
   const { resetCart } = useCart();
   const [, resetCheckout] = useAtom(clearCheckoutAtom);
 
@@ -62,14 +63,15 @@ export default function OrderDetailsPage() {
     error,
     refetch: refetchOrder,
   } = useOrderQuery({ id: query.orderId as string, language: locale! });
-  const { refetch } = useDownloadInvoiceMutation(
-    {
-      order_id: query.orderId as string,
-      isRTL,
-      language: locale!,
-    },
-    { enabled: false },
-  );
+  // Static invoice download — temporarily disabled
+  // const { refetch } = useDownloadInvoiceMutation(
+  //   {
+  //     order_id: query.orderId as string,
+  //     isRTL,
+  //     language: locale!,
+  //   },
+  //   { enabled: false },
+  // );
 
   const {
     handleSubmit,
@@ -138,16 +140,17 @@ export default function OrderDetailsPage() {
   if (error) return <ErrorMessage message={error.message} />;
   if (!order) return <ErrorMessage message={t('common:no-order-found')} />;
 
-  async function handleDownloadInvoice() {
-    const { data } = await refetch();
-
-    if (data) {
-      const a = document.createElement('a');
-      a.href = data;
-      a.setAttribute('download', 'order-invoice');
-      a.click();
-    }
-  }
+  // Static invoice download — temporarily disabled
+  // async function handleDownloadInvoice() {
+  //   const { data } = await refetch();
+  //
+  //   if (data) {
+  //     const a = document.createElement('a');
+  //     a.href = data;
+  //     a.setAttribute('download', 'order-invoice');
+  //     a.click();
+  //   }
+  // }
 
   const columns = [
     {
@@ -209,19 +212,19 @@ export default function OrderDetailsPage() {
       <PageHeader
         title={`${t('form:input-label-order-id')} - ${order?.tracking_number}`}
         subtitle={t('common:order-details-subtitle')}
-        toolbarLayout="stacked"
+      />
+      {/* Static invoice download — temporarily disabled
+      <ActionButton
+        type="button"
+        variant="secondary"
+        size="sm"
+        onClick={handleDownloadInvoice}
+        className="w-full justify-center sm:w-auto"
       >
-        <ActionButton
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={handleDownloadInvoice}
-          className="w-full justify-center sm:w-auto"
-        >
-          <DownloadIcon className="h-4 w-4 shrink-0" />
-          {t('common:text-download')} {t('common:text-invoice')}
-        </ActionButton>
-      </PageHeader>
+        <DownloadIcon className="h-4 w-4 shrink-0" />
+        {t('common:text-download')} {t('common:text-invoice')}
+      </ActionButton>
+      */}
 
       <Section className="mb-0 overflow-hidden">
         <div className="-mx-6 -mt-6 mb-6 md:-mx-6">

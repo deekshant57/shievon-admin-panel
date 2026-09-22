@@ -611,6 +611,7 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
         title={t('common:text-banner')}
         details={t('form:banner-slider-help-text')}
       >
+        {/* Minimal demo banner tip — temporarily hidden
         {layoutType === 'minimal' && fields?.length > 0 ? (
           <Alert
             className="mb-5"
@@ -619,6 +620,7 @@ export default function CreateOrUpdateTypeForm({ initialValues }: IProps) {
         ) : (
           ''
         )}
+        */}
         {(layoutType === 'compact' || layoutType === 'minimal') &&
         fields?.length > 0 ? (
           <Alert
