@@ -21,7 +21,7 @@ export const fullAddressAtom = atom((get) => {
     : '';
 });
 
-function getLocation(placeOrResult: any) {
+export function getLocation(placeOrResult: any) {
   // Declare the location variable with the Location interface
   const location: GoogleMapLocation = {
     lat: placeOrResult?.geometry?.location.lat(),
@@ -31,11 +31,8 @@ function getLocation(placeOrResult: any) {
     placeName: placeOrResult.name || placeOrResult.formatted_address?.split(',')[0] || '',
   };
 
-  if (!placeOrResult?.address_components) {
-    return location;
-  }
-
-  const addressComponents = placeOrResult.address_components as Component[];
+  const addressComponents = (placeOrResult.address_components ??
+    []) as Component[];
   const streetAddressParts: string[] = [];
   let premiseName = '';
 
@@ -92,16 +89,21 @@ function getLocation(placeOrResult: any) {
     location.placeName = premiseName;
   }
 
-  // If Google omits postal_code in components, try PIN/postal from formatted address
-  // (common for India: 6-digit PIN often appears in formatted_address string)
+  // Only a PIN sitting in the postal slot (the segment before the country).
+  // A 6-digit plot or phone number earlier in the address is not a PIN.
   if (
     !location.zip &&
     placeOrResult.formatted_address &&
     typeof placeOrResult.formatted_address === 'string'
   ) {
-    const pinMatch = placeOrResult.formatted_address.match(/\b\d{6}\b/)
+    const parts = placeOrResult.formatted_address
+      .split(',')
+      .map((part: string) => part.trim())
+      .filter(Boolean)
+    const stateAndCode = parts.length >= 2 ? parts[parts.length - 2] : ''
+    const pinMatch = stateAndCode.match(/(?:^|\s)(\d{6})$/)
     if (pinMatch) {
-      location.zip = pinMatch[0]
+      location.zip = pinMatch[1]
     }
   }
 
@@ -124,6 +126,14 @@ function getLocation(placeOrResult: any) {
       location.street_address = streetParts.join(', ');
     } else {
       location.street_address = formatted;
+    }
+  }
+
+  if (!location.street_address?.trim()) {
+    const fallbackStreet =
+      location.placeName || placeOrResult.formatted_address || ''
+    if (fallbackStreet) {
+      location.street_address = fallbackStreet
     }
   }
 

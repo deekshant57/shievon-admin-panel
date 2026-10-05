@@ -60,6 +60,9 @@ export const shopValidationSchema = yup.object().shape({
         .required('form:error-lng-required')
         .min(-180, 'form:error-lng-range')
         .max(180, 'form:error-lng-range'),
+      pinAdjusted: yup
+        .boolean()
+        .oneOf([true], 'form:error-shop-pin-entrance'),
     }),
     socials: yup.array().of(
       yup.object().shape({
@@ -101,7 +104,7 @@ export const shopValidationSchema = yup.object().shape({
     country: yup.string().required('form:error-country-required'),
     city: yup.string().required('form:error-city-required'),
     state: yup.string().required('form:error-state-required'),
-    zip: yup.string().required('form:error-zip-required'),
+    zip: yup.string().nullable(),
     street_address: yup.string().required('form:error-street-address-required'),
   }),
   timings: yup.object().shape({

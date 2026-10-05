@@ -38,7 +38,7 @@ import { join, split } from 'lodash';
 import omit from 'lodash/omit';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import OpenAIButton from '../openAI/openAI.button';
 import { useModalAction } from '../ui/modal/modal.context';
@@ -48,6 +48,9 @@ import StickyFooterPanel from '@/components/ui/sticky-footer-panel';
 import { siteSettings, socialIcon } from '@/settings/site.settings';
 import { ShopDescriptionSuggestion } from '@/components/shop/shop-ai-prompt';
 import ServiceScheduleForm from '@/components/shop/service-schedule-form';
+import ShopLocationPicker, {
+  ShopLocationPick,
+} from '@/components/shop/shop-location-picker';
 import PhoneNumberInput from '@/components/ui/phone-input';
 import DatePicker from '@/components/ui/date-picker';
 import { getDefaultSchedule } from '@/utils/serviceability';
@@ -110,6 +113,26 @@ type FormValues = {
   isShopUnderMaintenance?: boolean;
 };
 
+function addressLine(parts: {
+  street?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
+}) {
+  return [parts.street, parts.city, parts.state, parts.zip, parts.country]
+    .map((part) => String(part ?? '').trim())
+    .filter(Boolean)
+    .join(', ');
+}
+
+function coordKey(lat: unknown, lng: unknown) {
+  const latitude = typeof lat === 'number' ? lat : Number(lat);
+  const longitude = typeof lng === 'number' ? lng : Number(lng);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return '';
+  return `${latitude.toFixed(5)},${longitude.toFixed(5)}`;
+}
+
 const resolveAttachmentIdForUpdate = (
   currentValue: any,
   initialValue: any,
@@ -159,6 +182,7 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
     handleSubmit,
     formState: { errors },
     watch,
+    getValues,
     setValue,
     control,
   } = useForm<FormValues>({
@@ -187,6 +211,17 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
             },
             settings: {
               ...initialValues?.settings,
+              location: {
+                ...(initialValues?.settings?.location ?? {}),
+                pinAdjusted: Boolean(
+                  (initialValues?.address as { lat?: unknown } | undefined)
+                    ?.lat ?? initialValues?.settings?.location?.lat,
+                ) &&
+                  Boolean(
+                    (initialValues?.address as { lng?: unknown } | undefined)
+                      ?.lng ?? initialValues?.settings?.location?.lng,
+                  ),
+              },
               serviceSchedule:
                 initialValues?.settings?.serviceSchedule?.length
                   ? initialValues.settings.serviceSchedule
@@ -230,6 +265,7 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
             timings: { open: '09:00', close: '18:00' },
             settings: {
               serviceSchedule: getDefaultSchedule(),
+              location: { pinAdjusted: false },
             } as any,
             address: {
               country: '',
@@ -292,6 +328,114 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
     control,
   });
   const isMaintenanceMode = watch('settings.isShopUnderMaintenance');
+  const shopLocation = useWatch({
+    control,
+    name: 'settings.location',
+  });
+
+  const addressEchoRef = useRef('');
+  const coordEchoRef = useRef(
+    coordKey(
+      (initialValues?.address as { lat?: unknown } | undefined)?.lat ??
+        initialValues?.settings?.location?.lat,
+      (initialValues?.address as { lng?: unknown } | undefined)?.lng ??
+        initialValues?.settings?.location?.lng,
+    ),
+  );
+  const [addressMovedPin, setAddressMovedPin] = useState(false);
+
+  const applyPickedLocation = useCallback(
+    (location: ShopLocationPick) => {
+      const current = (getValues('settings.location') || {}) as Record<
+        string,
+        unknown
+      >;
+      const currentAddress = getValues('address');
+      const lat =
+        location.lat != null && String(location.lat).trim() !== ''
+          ? Number(location.lat)
+          : undefined;
+      const lng =
+        location.lng != null && String(location.lng).trim() !== ''
+          ? Number(location.lng)
+          : undefined;
+      const updateAddress = location.addressResolved !== false;
+      const keepText = (incoming: unknown, previous: unknown) => {
+        const text = typeof incoming === 'string' ? incoming.trim() : '';
+        if (text) return text;
+        return typeof previous === 'string' ? previous : '';
+      };
+      const street = keepText(
+        location.street_address,
+        currentAddress?.street_address,
+      );
+      const city = keepText(location.city, currentAddress?.city);
+      const state = keepText(location.state, currentAddress?.state);
+      const country = keepText(location.country, currentAddress?.country);
+      const zip = location.zip?.trim() ?? '';
+      if (updateAddress) {
+        addressEchoRef.current = addressLine({
+          street,
+          city,
+          state,
+          zip,
+          country,
+        });
+        setAddressMovedPin(false);
+      }
+      if (lat != null && Number.isFinite(lat) && lng != null && Number.isFinite(lng)) {
+        coordEchoRef.current = coordKey(lat, lng);
+      }
+
+      if (updateAddress) {
+        setValue('address.street_address', street, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+        setValue('address.city', city, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+        setValue('address.state', state, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+        setValue('address.zip', zip, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+        setValue('address.country', country, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }
+
+      setValue(
+        'settings.location',
+        {
+          ...current,
+          ...(updateAddress
+            ? {
+                street_address: street,
+                city,
+                state,
+                zip,
+                country,
+                formattedAddress:
+                  location.formattedAddress ?? current.formattedAddress,
+              }
+            : {}),
+          ...(lat != null && Number.isFinite(lat) ? { lat } : {}),
+          ...(lng != null && Number.isFinite(lng) ? { lng } : {}),
+          ...(typeof location.pinAdjusted === 'boolean'
+            ? { pinAdjusted: location.pinAdjusted }
+            : {}),
+        } as FormValues['settings']['location'],
+        { shouldDirty: true, shouldValidate: true },
+      );
+    },
+    [getValues, setValue],
+  );
 
   const today = new Date();
 
@@ -327,6 +471,13 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
           .filter((part) => String(part ?? '').trim() !== '')
           .join(', ')
 
+      addressEchoRef.current = addressLine({
+        street: street_address,
+        city,
+        state,
+        zip,
+        country,
+      })
       setValue('settings.location', {
         ...loc,
         country,
@@ -337,9 +488,99 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
         lat,
         lng,
         formattedAddress,
+        pinAdjusted:
+          String(lat ?? '').trim() !== '' && String(lng ?? '').trim() !== '',
       })
     }
   }, [initialValues, setValue])
+
+  const watchedStreet = watch('address.street_address');
+  const watchedCity = watch('address.city');
+  const watchedState = watch('address.state');
+  const watchedZip = watch('address.zip');
+  const watchedCountry = watch('address.country');
+
+  useEffect(() => {
+    const line = addressLine({
+      street: watchedStreet,
+      city: watchedCity,
+      state: watchedState,
+      zip: watchedZip,
+      country: watchedCountry,
+    });
+    if (line.length < 3 || line === addressEchoRef.current) return;
+
+    const timer = window.setTimeout(() => {
+      const current = (getValues('settings.location') || {}) as {
+        pinAdjusted?: boolean;
+        lat?: number;
+        lng?: number;
+      };
+      if (current.pinAdjusted) {
+        addressEchoRef.current = line;
+        return;
+      }
+      if (typeof google === 'undefined' || !google.maps?.Geocoder) return;
+
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: line }, (results, status) => {
+        const latest = addressLine({
+          street: getValues('address.street_address'),
+          city: getValues('address.city'),
+          state: getValues('address.state'),
+          zip: getValues('address.zip'),
+          country: getValues('address.country'),
+        });
+        if (latest !== line) return;
+        const placed = getValues('settings.location') as { pinAdjusted?: boolean } | undefined;
+        if (placed?.pinAdjusted) return;
+        if (status !== 'OK' || !results?.[0]?.geometry?.location) return;
+
+        const nextLat = results[0].geometry.location.lat();
+        const nextLng = results[0].geometry.location.lng();
+        const location = (getValues('settings.location') || {}) as Record<string, unknown>;
+        addressEchoRef.current = line;
+        coordEchoRef.current = coordKey(nextLat, nextLng);
+        setAddressMovedPin(true);
+        setValue(
+          'settings.location',
+          {
+            ...location,
+            lat: nextLat,
+            lng: nextLng,
+            pinAdjusted: false,
+          } as FormValues['settings']['location'],
+          { shouldDirty: true, shouldValidate: true },
+        );
+      });
+    }, 800);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    watchedStreet,
+    watchedCity,
+    watchedState,
+    watchedZip,
+    watchedCountry,
+    getValues,
+    setValue,
+  ]);
+
+  useEffect(() => {
+    const key = coordKey(shopLocation?.lat, shopLocation?.lng);
+    if (!key || key === coordEchoRef.current) return;
+    coordEchoRef.current = key;
+    const current = (getValues('settings.location') || {}) as Record<string, unknown>;
+    setAddressMovedPin(false);
+    setValue(
+      'settings.location',
+      {
+        ...current,
+        pinAdjusted: true,
+      } as FormValues['settings']['location'],
+      { shouldDirty: true, shouldValidate: true },
+    );
+  }, [shopLocation?.lat, shopLocation?.lng, getValues, setValue]);
 
   const isSlugEditable =
     (router?.query?.action === 'edit' || router?.pathname === '/[shop]/edit') &&
@@ -355,7 +596,9 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
   }, [initialValues, isSlugEditable, setValue, slugAutoSuggest])
 
   function onSubmit(values: FormValues) {
-    const location = { ...omit(values?.settings?.location, '__typename') } as any;
+    const location = {
+      ...omit(values?.settings?.location, ['__typename', 'pinAdjusted']),
+    } as any;
     const normalizedLat =
       location?.lat != null && String(location.lat).trim() !== ''
         ? Number(location.lat)
@@ -693,6 +936,22 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
         title={t('form:shop-address')}
         details={t('form:shop-address-helper-text')}
       >
+        <ShopLocationPicker
+          latitude={shopLocation?.lat}
+          longitude={shopLocation?.lng}
+          formattedAddress={shopLocation?.formattedAddress}
+          entranceConfirmed={shopLocation?.pinAdjusted === true}
+          onChange={applyPickedLocation}
+        />
+        {(errors.settings?.location as { pinAdjusted?: { message?: string } })
+          ?.pinAdjusted?.message ? (
+          <p className="-mt-2 mb-4 text-xs text-red-500">
+            {t(
+              (errors.settings?.location as { pinAdjusted?: { message?: string } })
+                .pinAdjusted?.message as string,
+            )}
+          </p>
+        ) : null}
         <p className="mb-4 text-sm font-medium text-heading">
           {t('form:shop-address-structured-title')}
         </p>
@@ -705,6 +964,14 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
             error={t(errors.address?.street_address?.message as string)}
             required
           />
+          {addressMovedPin ? (
+            <p className="text-xs text-amber-700">
+              {t(
+                'form:shop-location-address-moved-pin',
+                'The pin moved to this address. Click the entrance or drag the pin if that point is off.',
+              )}
+            </p>
+          ) : null}
           <Input
             label={t('form:input-label-city')}
             {...register('address.city')}
@@ -721,14 +988,18 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
             error={t(errors.address?.state?.message as string)}
             required
           />
-          <Input
-            label={t('form:input-label-zip')}
-            {...register('address.zip')}
-            variant="outline"
-            className="mb-0"
-            error={t(errors.address?.zip?.message as string)}
-            required
-          />
+          <div>
+            <Input
+              label={t('form:input-label-zip')}
+              {...register('address.zip')}
+              variant="outline"
+              className="mb-0"
+              error={t(errors.address?.zip?.message as string)}
+            />
+            <p className="mt-2 text-xs text-muted-foreground">
+              {t('form:shop-zip-manual-hint')}
+            </p>
+          </div>
           <Input
             label={t('form:input-label-country')}
             {...register('address.country')}
@@ -757,6 +1028,12 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
             error={t(errors.settings?.location?.lng?.message as string)}
             required
           />
+          <p className="-mt-2 text-xs text-muted-foreground">
+            {t(
+              'form:shop-location-coordinates-hint',
+              'These update when you move the pin. Type them if you already know the exact point.',
+            )}
+          </p>
         </div>
       </FormSection>
 

@@ -803,6 +803,8 @@ export interface Location {
   country?: string;
   zip?: string;
   formattedAddress?: string;
+  /** Form-only. Stripped before the shop is saved. */
+  pinAdjusted?: boolean;
 }
 
 export interface ShopSocials {

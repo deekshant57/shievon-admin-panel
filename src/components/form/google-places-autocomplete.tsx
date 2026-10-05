@@ -15,13 +15,16 @@ export default function GooglePlacesAutocomplete({
   disabled = false,
   icon = false,
   placeholder,
+  restrictCountry = 'in',
 }: {
-  onChange?: () => void;
+  onChange?: (location: GoogleMapLocation) => void;
   onChangeCurrentLocation?: (location: GoogleMapLocation) => void;
   data?: GoogleMapLocation;
   disabled?: boolean;
   icon?: boolean;
   placeholder?: string;
+  /** Pass false to search every country. Defaults to India for address forms. */
+  restrictCountry?: string | false;
 }) {
   const { t } = useTranslation();
   const [inputValue, setInputValue] = useState("");
@@ -104,8 +107,11 @@ export default function GooglePlacesAutocomplete({
           'address_components',
           'geometry.location',
           'formatted_address',
+          'name',
         ]}
-        componentRestrictions={{ country: 'in' }}
+        {...(restrictCountry
+          ? { componentRestrictions: { country: restrictCountry } }
+          : {})}
         // Note: Not setting 'types' prop to avoid "cannot be mixed" errors
         // This allows all place types: establishments, addresses, and geocodes
       >
