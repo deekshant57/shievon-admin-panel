@@ -7,30 +7,38 @@ export const shopValidationSchema = yup.object().shape({
   name: yup.string().required('form:error-name-required'),
   balance: yup.object().shape({
     payment_info: yup.object().shape({
-      name: yup
-        .string()
-        .trim()
-        .required('form:error-account-holder-name-required'),
+      name: yup.string().trim().nullable().optional(),
       email: yup
         .string()
         .trim()
-        .required('form:error-account-holder-email-required')
+        .transform((value) => (value === '' ? undefined : value))
+        .nullable()
+        .optional()
         .email('form:error-email-format'),
-      bank: yup.string().trim().required('form:error-bank-name-required'),
+      bank: yup.string().trim().nullable().optional(),
       account: yup
         .string()
         .transform((value) =>
           value === '' || value == null ? undefined : String(value).trim(),
         )
-        .required('form:error-account-number-required')
-        .matches(/^\d{9,18}$/, 'form:error-account-number-format'),
+        .nullable()
+        .optional()
+        .matches(/^\d{9,18}$/, {
+          message: 'form:error-account-number-format',
+          excludeEmptyString: true,
+        }),
       ifsc: yup
         .string()
-        .transform((value) =>
-          value ? String(value).trim().toUpperCase() : value,
-        )
-        .required('form:error-ifsc-required')
-        .matches(/^[A-Z]{4}0[A-Z0-9]{6}$/, 'form:error-ifsc-format'),
+        .transform((value) => {
+          if (value == null || String(value).trim() === '') return undefined;
+          return String(value).trim().toUpperCase();
+        })
+        .nullable()
+        .optional()
+        .matches(/^[A-Z]{4}0[A-Z0-9]{6}$/, {
+          message: 'form:error-ifsc-format',
+          excludeEmptyString: true,
+        }),
     }),
   }),
   settings: yup.object().shape({

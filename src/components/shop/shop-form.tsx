@@ -14,7 +14,6 @@ import { useSettingsQuery } from '@/data/settings';
 import { useCreateShopMutation, useUpdateShopMutation } from '@/data/shop';
 import {
   useUpdateSettlementPaymentInfoMutation,
-  useVerifySettlementPaymentInfoMutation,
   useVendorSettlementQuery,
 } from '@/data/vendor-settlement';
 import {
@@ -55,9 +54,6 @@ import PhoneNumberInput from '@/components/ui/phone-input';
 import DatePicker from '@/components/ui/date-picker';
 import { getDefaultSchedule } from '@/utils/serviceability';
 import { addDays, addMinutes, isSameDay, isToday } from 'date-fns';
-import Badge from '@/components/ui/badge/badge';
-import Button from '@/components/ui/button';
-import { resolveBankVerificationStatus } from '@/utils/bank-verification';
 // const socialIcon = [
 //   {
 //     value: 'FacebookIcon',
@@ -168,8 +164,6 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
   const { mutate: updateShop, isLoading: updating } = useUpdateShopMutation();
   const { mutate: updatePaymentInfo, isLoading: savingPayment } =
     useUpdateSettlementPaymentInfoMutation();
-  const { mutate: verifyPaymentInfo, isLoading: verifying } =
-    useVerifySettlementPaymentInfoMutation();
   const { settlement } = useVendorSettlementQuery(initialValues?.id, {
     enabled: Boolean(initialValues?.id),
     retry: false,
@@ -279,7 +273,7 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
     resolver: yupResolver(shopValidationSchema) as any,
   });
 
-  // Prefer settlement payment_info (includes IFSC + verification) when available
+  // Prefer settlement payment_info (includes IFSC) when available
   useEffect(() => {
     const payment = settlement?.payment_info;
     if (!payment) return;
@@ -812,124 +806,41 @@ const ShopForm = ({ initialValues }: { initialValues?: Shop }) => {
         title={t('form:shop-payment-info')}
         details={t('form:payment-info-helper-text')}
       >
-        {(() => {
-          const verificationStatus = resolveBankVerificationStatus({
-            settlement,
-            shopPaymentInfo: initialValues?.balance?.payment_info,
-          });
-
-          if (typeof window !== 'undefined') {
-            // eslint-disable-next-line no-console
-            console.info('[bank-verify] edit-shop status', {
-              shopId: initialValues?.id,
-              fromSettlement:
-                settlement?.payment_info?.verification_status ?? null,
-              fromShopBalance:
-                initialValues?.balance?.payment_info?.verification_status ??
-                null,
-              resolved: verificationStatus,
-              hasSettlement: Boolean(settlement),
-            });
-          }
-
-          const paymentWatch = watch('balance.payment_info');
-          const canVerify = Boolean(
-            initialValues?.id &&
-              verificationStatus !== 'verified' &&
-              paymentWatch?.name?.toString().trim() &&
-              paymentWatch?.bank?.toString().trim() &&
-              paymentWatch?.account != null &&
-              String(paymentWatch.account).trim() &&
-              paymentWatch?.ifsc?.toString().trim(),
-          );
-          const statusLabel =
-            verificationStatus === 'verified'
-              ? t('common:text-bank-verified') || 'Verified'
-              : verificationStatus === 'pending'
-                ? t('common:text-bank-pending') || 'Pending'
-                : verificationStatus === 'failed'
-                  ? t('common:text-bank-failed') || 'Failed'
-                  : t('common:text-bank-unverified') || 'Unverified';
-          const statusColor =
-            verificationStatus === 'verified'
-              ? 'bg-green-500 bg-opacity-10 text-green-600'
-              : verificationStatus === 'failed'
-                ? 'bg-red-500 bg-opacity-10 text-red-500'
-                : 'bg-yellow-500 bg-opacity-10 text-yellow-700';
-
-          return (
-            <>
-              {initialValues?.id ? (
-                <div className="mb-5 flex flex-wrap items-center gap-3">
-                  <Badge text={statusLabel} color={statusColor} />
-                  {verificationStatus !== 'verified' ? (
-                    <>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="small"
-                        loading={verifying}
-                        disabled={!canVerify || verifying || savingPayment}
-                        onClick={() => {
-                          if (!initialValues?.id) return;
-                          verifyPaymentInfo(initialValues.id);
-                        }}
-                      >
-                        {t('form:button-label-verify-bank') || 'Verify bank'}
-                      </Button>
-                      {!canVerify ? (
-                        <span className="text-xs text-muted-foreground">
-                          {t('form:text-verify-bank-hint') ||
-                            'Fill name, bank, account and IFSC, then save before verifying.'}
-                        </span>
-                      ) : null}
-                    </>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">
-                      {t('form:text-bank-already-verified') ||
-                        'Bank account verified. No further action needed.'}
-                    </span>
-                  )}
-                </div>
-              ) : null}
-              <Input
-                label={t('form:input-label-account-holder-name')}
-                {...register('balance.payment_info.name')}
-                variant="outline"
-                className="mb-5"
-                error={t(errors.balance?.payment_info?.name?.message!)}
-              />
-              <Input
-                label={t('form:input-label-account-holder-email')}
-                {...register('balance.payment_info.email')}
-                variant="outline"
-                className="mb-5"
-                error={t(errors.balance?.payment_info?.email?.message!)}
-              />
-              <Input
-                label={t('form:input-label-bank-name')}
-                {...register('balance.payment_info.bank')}
-                variant="outline"
-                className="mb-5"
-                error={t(errors.balance?.payment_info?.bank?.message!)}
-              />
-              <Input
-                label={t('form:input-label-account-number')}
-                {...register('balance.payment_info.account')}
-                variant="outline"
-                className="mb-5"
-                error={t(errors.balance?.payment_info?.account?.message!)}
-              />
-              <Input
-                label={t('form:input-label-ifsc') || 'IFSC'}
-                {...register('balance.payment_info.ifsc')}
-                variant="outline"
-                className="mb-5"
-                error={t(errors.balance?.payment_info?.ifsc?.message!)}
-              />
-            </>
-          );
-        })()}
+        <Input
+          label={t('form:input-label-account-holder-name')}
+          {...register('balance.payment_info.name')}
+          variant="outline"
+          className="mb-5"
+          error={t(errors.balance?.payment_info?.name?.message!)}
+        />
+        <Input
+          label={t('form:input-label-account-holder-email')}
+          {...register('balance.payment_info.email')}
+          variant="outline"
+          className="mb-5"
+          error={t(errors.balance?.payment_info?.email?.message!)}
+        />
+        <Input
+          label={t('form:input-label-bank-name')}
+          {...register('balance.payment_info.bank')}
+          variant="outline"
+          className="mb-5"
+          error={t(errors.balance?.payment_info?.bank?.message!)}
+        />
+        <Input
+          label={t('form:input-label-account-number')}
+          {...register('balance.payment_info.account')}
+          variant="outline"
+          className="mb-5"
+          error={t(errors.balance?.payment_info?.account?.message!)}
+        />
+        <Input
+          label={t('form:input-label-ifsc') || 'IFSC'}
+          {...register('balance.payment_info.ifsc')}
+          variant="outline"
+          className="mb-5"
+          error={t(errors.balance?.payment_info?.ifsc?.message!)}
+        />
       </FormSection>
 
       <FormSection
