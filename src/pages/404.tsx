@@ -32,7 +32,7 @@ const NotFoundPage = () => {
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => ({
   props: {
-    ...(await serverSideTranslations(locale!, ['common'])),
+    ...(await serverSideTranslations(locale || 'en', ['common'])),
   },
 })
 

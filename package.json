@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3002",
-    "build": "next build",
+    "build": "node scripts/generate-gh-routes.mjs && next build",
+    "postbuild": "node scripts/prepare-github-pages.mjs",
     "start": "next start -p 3002",
     "lint": "next lint"
   },

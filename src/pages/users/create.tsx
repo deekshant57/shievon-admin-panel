@@ -20,6 +20,6 @@ CreateCustomerPage.Layout = Layout;
 
 export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['table', 'form', 'common'])),
+    ...(await serverSideTranslations(locale || 'en', ['table', 'form', 'common'])),
   },
 });

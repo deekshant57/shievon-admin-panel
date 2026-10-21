@@ -30,9 +30,9 @@ UpdateTaxPage.Layout = Layout;
 
 export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['table', 'common', 'form'])),
+    ...(await serverSideTranslations(locale || 'en', ['table', 'common', 'form'])),
   },
 });
 export const getStaticPaths: GetStaticPaths = async () => {
-  return { paths: [], fallback: 'blocking' };
+  return { paths: [{ params: {"id":"__gh"} }], fallback: false };
 };

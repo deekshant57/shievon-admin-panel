@@ -52,10 +52,14 @@ VendorFlashSaleSinglePage.authenticate = {
 };
 VendorFlashSaleSinglePage.Layout = ShopLayout;
 
-export const getServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['common'])),
+    ...(await serverSideTranslations(locale || 'en', ['common'])),
   },
 });
 
 export default VendorFlashSaleSinglePage;
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"shop":"__gh","slug":"__gh"} }], fallback: false };
+}

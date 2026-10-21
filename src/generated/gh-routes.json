@@ -1,0 +1,796 @@
+[
+  {
+    "page": "/[shop]/flash-sale/vendor-request/create",
+    "regex": "^/([^/]+)/flash-sale/vendor-request/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/flash-sale/vendor-request/create"
+  },
+  {
+    "page": "/[shop]/products/import/clothing",
+    "regex": "^/([^/]+)/products/import/clothing/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/products/import/clothing"
+  },
+  {
+    "page": "/[shop]/products/import/footwear",
+    "regex": "^/([^/]+)/products/import/footwear/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/products/import/footwear"
+  },
+  {
+    "page": "/shop-transfer/vendor/[transaction_identifier]",
+    "regex": "^/shop-transfer/vendor/([^/]+)/?$",
+    "params": [
+      "transaction_identifier"
+    ],
+    "dataPath": "/shop-transfer/vendor/__gh"
+  },
+  {
+    "page": "/[shop]/terms-and-conditions/create",
+    "regex": "^/([^/]+)/terms-and-conditions/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/terms-and-conditions/create"
+  },
+  {
+    "page": "/[shop]/flash-sale/vendor-request",
+    "regex": "^/([^/]+)/flash-sale/vendor-request/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/flash-sale/vendor-request"
+  },
+  {
+    "page": "/[shop]/service-categories/create",
+    "regex": "^/([^/]+)/service-categories/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/service-categories/create"
+  },
+  {
+    "page": "/flash-sale/vendor-request/[id]",
+    "regex": "^/flash-sale/vendor-request/([^/]+)/?$",
+    "params": [
+      "id"
+    ],
+    "dataPath": "/flash-sale/vendor-request/__gh"
+  },
+  {
+    "page": "/[shop]/flash-sale/my-products",
+    "regex": "^/([^/]+)/flash-sale/my-products/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/flash-sale/my-products"
+  },
+  {
+    "page": "/[shop]/products/product-stock",
+    "regex": "^/([^/]+)/products/product-stock/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/products/product-stock"
+  },
+  {
+    "page": "/[shop]/manufacturers/create",
+    "regex": "^/([^/]+)/manufacturers/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/manufacturers/create"
+  },
+  {
+    "page": "/[shop]/service-types/create",
+    "regex": "^/([^/]+)/service-types/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/service-types/create"
+  },
+  {
+    "page": "/[shop]/store-notices/create",
+    "regex": "^/([^/]+)/store-notices/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/store-notices/create"
+  },
+  {
+    "page": "/[shop]/orders/transaction",
+    "regex": "^/([^/]+)/orders/transaction/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/orders/transaction"
+  },
+  {
+    "page": "/[shop]/products/inventory",
+    "regex": "^/([^/]+)/products/inventory/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/products/inventory"
+  },
+  {
+    "page": "/[shop]/attributes/create",
+    "regex": "^/([^/]+)/attributes/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/attributes/create"
+  },
+  {
+    "page": "/[shop]/withdraws/create",
+    "regex": "^/([^/]+)/withdraws/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/withdraws/create"
+  },
+  {
+    "page": "/[shop]/products/create",
+    "regex": "^/([^/]+)/products/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/products/create"
+  },
+  {
+    "page": "/[shop]/services/create",
+    "regex": "^/([^/]+)/services/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/services/create"
+  },
+  {
+    "page": "/[shop]/authors/create",
+    "regex": "^/([^/]+)/authors/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/authors/create"
+  },
+  {
+    "page": "/[shop]/coupons/create",
+    "regex": "^/([^/]+)/coupons/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/coupons/create"
+  },
+  {
+    "page": "/[shop]/products/draft",
+    "regex": "^/([^/]+)/products/draft/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/products/draft"
+  },
+  {
+    "page": "/notify-logs/user/[id]",
+    "regex": "^/notify-logs/user/([^/]+)/?$",
+    "params": [
+      "id"
+    ],
+    "dataPath": "/notify-logs/user/__gh"
+  },
+  {
+    "page": "/[shop]/staffs/create",
+    "regex": "^/([^/]+)/staffs/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/staffs/create"
+  },
+  {
+    "page": "/shippings/edit/[id]",
+    "regex": "^/shippings/edit/([^/]+)/?$",
+    "params": [
+      "id"
+    ],
+    "dataPath": "/shippings/edit/__gh"
+  },
+  {
+    "page": "/[shop]/faqs/create",
+    "regex": "^/([^/]+)/faqs/create/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/faqs/create"
+  },
+  {
+    "page": "/services/[id]/edit",
+    "regex": "^/services/([^/]+)/edit/?$",
+    "params": [
+      "id"
+    ],
+    "dataPath": "/services/__gh/edit"
+  },
+  {
+    "page": "/taxes/edit/[id]",
+    "regex": "^/taxes/edit/([^/]+)/?$",
+    "params": [
+      "id"
+    ],
+    "dataPath": "/taxes/edit/__gh"
+  },
+  {
+    "page": "/shop-transfer/[transaction_identifier]",
+    "regex": "^/shop-transfer/([^/]+)/?$",
+    "params": [
+      "transaction_identifier"
+    ],
+    "dataPath": "/shop-transfer/__gh"
+  },
+  {
+    "page": "/refund-policies/[refundPolicySlug]",
+    "regex": "^/refund-policies/([^/]+)/?$",
+    "params": [
+      "refundPolicySlug"
+    ],
+    "dataPath": "/refund-policies/__gh"
+  },
+  {
+    "page": "/terms-and-conditions/[termSlug]",
+    "regex": "^/terms-and-conditions/([^/]+)/?$",
+    "params": [
+      "termSlug"
+    ],
+    "dataPath": "/terms-and-conditions/__gh"
+  },
+  {
+    "page": "/[shop]/terms-and-conditions",
+    "regex": "^/([^/]+)/terms-and-conditions/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/terms-and-conditions"
+  },
+  {
+    "page": "/[shop]/service-categories",
+    "regex": "^/([^/]+)/service-categories/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/service-categories"
+  },
+  {
+    "page": "/[shop]/transfer-ownership",
+    "regex": "^/([^/]+)/transfer-ownership/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/transfer-ownership"
+  },
+  {
+    "page": "/delivery-issues/[orderId]",
+    "regex": "^/delivery-issues/([^/]+)/?$",
+    "params": [
+      "orderId"
+    ],
+    "dataPath": "/delivery-issues/__gh"
+  },
+  {
+    "page": "/withdraws/[withdrawId]",
+    "regex": "^/withdraws/([^/]+)/?$",
+    "params": [
+      "withdrawId"
+    ],
+    "dataPath": "/withdraws/__gh"
+  },
+  {
+    "page": "/[shop]/manufacturers",
+    "regex": "^/([^/]+)/manufacturers/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/manufacturers"
+  },
+  {
+    "page": "/[shop]/service-types",
+    "regex": "^/([^/]+)/service-types/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/service-types"
+  },
+  {
+    "page": "/[shop]/store-notices",
+    "regex": "^/([^/]+)/store-notices/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/store-notices"
+  },
+  {
+    "page": "/refunds/[refundId]",
+    "regex": "^/refunds/([^/]+)/?$",
+    "params": [
+      "refundId"
+    ],
+    "dataPath": "/refunds/__gh"
+  },
+  {
+    "page": "/reviews/[reviewId]",
+    "regex": "^/reviews/([^/]+)/?$",
+    "params": [
+      "reviewId"
+    ],
+    "dataPath": "/reviews/__gh"
+  },
+  {
+    "page": "/store-notices/[id]",
+    "regex": "^/store-notices/([^/]+)/?$",
+    "params": [
+      "id"
+    ],
+    "dataPath": "/store-notices/__gh"
+  },
+  {
+    "page": "/[shop]/attributes",
+    "regex": "^/([^/]+)/attributes/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/attributes"
+  },
+  {
+    "page": "/[shop]/flash-sale",
+    "regex": "^/([^/]+)/flash-sale/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/flash-sale"
+  },
+  {
+    "page": "/flash-sale/[slug]",
+    "regex": "^/flash-sale/([^/]+)/?$",
+    "params": [
+      "slug"
+    ],
+    "dataPath": "/flash-sale/__gh"
+  },
+  {
+    "page": "/shop-message/[id]",
+    "regex": "^/shop-message/([^/]+)/?$",
+    "params": [
+      "id"
+    ],
+    "dataPath": "/shop-message/__gh"
+  },
+  {
+    "page": "/[shop]/questions",
+    "regex": "^/([^/]+)/questions/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/questions"
+  },
+  {
+    "page": "/[shop]/withdraws",
+    "regex": "^/([^/]+)/withdraws/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/withdraws"
+  },
+  {
+    "page": "/orders/[orderId]",
+    "regex": "^/orders/([^/]+)/?$",
+    "params": [
+      "orderId"
+    ],
+    "dataPath": "/orders/__gh"
+  },
+  {
+    "page": "/[shop]/products",
+    "regex": "^/([^/]+)/products/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/products"
+  },
+  {
+    "page": "/[shop]/services",
+    "regex": "^/([^/]+)/services/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/services"
+  },
+  {
+    "page": "/[shop]/authors",
+    "regex": "^/([^/]+)/authors/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/authors"
+  },
+  {
+    "page": "/[shop]/coupons",
+    "regex": "^/([^/]+)/coupons/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/coupons"
+  },
+  {
+    "page": "/[shop]/refunds",
+    "regex": "^/([^/]+)/refunds/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/refunds"
+  },
+  {
+    "page": "/[shop]/reviews",
+    "regex": "^/([^/]+)/reviews/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/reviews"
+  },
+  {
+    "page": "/[shop]/orders",
+    "regex": "^/([^/]+)/orders/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/orders"
+  },
+  {
+    "page": "/[shop]/staffs",
+    "regex": "^/([^/]+)/staffs/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/staffs"
+  },
+  {
+    "page": "/message/[id]",
+    "regex": "^/message/([^/]+)/?$",
+    "params": [
+      "id"
+    ],
+    "dataPath": "/message/__gh"
+  },
+  {
+    "page": "/[shop]/edit",
+    "regex": "^/([^/]+)/edit/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/edit"
+  },
+  {
+    "page": "/[shop]/faqs",
+    "regex": "^/([^/]+)/faqs/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh/faqs"
+  },
+  {
+    "page": "/[shop]",
+    "regex": "^/([^/]+)/?$",
+    "params": [
+      "shop"
+    ],
+    "dataPath": "/__gh"
+  },
+  {
+    "page": "/flash-sale/vendor-request/[id]/[action]",
+    "regex": "^/flash-sale/vendor-request/([^/]+)/([^/]+)/?$",
+    "params": [
+      "id",
+      "action"
+    ],
+    "dataPath": "/flash-sale/vendor-request/__gh/__gh"
+  },
+  {
+    "page": "/[shop]/flash-sale/vendor-request/[id]",
+    "regex": "^/([^/]+)/flash-sale/vendor-request/([^/]+)/?$",
+    "params": [
+      "shop",
+      "id"
+    ],
+    "dataPath": "/__gh/flash-sale/vendor-request/__gh"
+  },
+  {
+    "page": "/[shop]/services/[id]/edit",
+    "regex": "^/([^/]+)/services/([^/]+)/edit/?$",
+    "params": [
+      "shop",
+      "id"
+    ],
+    "dataPath": "/__gh/services/__gh/edit"
+  },
+  {
+    "page": "/refund-policies/[refundPolicySlug]/[action]",
+    "regex": "^/refund-policies/([^/]+)/([^/]+)/?$",
+    "params": [
+      "refundPolicySlug",
+      "action"
+    ],
+    "dataPath": "/refund-policies/__gh/__gh"
+  },
+  {
+    "page": "/refund-reasons/[refundReasonSlug]/[action]",
+    "regex": "^/refund-reasons/([^/]+)/([^/]+)/?$",
+    "params": [
+      "refundReasonSlug",
+      "action"
+    ],
+    "dataPath": "/refund-reasons/__gh/__gh"
+  },
+  {
+    "page": "/manufacturers/[manufacturerSlug]/[action]",
+    "regex": "^/manufacturers/([^/]+)/([^/]+)/?$",
+    "params": [
+      "manufacturerSlug",
+      "action"
+    ],
+    "dataPath": "/manufacturers/__gh/__gh"
+  },
+  {
+    "page": "/terms-and-conditions/[termSlug]/[action]",
+    "regex": "^/terms-and-conditions/([^/]+)/([^/]+)/?$",
+    "params": [
+      "termSlug",
+      "action"
+    ],
+    "dataPath": "/terms-and-conditions/__gh/__gh"
+  },
+  {
+    "page": "/[shop]/terms-and-conditions/[termSlug]",
+    "regex": "^/([^/]+)/terms-and-conditions/([^/]+)/?$",
+    "params": [
+      "shop",
+      "termSlug"
+    ],
+    "dataPath": "/__gh/terms-and-conditions/__gh"
+  },
+  {
+    "page": "/service-categories/[param]/[action]",
+    "regex": "^/service-categories/([^/]+)/([^/]+)/?$",
+    "params": [
+      "param",
+      "action"
+    ],
+    "dataPath": "/service-categories/__gh/__gh"
+  },
+  {
+    "page": "/categories/[categorySlug]/[action]",
+    "regex": "^/categories/([^/]+)/([^/]+)/?$",
+    "params": [
+      "categorySlug",
+      "action"
+    ],
+    "dataPath": "/categories/__gh/__gh"
+  },
+  {
+    "page": "/service-types/[groupSlug]/[action]",
+    "regex": "^/service-types/([^/]+)/([^/]+)/?$",
+    "params": [
+      "groupSlug",
+      "action"
+    ],
+    "dataPath": "/service-types/__gh/__gh"
+  },
+  {
+    "page": "/attributes/[attributeId]/[action]",
+    "regex": "^/attributes/([^/]+)/([^/]+)/?$",
+    "params": [
+      "attributeId",
+      "action"
+    ],
+    "dataPath": "/attributes/__gh/__gh"
+  },
+  {
+    "page": "/products/[productSlug]/[action]",
+    "regex": "^/products/([^/]+)/([^/]+)/?$",
+    "params": [
+      "productSlug",
+      "action"
+    ],
+    "dataPath": "/products/__gh/__gh"
+  },
+  {
+    "page": "/authors/[authorSlug]/[action]",
+    "regex": "^/authors/([^/]+)/([^/]+)/?$",
+    "params": [
+      "authorSlug",
+      "action"
+    ],
+    "dataPath": "/authors/__gh/__gh"
+  },
+  {
+    "page": "/coupons/[couponSlug]/[action]",
+    "regex": "^/coupons/([^/]+)/([^/]+)/?$",
+    "params": [
+      "couponSlug",
+      "action"
+    ],
+    "dataPath": "/coupons/__gh/__gh"
+  },
+  {
+    "page": "/groups/[groupSlug]/[action]",
+    "regex": "^/groups/([^/]+)/([^/]+)/?$",
+    "params": [
+      "groupSlug",
+      "action"
+    ],
+    "dataPath": "/groups/__gh/__gh"
+  },
+  {
+    "page": "/store-notices/[id]/[action]",
+    "regex": "^/store-notices/([^/]+)/([^/]+)/?$",
+    "params": [
+      "id",
+      "action"
+    ],
+    "dataPath": "/store-notices/__gh/__gh"
+  },
+  {
+    "page": "/flash-sale/[slug]/[action]",
+    "regex": "^/flash-sale/([^/]+)/([^/]+)/?$",
+    "params": [
+      "slug",
+      "action"
+    ],
+    "dataPath": "/flash-sale/__gh/__gh"
+  },
+  {
+    "page": "/[shop]/refunds/[refundId]",
+    "regex": "^/([^/]+)/refunds/([^/]+)/?$",
+    "params": [
+      "shop",
+      "refundId"
+    ],
+    "dataPath": "/__gh/refunds/__gh"
+  },
+  {
+    "page": "/[shop]/store-notices/[id]",
+    "regex": "^/([^/]+)/store-notices/([^/]+)/?$",
+    "params": [
+      "shop",
+      "id"
+    ],
+    "dataPath": "/__gh/store-notices/__gh"
+  },
+  {
+    "page": "/[shop]/flash-sale/[slug]",
+    "regex": "^/([^/]+)/flash-sale/([^/]+)/?$",
+    "params": [
+      "shop",
+      "slug"
+    ],
+    "dataPath": "/__gh/flash-sale/__gh"
+  },
+  {
+    "page": "/[shop]/orders/[orderId]",
+    "regex": "^/([^/]+)/orders/([^/]+)/?$",
+    "params": [
+      "shop",
+      "orderId"
+    ],
+    "dataPath": "/__gh/orders/__gh"
+  },
+  {
+    "page": "/tags/[tagSlug]/[action]",
+    "regex": "^/tags/([^/]+)/([^/]+)/?$",
+    "params": [
+      "tagSlug",
+      "action"
+    ],
+    "dataPath": "/tags/__gh/__gh"
+  },
+  {
+    "page": "/faqs/[id]/[action]",
+    "regex": "^/faqs/([^/]+)/([^/]+)/?$",
+    "params": [
+      "id",
+      "action"
+    ],
+    "dataPath": "/faqs/__gh/__gh"
+  },
+  {
+    "page": "/[shop]/flash-sale/vendor-request/[id]/[action]",
+    "regex": "^/([^/]+)/flash-sale/vendor-request/([^/]+)/([^/]+)/?$",
+    "params": [
+      "shop",
+      "id",
+      "action"
+    ],
+    "dataPath": "/__gh/flash-sale/vendor-request/__gh/__gh"
+  },
+  {
+    "page": "/[shop]/terms-and-conditions/[termSlug]/[action]",
+    "regex": "^/([^/]+)/terms-and-conditions/([^/]+)/([^/]+)/?$",
+    "params": [
+      "shop",
+      "termSlug",
+      "action"
+    ],
+    "dataPath": "/__gh/terms-and-conditions/__gh/__gh"
+  },
+  {
+    "page": "/[shop]/service-categories/[param]/[action]",
+    "regex": "^/([^/]+)/service-categories/([^/]+)/([^/]+)/?$",
+    "params": [
+      "shop",
+      "param",
+      "action"
+    ],
+    "dataPath": "/__gh/service-categories/__gh/__gh"
+  },
+  {
+    "page": "/[shop]/service-types/[groupSlug]/[action]",
+    "regex": "^/([^/]+)/service-types/([^/]+)/([^/]+)/?$",
+    "params": [
+      "shop",
+      "groupSlug",
+      "action"
+    ],
+    "dataPath": "/__gh/service-types/__gh/__gh"
+  },
+  {
+    "page": "/[shop]/attributes/[attributeId]/[action]",
+    "regex": "^/([^/]+)/attributes/([^/]+)/([^/]+)/?$",
+    "params": [
+      "shop",
+      "attributeId",
+      "action"
+    ],
+    "dataPath": "/__gh/attributes/__gh/__gh"
+  },
+  {
+    "page": "/[shop]/products/[productSlug]/[action]",
+    "regex": "^/([^/]+)/products/([^/]+)/([^/]+)/?$",
+    "params": [
+      "shop",
+      "productSlug",
+      "action"
+    ],
+    "dataPath": "/__gh/products/__gh/__gh"
+  },
+  {
+    "page": "/[shop]/coupons/[couponSlug]/[action]",
+    "regex": "^/([^/]+)/coupons/([^/]+)/([^/]+)/?$",
+    "params": [
+      "shop",
+      "couponSlug",
+      "action"
+    ],
+    "dataPath": "/__gh/coupons/__gh/__gh"
+  },
+  {
+    "page": "/[shop]/store-notices/[id]/[action]",
+    "regex": "^/([^/]+)/store-notices/([^/]+)/([^/]+)/?$",
+    "params": [
+      "shop",
+      "id",
+      "action"
+    ],
+    "dataPath": "/__gh/store-notices/__gh/__gh"
+  },
+  {
+    "page": "/[shop]/faqs/[id]/[action]",
+    "regex": "^/([^/]+)/faqs/([^/]+)/([^/]+)/?$",
+    "params": [
+      "shop",
+      "id",
+      "action"
+    ],
+    "dataPath": "/__gh/faqs/__gh/__gh"
+  }
+]

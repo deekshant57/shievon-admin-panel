@@ -1,5 +1,6 @@
 import dynamic from 'next/dynamic';
-import type { GetServerSideProps } from 'next';
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import {
   allowedRoles,
@@ -10,17 +11,25 @@ import {
 import { SUPER_ADMIN } from '@/utils/constants';
 import AppLayout from '@/components/layouts/app';
 import { Routes } from '@/config/routes';
-import { Config } from '@/config';
 
 const AdminDashboard = dynamic(() => import('@/components/dashboard/admin'));
 const OwnerDashboard = dynamic(() => import('@/components/dashboard/owner'));
 
-export default function Dashboard({
-  userPermissions,
-}: {
-  userPermissions: string[];
-}) {
-  if (userPermissions?.includes(SUPER_ADMIN)) {
+export default function Dashboard() {
+  const router = useRouter();
+  const { token, permissions } = getAuthCredentials();
+  const authenticated =
+    isAuthenticated({ token, permissions }) &&
+    hasAccess(allowedRoles, permissions);
+
+  useEffect(() => {
+    if (!authenticated) {
+      router.replace(Routes.login);
+    }
+  }, [authenticated, router]);
+
+  if (!authenticated) return null;
+  if (permissions?.includes(SUPER_ADMIN)) {
     return <AdminDashboard />;
   }
   return <OwnerDashboard />;
@@ -28,41 +37,13 @@ export default function Dashboard({
 
 Dashboard.Layout = AppLayout;
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const { locale } = ctx;
-  // TODO: Improve it
-  const generateRedirectUrl =
-    locale !== Config.defaultLanguage
-      ? `/${locale}${Routes.login}`
-      : Routes.login;
-  const { token, permissions } = getAuthCredentials(ctx);
-  if (
-    !isAuthenticated({ token, permissions }) ||
-    !hasAccess(allowedRoles, permissions)
-  ) {
-    return {
-      redirect: {
-        destination: generateRedirectUrl,
-        permanent: false,
-      },
-    };
-  }
-  if (locale) {
-    return {
-      props: {
-        ...(await serverSideTranslations(locale, [
+export const getStaticProps = async ({ locale }: { locale?: string }) => ({
+  props: {
+    ...(await serverSideTranslations(locale || 'en', [
           'common',
           'form',
           'table',
           'widgets',
         ])),
-        userPermissions: permissions,
-      },
-    };
-  }
-  return {
-    props: {
-      userPermissions: permissions,
-    },
-  };
-};
+  },
+});

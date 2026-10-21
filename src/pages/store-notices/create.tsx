@@ -20,6 +20,6 @@ CreateStoreNoticePage.Layout = Layout;
 
 export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['form', 'common'])),
+    ...(await serverSideTranslations(locale || 'en', ['form', 'common'])),
   },
 });

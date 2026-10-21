@@ -185,10 +185,14 @@ OwnerStoreNoticePage.authenticate = {
 };
 OwnerStoreNoticePage.Layout = Layout;
 
-export const getServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['common'])),
+    ...(await serverSideTranslations(locale || 'en', ['common'])),
   },
 });
 
 export default OwnerStoreNoticePage;
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"shop":"__gh","id":"__gh"} }], fallback: false };
+}

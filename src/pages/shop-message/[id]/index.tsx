@@ -25,8 +25,12 @@ MessagePage.authenticate = {
 
 MessagePage.Layout = Layout;
 
-export const getServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['form', 'common'])),
+    ...(await serverSideTranslations(locale || 'en', ['form', 'common'])),
   },
 });
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"id":"__gh"} }], fallback: false };
+}

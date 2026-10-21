@@ -49,8 +49,12 @@ export default function UpdateProductPage() {
 }
 UpdateProductPage.Layout = Layout;
 
-export const getServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['common', 'form'])),
+    ...(await serverSideTranslations(locale || 'en', ['common', 'form'])),
   },
 });
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"productSlug":"__gh","action":"__gh"} }], fallback: false };
+}

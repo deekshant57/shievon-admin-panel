@@ -81,19 +81,8 @@ Vendors.authenticate = {
 };
 Vendors.Layout = Layout;
 
-export const getServerSideProps = async (context: any) => {
-  const { fetchVendorsFromApi } = await import('@/data/server-api')
-  const initialData = await fetchVendorsFromApi(context, {
-    limit: 20,
-    page: 1,
-    orderBy: 'created_at',
-    sortedBy: 'desc',
-    is_active: true,
-  })
-  return {
-    props: {
-      ...(await serverSideTranslations(context.locale, ['table', 'common', 'form'])),
-      initialVendorsData: initialData ?? null,
-    },
-  }
-}
+export const getStaticProps = async ({ locale }: { locale?: string }) => ({
+  props: {
+    ...(await serverSideTranslations(locale || 'en', ['table', 'common', 'form'])),
+  },
+});

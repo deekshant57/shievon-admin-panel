@@ -65,8 +65,9 @@ const shouldRetryQuery = (failureCount: number, error: unknown) => {
 };
 
 const AppSettings: React.FC<{ children?: React.ReactNode }> = (props) => {
-  const { query, locale } = useRouter();
-  const { settings, loading, error } = useSettingsQuery({ language: locale! });
+  const { locale } = useRouter();
+  const language = locale || Config.defaultLanguage;
+  const { settings, loading, error } = useSettingsQuery({ language });
   if (loading) return <PageLoader />;
   if (error) return <ErrorMessage message={error.message} />;
   // TODO: fix it
@@ -95,7 +96,7 @@ const CustomApp = ({ Component, pageProps }: AppPropsWithLayout) => {
   const getLayout = Component.getLayout ?? ((page) => page);
 
   const { locale } = useRouter();
-  const dir = Config.getDirection(locale);
+  const dir = Config.getDirection(locale || Config.defaultLanguage);
   return (
     <div dir={dir} className={inter.className}>
       <QueryClientProvider client={queryClient}>

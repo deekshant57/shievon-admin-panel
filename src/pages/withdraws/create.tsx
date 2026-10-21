@@ -97,8 +97,8 @@ AdminCreatePayoutPage.authenticate = {
 };
 AdminCreatePayoutPage.Layout = Layout;
 
-export const getServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['form', 'common', 'table'])),
+    ...(await serverSideTranslations(locale || 'en', ['form', 'common', 'table'])),
   },
 });

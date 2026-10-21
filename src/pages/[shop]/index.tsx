@@ -318,9 +318,9 @@ ShopPage.authenticate = {
 
 export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['form', 'common', 'table'])),
+    ...(await serverSideTranslations(locale || 'en', ['form', 'common', 'table'])),
   },
 });
 export const getStaticPaths: GetStaticPaths = async () => {
-  return { paths: [], fallback: 'blocking' };
+  return { paths: [{ params: {"shop":"__gh"} }], fallback: false };
 };

@@ -16,7 +16,7 @@ MyShop.Layout = OwnerLayout;
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => ({
   props: {
-    ...(await serverSideTranslations(locale!, ['common', 'form'])),
+    ...(await serverSideTranslations(locale || 'en', ['common', 'form'])),
   },
 });
 

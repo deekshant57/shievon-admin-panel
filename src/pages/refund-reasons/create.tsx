@@ -26,6 +26,6 @@ CreateRefundPolicyPage.Layout = Layout;
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => ({
   props: {
-    ...(await serverSideTranslations(locale!, ['form', 'common'])),
+    ...(await serverSideTranslations(locale || 'en', ['form', 'common'])),
   },
 });

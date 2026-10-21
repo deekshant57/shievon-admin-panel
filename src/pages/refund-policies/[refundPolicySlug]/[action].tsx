@@ -36,8 +36,12 @@ UpdateRefundPolicyPage.authenticate = {
 };
 UpdateRefundPolicyPage.Layout = Layout;
 
-export const getServerSideProps: GetStaticProps = async ({ locale }) => ({
+export const getStaticProps: GetStaticProps = async ({ locale }) => ({
   props: {
-    ...(await serverSideTranslations(locale!, ['form', 'common'])),
+    ...(await serverSideTranslations(locale || 'en', ['form', 'common'])),
   },
 });
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"refundPolicySlug":"__gh","action":"__gh"} }], fallback: false };
+}

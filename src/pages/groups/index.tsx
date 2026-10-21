@@ -85,6 +85,6 @@ TypesPage.Layout = Layout;
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => ({
   props: {
-    ...(await serverSideTranslations(locale!, ['table', 'common', 'form'])),
+    ...(await serverSideTranslations(locale || 'en', ['table', 'common', 'form'])),
   },
 });

@@ -82,19 +82,8 @@ MyStaffsPage.authenticate = {
 };
 MyStaffsPage.Layout = Layout;
 
-export const getServerSideProps = async (context: any) => {
-  const { fetchMyStaffsFromApi } = await import('@/data/server-api')
-  const initialData = await fetchMyStaffsFromApi(context, {
-    limit: 20,
-    page: 1,
-    orderBy: 'created_at',
-    sortedBy: 'desc',
-    is_active: true,
-  })
-  return {
-    props: {
-      ...(await serverSideTranslations(context.locale, ['table', 'common', 'form'])),
-      initialMyStaffsData: initialData ?? null,
-    },
-  }
-}
+export const getStaticProps = async ({ locale }: { locale?: string }) => ({
+  props: {
+    ...(await serverSideTranslations(locale || 'en', ['table', 'common', 'form'])),
+  },
+});

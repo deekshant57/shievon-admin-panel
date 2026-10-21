@@ -409,8 +409,12 @@ export default function OrderDetailsPage() {
 }
 OrderDetailsPage.Layout = Layout;
 
-export const getServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['common', 'form', 'table'])),
+    ...(await serverSideTranslations(locale || 'en', ['common', 'form', 'table'])),
   },
 });
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"orderId":"__gh"} }], fallback: false };
+}

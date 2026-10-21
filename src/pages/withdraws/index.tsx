@@ -260,6 +260,6 @@ WithdrawsPage.Layout = Layout;
 
 export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['table', 'common', 'form'])),
+    ...(await serverSideTranslations(locale || 'en', ['table', 'common', 'form'])),
   },
 });

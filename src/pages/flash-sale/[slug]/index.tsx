@@ -105,10 +105,14 @@ FlashSalePage.authenticate = {
 
 FlashSalePage.Layout = Layout;
 
-export const getServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['common', 'table', 'form'])),
+    ...(await serverSideTranslations(locale || 'en', ['common', 'table', 'form'])),
   },
 });
 
 export default FlashSalePage;
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"slug":"__gh"} }], fallback: false };
+}

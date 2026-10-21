@@ -93,18 +93,8 @@ CustomersPage.authenticate = {
 };
 CustomersPage.Layout = Layout;
 
-export const getServerSideProps = async (context: any) => {
-  const { fetchCustomersFromApi } = await import('@/data/server-api')
-  const initialData = await fetchCustomersFromApi(context, {
-    limit: 20,
-    page: 1,
-    orderBy: 'created_at',
-    sortedBy: 'desc',
-  })
-  return {
-    props: {
-      ...(await serverSideTranslations(context.locale, ['table', 'common', 'form'])),
-      initialCustomersData: initialData ?? null,
-    },
-  }
-}
+export const getStaticProps = async ({ locale }: { locale?: string }) => ({
+  props: {
+    ...(await serverSideTranslations(locale || 'en', ['table', 'common', 'form'])),
+  },
+});

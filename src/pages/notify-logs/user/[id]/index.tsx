@@ -246,8 +246,12 @@ NotifyLogsPageForVendor.authenticate = {
 };
 
 NotifyLogsPageForVendor.Layout = OwnerLayout;
-export const getServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['form', 'common', 'table'])),
+    ...(await serverSideTranslations(locale || 'en', ['form', 'common', 'table'])),
   },
 });
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"id":"__gh"} }], fallback: false };
+}

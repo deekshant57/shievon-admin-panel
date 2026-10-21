@@ -33,10 +33,14 @@ TermsAndConditionsPage.authenticate = {
 };
 TermsAndConditionsPage.Layout = Layout;
 
-export const getServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['common'])),
+    ...(await serverSideTranslations(locale || 'en', ['common'])),
   },
 });
 
 export default TermsAndConditionsPage;
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"termSlug":"__gh"} }], fallback: false };
+}

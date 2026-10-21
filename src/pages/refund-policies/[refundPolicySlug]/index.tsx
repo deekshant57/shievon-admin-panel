@@ -33,10 +33,14 @@ ViewRefundPolicyPage.authenticate = {
 };
 ViewRefundPolicyPage.Layout = Layout;
 
-export const getServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['common'])),
+    ...(await serverSideTranslations(locale || 'en', ['common'])),
   },
 });
 
 export default ViewRefundPolicyPage;
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"refundPolicySlug":"__gh"} }], fallback: false };
+}

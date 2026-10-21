@@ -26,9 +26,9 @@ const getQueryValue = (value: string | string[] | undefined) => {
   return value ?? '';
 };
 
-export const getServerSideProps: GetServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps: GetServerSideProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale!, ['common', 'form'])),
+    ...(await serverSideTranslations(locale || 'en', ['common', 'form'])),
   },
 });
 

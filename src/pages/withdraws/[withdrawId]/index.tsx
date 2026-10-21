@@ -209,8 +209,12 @@ Withdraw.authenticate = {
 };
 Withdraw.Layout = AdminLayout;
 
-export const getServerSideProps: GetServerSideProps = async ({ locale }) => ({
+export const getStaticProps: GetServerSideProps = async ({ locale }) => ({
   props: {
-    ...(await serverSideTranslations(locale!, ['table', 'common', 'form'])),
+    ...(await serverSideTranslations(locale || 'en', ['table', 'common', 'form'])),
   },
 });
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"withdrawId":"__gh"} }], fallback: false };
+}

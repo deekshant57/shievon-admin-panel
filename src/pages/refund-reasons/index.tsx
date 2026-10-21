@@ -98,6 +98,6 @@ RefundReasons.Layout = Layout;
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => ({
   props: {
-    ...(await serverSideTranslations(locale!, ['form', 'common', 'table'])),
+    ...(await serverSideTranslations(locale || 'en', ['form', 'common', 'table'])),
   },
 });

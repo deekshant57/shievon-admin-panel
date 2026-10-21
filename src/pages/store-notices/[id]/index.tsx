@@ -82,10 +82,14 @@ StoreNoticePage.authenticate = {
 };
 StoreNoticePage.Layout = Layout;
 
-export const getServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['common'])),
+    ...(await serverSideTranslations(locale || 'en', ['common'])),
   },
 });
 
 export default StoreNoticePage;
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"id":"__gh"} }], fallback: false };
+}

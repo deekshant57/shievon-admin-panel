@@ -122,8 +122,12 @@ FlashSaleVendorRequestLists.authenticate = {
   permissions: adminOwnerAndStaffOnly,
 };
 FlashSaleVendorRequestLists.Layout = ShopLayout;
-export const getServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['common', 'form', 'table'])),
+    ...(await serverSideTranslations(locale || 'en', ['common', 'form', 'table'])),
   },
 });
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"shop":"__gh"} }], fallback: false };
+}

@@ -289,6 +289,6 @@ NotifyLogsPage.authenticate = {
 NotifyLogsPage.Layout = Layout;
 export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['form', 'common', 'table'])),
+    ...(await serverSideTranslations(locale || 'en', ['form', 'common', 'table'])),
   },
 });

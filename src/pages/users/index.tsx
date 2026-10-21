@@ -93,18 +93,8 @@ AllUsersPage.authenticate = {
 };
 AllUsersPage.Layout = Layout;
 
-export const getServerSideProps = async (context: any) => {
-  const { fetchUsersFromApi } = await import('@/data/server-api')
-  const initialData = await fetchUsersFromApi(context, {
-    limit: 20,
-    page: 1,
-    orderBy: 'created_at',
-    sortedBy: 'desc',
-  })
-  return {
-    props: {
-      ...(await serverSideTranslations(context.locale, ['table', 'common', 'form'])),
-      initialUsersData: initialData ?? null,
-    },
-  }
-}
+export const getStaticProps = async ({ locale }: { locale?: string }) => ({
+  props: {
+    ...(await serverSideTranslations(locale || 'en', ['table', 'common', 'form'])),
+  },
+});

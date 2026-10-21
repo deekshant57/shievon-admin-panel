@@ -64,8 +64,12 @@ UpdateServiceOfferingPage.authenticate = {
 }
 UpdateServiceOfferingPage.Layout = Layout
 
-export const getServerSideProps = async ({ locale }: { locale?: string }) => ({
+export const getStaticProps = async ({ locale }: { locale?: string }) => ({
   props: {
     ...(await serverSideTranslations(locale ?? 'en', ['form', 'common'])),
   },
 })
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"id":"__gh"} }], fallback: false };
+}

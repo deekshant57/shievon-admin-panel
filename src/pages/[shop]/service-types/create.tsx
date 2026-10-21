@@ -23,8 +23,12 @@ CreateShopServiceTypePage.authenticate = {
 }
 CreateShopServiceTypePage.Layout = ShopLayout
 
-export const getServerSideProps = async ({ locale }: { locale?: string }) => ({
+export const getStaticProps = async ({ locale }: { locale?: string }) => ({
   props: {
     ...(await serverSideTranslations(locale ?? 'en', ['form', 'common'])),
   },
 })
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"shop":"__gh"} }], fallback: false };
+}

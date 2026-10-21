@@ -40,10 +40,10 @@ export default function UpdateAttributePage() {
 
 export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['table', 'common', 'form'])),
+    ...(await serverSideTranslations(locale || 'en', ['table', 'common', 'form'])),
   },
 });
 export const getStaticPaths: GetStaticPaths = async () => {
-  return { paths: [], fallback: 'blocking' };
+  return { paths: [{ params: {"attributeId":"__gh","action":"__gh"} }], fallback: false };
 };
 UpdateAttributePage.Layout = Layout;

@@ -49,8 +49,12 @@ CreateAttributePage.authenticate = {
   permissions: adminOwnerAndStaffOnly,
 };
 CreateAttributePage.Layout = ShopLayout;
-export const getServerSideProps = async ({ locale }: any) => ({
+export const getStaticProps = async ({ locale }: any) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['common', 'form'])),
+    ...(await serverSideTranslations(locale || 'en', ['common', 'form'])),
   },
 });
+
+export async function getStaticPaths() {
+  return { paths: [{ params: {"shop":"__gh"} }], fallback: false };
+}
