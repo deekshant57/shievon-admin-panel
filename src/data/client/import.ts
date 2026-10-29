@@ -2,6 +2,11 @@ import { HttpClient } from './http-client';
 import { API_ENDPOINTS } from '@/data/client/api-endpoints';
 import {
   ClothingImportCommitInput,
+  CosmeticsImportCommitInput,
+  CosmeticsImportJob,
+  CosmeticsImportJobsInput,
+  CosmeticsImportPreviewInput,
+  CosmeticsImportTemplateInput,
   ClothingImportJob,
   ClothingImportJobsInput,
   ClothingImportJobsResponse,
@@ -86,6 +91,56 @@ export const importClient = {
   downloadClothingImportReport: async (jobId: string | number) => {
     return HttpClient.getBlob(
       `${API_ENDPOINTS.CLOTHING_IMPORT_JOBS}/${jobId}/report`
+    );
+  },
+  downloadCosmeticsTemplate: async (input: CosmeticsImportTemplateInput) => {
+    return HttpClient.getBlob(API_ENDPOINTS.COSMETICS_IMPORT_TEMPLATE, {
+      shopId: input.shopId,
+      shop_id: input.shopId,
+    });
+  },
+  previewCosmeticsImport: async (input: CosmeticsImportPreviewInput) => {
+    const formData = new FormData();
+    formData.append('xlsx', input.xlsx);
+    if (input.zip) {
+      formData.append('zip', input.zip);
+    }
+    formData.append('shopId', String(input.shopId));
+
+    return HttpClient.post<CosmeticsImportJob>(
+      API_ENDPOINTS.COSMETICS_IMPORT_PREVIEW,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+  },
+  getCosmeticsImportJob: async (jobId: string | number) => {
+    return HttpClient.get<CosmeticsImportJob>(
+      `${API_ENDPOINTS.COSMETICS_IMPORT_JOBS}/${jobId}`
+    );
+  },
+  getCosmeticsImportJobs: async (input: CosmeticsImportJobsInput) => {
+    return HttpClient.get<CosmeticsImportJob[]>(
+      API_ENDPOINTS.COSMETICS_IMPORT_JOBS,
+      input
+    );
+  },
+  commitCosmeticsImport: async ({
+    jobId,
+    idempotencyKey,
+    confirmedNearDuplicates,
+  }: CosmeticsImportCommitInput) => {
+    return HttpClient.post<CosmeticsImportJob>(
+      `${API_ENDPOINTS.COSMETICS_IMPORT_JOBS}/${jobId}/commit`,
+      { idempotencyKey, confirmedNearDuplicates }
+    );
+  },
+  downloadCosmeticsImportReport: async (jobId: string | number) => {
+    return HttpClient.getBlob(
+      `${API_ENDPOINTS.COSMETICS_IMPORT_JOBS}/${jobId}/report`
     );
   },
   downloadFootwearTemplate: async (input: FootwearImportTemplateInput) => {

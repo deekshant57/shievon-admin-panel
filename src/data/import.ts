@@ -6,6 +6,11 @@ import { getApiErrorMessage } from '@/data/client/http-client';
 import { importClient } from '@/data/client/import';
 import {
   ClothingImportCommitInput,
+  CosmeticsImportCommitInput,
+  CosmeticsImportJob,
+  CosmeticsImportJobsInput,
+  CosmeticsImportPreviewInput,
+  CosmeticsImportTemplateInput,
   ClothingImportJob,
   ClothingImportJobsInput,
   ClothingImportJobsResponse,
@@ -382,6 +387,136 @@ export const useDownloadFootwearImportReportMutation = () => {
         toast.error(
           error?.response?.data?.message ??
             t('common:footwear-import-report-download-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useDownloadCosmeticsTemplateMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: CosmeticsImportTemplateInput) =>
+      importClient.downloadCosmeticsTemplate(input),
+    {
+      onSuccess: (blob) => {
+        downloadBlob(blob, 'cosmetics-import-template.xlsx');
+      },
+      onError: (error: unknown) => {
+        toast.error(
+          getApiErrorMessage(
+            error,
+            t('common:cosmetics-import-template-download-failed')
+          )
+        );
+      },
+    }
+  );
+};
+
+export const usePreviewCosmeticsImportMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: CosmeticsImportPreviewInput) =>
+      importClient.previewCosmeticsImport(input),
+    {
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:cosmetics-import-preview-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useCosmeticsImportJobQuery = (
+  jobId?: string | number,
+  options: { enabled?: boolean; refetchInterval?: number | false } = {}
+) => {
+  const { data, error, isLoading, refetch } = useQuery<
+    CosmeticsImportJob,
+    Error
+  >(
+    [API_ENDPOINTS.COSMETICS_IMPORT_JOBS, jobId],
+    () => importClient.getCosmeticsImportJob(jobId as string | number),
+    {
+      enabled: Boolean(jobId) && (options.enabled ?? true),
+      refetchInterval: options.refetchInterval,
+    }
+  );
+
+  return {
+    job: data,
+    error,
+    loading: isLoading,
+    refetch,
+  };
+};
+
+export const useCosmeticsImportJobsQuery = (
+  input?: CosmeticsImportJobsInput,
+  options: { enabled?: boolean } = {}
+) => {
+  const { data, error, isLoading, refetch } = useQuery<
+    CosmeticsImportJob[],
+    Error
+  >(
+    [API_ENDPOINTS.COSMETICS_IMPORT_JOBS, input],
+    () => importClient.getCosmeticsImportJobs(input as CosmeticsImportJobsInput),
+    {
+      enabled: Boolean(input?.shopId) && (options.enabled ?? true),
+      retry: false,
+    }
+  );
+
+  return {
+    jobs: Array.isArray(data) ? data : [],
+    error,
+    loading: isLoading,
+    refetch,
+  };
+};
+
+export const useCommitCosmeticsImportMutation = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: CosmeticsImportCommitInput) =>
+      importClient.commitCosmeticsImport(input),
+    {
+      onSuccess: () => {
+        toast.success(t('common:cosmetics-import-commit-started'));
+        queryClient.invalidateQueries(API_ENDPOINTS.PRODUCTS);
+        queryClient.invalidateQueries(API_ENDPOINTS.COSMETICS_IMPORT_JOBS);
+      },
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:cosmetics-import-commit-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useDownloadCosmeticsImportReportMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (jobId: string | number) =>
+      importClient.downloadCosmeticsImportReport(jobId),
+    {
+      onSuccess: (blob, jobId) => {
+        downloadBlob(blob, `cosmetics-import-report-${jobId}.xlsx`);
+      },
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:cosmetics-import-report-download-failed')
         );
       },
     }

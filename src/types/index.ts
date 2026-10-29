@@ -1525,6 +1525,123 @@ export interface FootwearImportTemplateInput {
   shopId: string | number;
 }
 
+export interface CosmeticsImportTemplateInput {
+  shopId: string | number;
+}
+
+export interface CosmeticsImportPreviewInput {
+  shopId: string | number;
+  xlsx: File;
+  /** Optional: images are not needed yet. */
+  zip?: File | null;
+}
+
+export interface CosmeticsImportCommitInput {
+  jobId: string | number;
+  idempotencyKey: string;
+  /** Ids of the near-duplicate values the owner ticked in the preview. */
+  confirmedNearDuplicates: string[];
+}
+
+export interface CosmeticsImportJobsInput {
+  shopId: string | number;
+}
+
+export interface CosmeticsImportError {
+  row?: number;
+  parent_sku?: string;
+  sku?: string;
+  field?: string;
+  code: string;
+  message: string;
+}
+
+export interface CosmeticsImportGroupError {
+  parent_sku: string;
+  code: string;
+  message: string;
+  rows: number[];
+  fields?: string[];
+}
+
+export type CosmeticsCatalogueField =
+  | 'category'
+  | 'sub_category'
+  | 'type_of_product'
+  | 'pack_type';
+
+/** A catalogue value the import will create (or, with requires_confirmation, may create). */
+export interface CosmeticsImportNewValue {
+  id: string;
+  field: CosmeticsCatalogueField;
+  name: string;
+  parent_name?: string | null;
+  parent_is_new?: boolean;
+  rows: number[];
+  close_to?: { name: string; parentName?: string; inFile?: boolean } | null;
+  requires_confirmation: boolean;
+  message: string;
+}
+
+export interface CosmeticsImportInactiveMatch {
+  field: CosmeticsCatalogueField;
+  value: string;
+  mappedTo: string;
+  rows: number[];
+  message: string;
+}
+
+export interface CosmeticsImportCounts {
+  total_rows?: number;
+  valid_rows?: number;
+  invalid_rows?: number;
+  products_to_create?: number;
+  products_to_update?: number;
+  variants_to_create?: number;
+  variants_to_update?: number;
+  images_to_upload?: number;
+  blocked_groups?: number;
+  new_categories?: number;
+  new_sub_categories?: number;
+  new_types_of_product?: number;
+  new_pack_types?: number;
+  needs_confirmation?: number;
+}
+
+export interface CosmeticsImportCommitSummary {
+  products_created?: number;
+  products_updated?: number;
+  variants_created?: number;
+  variants_updated?: number;
+  images_added?: number;
+  categories_created?: number;
+  sub_categories_created?: number;
+  types_of_product_created?: number;
+  pack_types_created?: number;
+}
+
+export interface CosmeticsImportJob {
+  jobId: string;
+  status: string;
+  current_phase?: string | null;
+  counts?: CosmeticsImportCounts;
+  /** The commit result once there is one, else the preview counts. */
+  summary?: CosmeticsImportCounts & CosmeticsImportCommitSummary;
+  errors?: CosmeticsImportError[];
+  group_errors?: CosmeticsImportGroupError[];
+  new_values?: CosmeticsImportNewValue[];
+  near_duplicates?: CosmeticsImportNewValue[];
+  inactive_matches?: CosmeticsImportInactiveMatch[];
+  requires_confirmation?: string[];
+  confirmed?: string[];
+  message?: string;
+  source_xlsx_name?: string | null;
+  source_zip_name?: string | null;
+  report_link?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface FootwearImportPreviewInput {
   shopId: string | number;
   xlsx: File;

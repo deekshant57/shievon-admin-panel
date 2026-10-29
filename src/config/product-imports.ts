@@ -17,4 +17,9 @@ export const PRODUCT_IMPORTS: ProductImportType[] = [
     labelKey: 'footwear-import-title',
     href: Routes.product.footwearImport,
   },
+  {
+    key: 'cosmetics',
+    labelKey: 'cosmetics-import-title',
+    href: Routes.product.cosmeticsImport,
+  },
 ];
