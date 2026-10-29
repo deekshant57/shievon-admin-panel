@@ -6,13 +6,13 @@
 
 const ASKED_KEY = 'vendor-order-notify-asked';
 
-export type NotificationSupport =
+type NotificationSupport =
   | 'unsupported'
   | 'default'
   | 'granted'
   | 'denied';
 
-export function getNotificationSupport(): NotificationSupport {
+function getNotificationSupport(): NotificationSupport {
   if (typeof window === 'undefined' || !('Notification' in window)) {
     return 'unsupported';
   }
@@ -59,7 +59,7 @@ export function dismissNotificationPrompt(): void {
   markAsked();
 }
 
-export interface SystemOrderNotificationInput {
+interface SystemOrderNotificationInput {
   orderNumber: string;
   body: string;
   /** Called when the vendor clicks the notification (the tab has been focused). */

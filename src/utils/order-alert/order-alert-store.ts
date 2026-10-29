@@ -148,14 +148,6 @@ export function dismissOrderAlert(id: string): void {
   }
 }
 
-export function dismissAllOrderAlerts(): void {
-  stopOrderAlertLoop();
-  if (alerts.length) {
-    alerts = [];
-    emit();
-  }
-}
-
 /** "View order": acknowledge (silence + remove) and open the order. */
 export function viewOrderAlert(id: string): void {
   const alert = alerts.find((candidate) => candidate.id === id);

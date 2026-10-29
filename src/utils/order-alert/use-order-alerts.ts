@@ -6,13 +6,10 @@ import {
   isOrderAlertSoundUnlocked,
   isOrderSoundMuted,
   setOrderSoundMuted,
-  stopOrderAlertLoop,
   subscribeOrderAudio,
 } from '@/utils/play-new-order-alert-sound';
 import {
   OrderAlert,
-  addOrderAlert,
-  dismissAllOrderAlerts,
   dismissOrderAlert,
   getOrderAlerts,
   subscribeOrderAlerts,
@@ -69,11 +66,7 @@ export function useOrderAlerts() {
     muted: audio[1] === 'm',
     ringing: audio[2] === 'r',
     setMuted,
-    stopRinging: stopOrderAlertLoop,
     dismiss: dismissOrderAlert,
-    dismissAll: dismissAllOrderAlerts,
     view: viewOrderAlert,
   };
 }
-
-export { addOrderAlert };

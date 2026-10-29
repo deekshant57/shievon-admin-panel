@@ -22,7 +22,7 @@ const WINDOW_POOL_KEY = '__vendorOrderAlertAudioPool';
 const WINDOW_LOOP_KEY = '__vendorOrderAlertLoopAudio';
 
 /** The ringing alert stops by itself after this long if nobody acknowledges it. */
-export const ORDER_ALERT_LOOP_MS = 10_000;
+const ORDER_ALERT_LOOP_MS = 10_000;
 
 let poolCursor = 0;
 let loopTimer: ReturnType<typeof setTimeout> | null = null;
@@ -182,7 +182,7 @@ function nextPoolAudio(): HTMLAudioElement | null {
  * Primes every element quietly during a user gesture. Returns whether audio is
  * now unlocked; on false the caller keeps showing the "enable sounds" prompt.
  */
-export async function unlockOrderAlertSoundSilently(): Promise<boolean> {
+async function unlockOrderAlertSoundSilently(): Promise<boolean> {
   if (typeof window === 'undefined') {
     return false;
   }
@@ -263,8 +263,6 @@ export function playNewOrderAlertSound(): void {
   }
 
   if (!isOrderAlertSoundUnlocked()) {
-    // eslint-disable-next-line no-console
-    console.info('[vendor-order-sound] not enabled yet — waiting for a click');
     return;
   }
 
