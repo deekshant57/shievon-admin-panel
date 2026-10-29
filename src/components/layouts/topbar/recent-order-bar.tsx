@@ -15,7 +15,6 @@ import timezone from 'dayjs/plugin/timezone';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { adminOnly, getAuthCredentials, hasAccess } from '@/utils/auth-utils';
-import { toast } from 'react-toastify';
 import { Routes } from '@/config/routes';
 import { useRouter } from 'next/router';
 import { useShopQuery } from '@/data/shop';
@@ -23,11 +22,9 @@ import { VendorNotification } from '@/types';
 import { Config } from '@/config';
 import { PusherConfig } from '@/utils/pusher-config';
 import { API_ENDPOINTS } from '@/data/client/api-endpoints';
-import {
-  enableOrderAlertSound,
-  isOrderAlertSoundUnlocked,
-  playNewOrderAlertSound,
-} from '@/utils/play-new-order-alert-sound';
+import OrderAlertHost from '@/components/order-alert/order-alert-host';
+import OrderSoundControls from '@/components/order-alert/order-sound-controls';
+import { addOrderAlert } from '@/utils/order-alert/order-alert-store';
 
 type RecentOrderBarProps = {
   user: {
@@ -121,7 +118,20 @@ type VendorOrderPaidPusherPayload = {
   order_id?: string;
   order_number?: string;
   shop_id?: number;
+  total_amount?: number | null;
+  currency?: string | null;
 };
+
+/** "INR 499.00" from the event, or from the message text for older events. */
+function amountLabelFromPayload(data: VendorOrderPaidPusherPayload): string {
+  if (data?.total_amount != null && data?.currency) {
+    const amount = Number(data.total_amount);
+    if (Number.isFinite(amount)) {
+      return `${data.currency} ${amount.toFixed(2)}`;
+    }
+  }
+  return data?.message?.match(/\(([A-Z]{3} [\d.,]+)\)/)?.[1] ?? '';
+}
 
 const RecentOrderBar = ({ user }: RecentOrderBarProps) => {
   const { t } = useTranslation();
@@ -141,32 +151,18 @@ const RecentOrderBar = ({ user }: RecentOrderBarProps) => {
     ...(shopIdParam ? { shop_id: shopIdParam } : {}),
   });
   const { mutate: markAllRead } = useMarkAllVendorNotificationsReadMutation();
-  const toastedIdsRef = useRef<Set<string>>(new Set());
-
-  const soundPromptShownRef = useRef(false);
+  // The Pusher handler outlives renders; it reads the latest routing info from here.
+  const routeCtxRef = useRef({
+    isSuperAdmin,
+    activeShopSlug,
+    shops: user?.shops,
+  });
+  routeCtxRef.current = { isSuperAdmin, activeShopSlug, shops: user?.shops };
 
   const unreadNotifications = useMemo(
     () => notifications.filter((item) => !item.is_read),
     [notifications],
   );
-
-  // One-time hint: browsers require a click before alert audio can play.
-  useEffect(() => {
-    if (
-      soundPromptShownRef.current ||
-      isOrderAlertSoundUnlocked() ||
-      Config.broadcastDriver !== 'pusher' ||
-      Config.pusherEnable !== 'true'
-    ) {
-      return;
-    }
-    soundPromptShownRef.current = true;
-    toast.info(
-      t('common:text-enable-order-alert-sound') ||
-        'Click the order bag icon once to enable new-order alert sounds.',
-      { autoClose: 8000, toastId: 'vendor-order-sound-hint' },
-    );
-  }, [t]);
 
   useEffect(() => {
     if (
@@ -196,22 +192,22 @@ const RecentOrderBar = ({ user }: RecentOrderBarProps) => {
     });
 
     channel.bind(eventName, (data: VendorOrderPaidPusherPayload) => {
-      // Always attempt sound on live events (toast text is deduped below).
-      playNewOrderAlertSound();
-
-      const toastId =
-        data?.notification_id != null
-          ? `vendor-order-${data.notification_id}`
-          : data?.order_id != null
-            ? `vendor-order-${data.order_id}`
-            : 'vendor-order-paid';
-
-      if (!toastedIdsRef.current.has(String(toastId))) {
-        toastedIdsRef.current.add(String(toastId));
-        toast.success(
-          data?.message || data?.title || t('common:text-new-paid-order'),
-          { toastId },
-        );
+      // On-screen alert + ringing (+ system notification when the tab is hidden).
+      if (data?.order_id && data?.order_number) {
+        const ctx = routeCtxRef.current;
+        const orderPath = Routes.order.details(data.order_id);
+        const ownSlug = ctx.shops?.find(
+          (shop) => String(shop.id) === String(data.shop_id),
+        )?.slug;
+        const slug = ownSlug ?? ctx.activeShopSlug;
+        addOrderAlert({
+          id: String(data.notification_id ?? data.order_id),
+          orderId: data.order_id,
+          orderNumber: data.order_number,
+          amountLabel: amountLabelFromPayload(data),
+          message: data.message ?? data.title ?? '',
+          href: ctx.isSuperAdmin || !slug ? orderPath : `/${slug}${orderPath}`,
+        });
       }
 
       queryClient.invalidateQueries(API_ENDPOINTS.VENDOR_NOTIFICATIONS);
@@ -238,7 +234,7 @@ const RecentOrderBar = ({ user }: RecentOrderBarProps) => {
       channel.unbind('pusher:subscription_error');
       PusherConfig.unsubscribe(channelName);
     };
-  }, [queryClient, t, user?.id]);
+  }, [queryClient, user?.id]);
 
   const ordersListHref = useMemo(() => {
     if (isSuperAdmin) {
@@ -257,24 +253,15 @@ const RecentOrderBar = ({ user }: RecentOrderBarProps) => {
   }
 
   return (
-    <Menu as="div" className="inline-block text-left sm:relative">
+    <>
+      <OrderSoundControls />
+      <OrderAlertHost />
+      <Menu as="div" className="inline-block text-left sm:relative">
       <Menu.Button
         className={cn(
           'relative flex h-9 w-9 items-center justify-center gap-2 rounded-full border border-gray-200 bg-gray-50 text-gray-600 before:absolute before:top-0 before:right-0 before:h-2 before:w-2 before:rounded-full focus:outline-none data-[headlessui-state=open]:bg-white data-[headlessui-state=open]:text-accent',
           unreadNotifications.length > 0 ? 'before:bg-[#3080F8]' : '',
         )}
-        onPointerDown={() => {
-          const wasUnlocked = isOrderAlertSoundUnlocked();
-          void enableOrderAlertSound().then((ok) => {
-            if (ok && !wasUnlocked) {
-              toast.success(
-                t('common:text-order-alert-sound-enabled') ||
-                  'Order alert sounds enabled.',
-                { toastId: 'vendor-order-sound-enabled' },
-              );
-            }
-          });
-        }}
       >
         <ShoppingBagIcon className="h-5 w-5" />
       </Menu.Button>
@@ -335,7 +322,8 @@ const RecentOrderBar = ({ user }: RecentOrderBarProps) => {
           </Menu.Item>
         </Menu.Items>
       </Transition>
-    </Menu>
+      </Menu>
+    </>
   );
 };
 
