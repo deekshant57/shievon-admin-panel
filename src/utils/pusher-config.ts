@@ -31,7 +31,7 @@ const authEndpoint =
 export const PusherConfig = new Pusher(
   `${process.env.NEXT_PUBLIC_PUSHER_APP_KEY}`,
   {
-    cluster: `${process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER}`,
+    cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER || 'ap2',
     channelAuthorization: {
       customHandler: ({ socketId, channelName }, callback) => {
         const token = getAuthToken();
