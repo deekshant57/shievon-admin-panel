@@ -118,6 +118,9 @@ export const productClient = {
       search: HttpClient.formatSearchParams({
         status,
         name,
+        // GET /draft-products applies shop scope only from search `shop_id:{id}`.
+        // A bare shop_id query param is ignored, which is why super admins saw every shop.
+        shop_id,
       }),
     };
     console.log('[Draft Products API] request', {

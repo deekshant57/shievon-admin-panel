@@ -281,7 +281,10 @@ function normalizePaginatorData(
   return data;
 }
 
-export const useProductStockQuery = (options: Partial<ProductQueryOptions>) => {
+export const useProductStockQuery = (
+  options: Partial<ProductQueryOptions>,
+  queryOptions: any = {},
+) => {
   const { data, error, isLoading } = useQuery<ProductPaginator, Error>(
     [API_ENDPOINTS.LOW_OR_OUT_OF_STOCK_PRODUCTS, options],
     ({ queryKey, pageParam }) =>
@@ -290,6 +293,7 @@ export const useProductStockQuery = (options: Partial<ProductQueryOptions>) => {
       ),
     {
       keepPreviousData: true,
+      ...queryOptions,
     },
   );
 

@@ -419,7 +419,14 @@ export default function CreateOrUpdateProductForm({
           },
         ];
       } else {
+        // A super admin can keep a draft or publish it. The update API accepts
+        // both `draft` and `publish`.
         statusList = [
+          {
+            label: 'form:input-label-published',
+            id: 'published',
+            value: ProductStatus.Publish,
+          },
           {
             label: 'form:input-label-draft',
             id: 'draft',
@@ -691,12 +698,6 @@ export default function CreateOrUpdateProductForm({
                         id={status?.id}
                         value={status?.value}
                         className="mb-2"
-                        disabled={
-                          permission &&
-                          initialValues?.status === ProductStatus?.Draft
-                            ? true
-                            : false
-                        }
                       />
                     ))
                   : ''}

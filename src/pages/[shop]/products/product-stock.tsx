@@ -53,17 +53,22 @@ export default function VendorProductStockPage() {
     setVisible((v) => !v);
   };
 
-  const { products, paginatorInfo, loading, error } = useProductStockQuery({
-    name: searchTerm,
-    limit: 10,
-    page,
-    orderBy,
-    sortedBy,
-    shop_id: shopId,
-    language: locale,
-    categories: category,
-    type,
-  });
+  const { products, paginatorInfo, loading, error } = useProductStockQuery(
+    {
+      name: searchTerm,
+      limit: 10,
+      page,
+      orderBy,
+      sortedBy,
+      shop_id: shopId,
+      language: locale,
+      categories: category,
+      type,
+    },
+    {
+      enabled: Boolean(shopId),
+    },
+  );
 
   // Check permissions and redirect if user doesn't have access
   useEffect(() => {
@@ -91,7 +96,7 @@ export default function VendorProductStockPage() {
     }
   }, [fetchingShop, shopId, me, permissions, router]);
 
-  if (loading) return <Loader text={t('common:text-loading')} />;
+  if (loading || fetchingShop) return <Loader text={t('common:text-loading')} />;
   if (error) return <ErrorMessage message={error.message} />;
 
   function handleSearch({ searchText }: { searchText: string }) {
