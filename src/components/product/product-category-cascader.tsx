@@ -1,11 +1,10 @@
-import SelectInput from '@/components/ui/select-input';
 import Label from '@/components/ui/label';
+import Select from '@/components/ui/select/select';
 import { Control, useFormContext, useWatch } from 'react-hook-form';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import { useCategoriesQuery } from '@/data/category';
 import { useRouter } from 'next/router';
-import { Category } from '@/types';
 
 interface Props {
   control: Control<any>;
@@ -98,6 +97,36 @@ const pickCategory = (cat: any) => ({
   name: cat.name,
   slug: cat.slug,
 });
+
+function buildCategoryPath(leaf: any, flatCategories: any[]): any[] {
+  const pathFromField = parseCategoryPath(leaf?.path)
+    .map((id) => flatCategories.find((category) => Number(category.id) === id))
+    .filter(Boolean);
+
+  if (pathFromField.length > 0) return pathFromField;
+
+  const path = [leaf];
+  let current = leaf;
+  const guard = new Set<number>([Number(leaf.id)]);
+  while (getParentId(current) != null) {
+    const parentId = getParentId(current)!;
+    if (guard.has(parentId)) break;
+    const parent = flatCategories.find(
+      (category) => Number(category.id) === parentId,
+    );
+    if (!parent) break;
+    path.unshift(parent);
+    guard.add(parentId);
+    current = parent;
+  }
+  return path;
+}
+
+function isLeafCategory(category: any, flatCategories: any[]): boolean {
+  const id = Number(category?.id);
+  if (Number.isNaN(id)) return false;
+  return !flatCategories.some((item) => getParentId(item) === id);
+}
 
 const optionId = (option: any) =>
   option?.id != null ? String(option.id) : '';
@@ -213,23 +242,6 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
     return list;
   }, [stableRawCategories, hasGroup, typeId, typeSlug]);
 
-  const primaryCategory = useWatch({
-    control,
-    name: 'primary_category',
-  }) as Category | null;
-  const secondaryCategory = useWatch({
-    control,
-    name: 'secondary_category',
-  }) as Category | null;
-  const tertiaryCategory = useWatch({
-    control,
-    name: 'tertiary_category',
-  }) as Category | null;
-  const quaternaryCategory = useWatch({
-    control,
-    name: 'quaternary_category',
-  }) as Category | null;
-
   // Rebuild L1→leaf from the saved product category once the tree is available.
   useEffect(() => {
     if (!hasGroup || !hasSavedLeaf || flatCategories.length === 0) return;
@@ -262,26 +274,7 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
       return;
     }
 
-    const pathFromField = parseCategoryPath(leaf.path)
-      .map((id) => flatCategories.find((c: any) => Number(c.id) === id))
-      .filter(Boolean);
-
-    let path: any[] = pathFromField.length > 0 ? pathFromField : [leaf];
-    if (pathFromField.length === 0) {
-      let current: any = leaf;
-      const guard = new Set<number>([Number(leaf.id)]);
-      while (getParentId(current) != null) {
-        const parentId = getParentId(current)!;
-        if (guard.has(parentId)) break;
-        const parent = flatCategories.find(
-          (c: any) => Number(c.id) === parentId,
-        );
-        if (!parent) break;
-        path.unshift(parent);
-        guard.add(parentId);
-        current = parent;
-      }
-    }
+    const path = buildCategoryPath(leaf, flatCategories);
 
     hierarchyResolved.current = true;
     lastResolvedLeafId.current = savedLeafId;
@@ -317,94 +310,96 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flatCategories, hasGroup, hasSavedLeaf, savedLeafId]);
 
-  const primaryId =
-    primaryCategory?.id != null ? Number(primaryCategory.id) : null;
-  const secondaryId =
-    secondaryCategory?.id != null ? Number(secondaryCategory.id) : null;
-  const tertiaryId =
-    tertiaryCategory?.id != null ? Number(tertiaryCategory.id) : null;
-  const quaternaryId =
-    quaternaryCategory?.id != null ? Number(quaternaryCategory.id) : null;
+  const groupedLeafOptions = useMemo(() => {
+    const groups = new Map<string, any[]>();
+    for (const category of flatCategories) {
+      if (!isLeafCategory(category, flatCategories)) continue;
+      const path = buildCategoryPath(category, flatCategories);
+      const groupLabel =
+        path.length > 1
+          ? path
+              .slice(0, -1)
+              .map((item) => item.name)
+              .join(' / ')
+          : category.name;
+      const option = pickCategory(category);
+      const existing = groups.get(groupLabel) ?? [];
+      existing.push(option);
+      groups.set(groupLabel, existing);
+    }
+    return Array.from(groups.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([label, options]) => ({
+        label,
+        options: options.sort((a, b) =>
+          String(a.name).localeCompare(String(b.name)),
+        ),
+      }));
+  }, [flatCategories]);
 
-  const clearFrom = (level: 'secondary' | 'tertiary' | 'quaternary') => {
-    if (level === 'secondary') {
-      setValue('secondary_category', null);
-      setValue('tertiary_category', null);
-      setValue('quaternary_category', null);
+  const selectedLeafOption = useMemo(() => {
+    if (!hasSavedLeaf) return null;
+    for (const group of groupedLeafOptions) {
+      const match = group.options.find(
+        (option) => Number(option.id) === savedLeafId,
+      );
+      if (match) return match;
+    }
+    const leaf = flatCategories.find(
+      (category) => Number(category.id) === savedLeafId,
+    );
+    return leaf ? pickCategory(leaf) : null;
+  }, [flatCategories, groupedLeafOptions, hasSavedLeaf, savedLeafId]);
+
+  const selectedPath = useMemo(() => {
+    if (!selectedLeafOption) return [];
+    const leaf = flatCategories.find(
+      (category) => Number(category.id) === Number(selectedLeafOption.id),
+    );
+    if (!leaf) return [selectedLeafOption];
+    return buildCategoryPath(leaf, flatCategories);
+  }, [flatCategories, selectedLeafOption]);
+
+  const applyLeaf = (next: any) => {
+    if (next == null || next.id == null) {
+      setValue('categories', [], { shouldDirty: true });
+      setValue('primary_category', null, { shouldDirty: true });
+      setValue('secondary_category', null, { shouldDirty: true });
+      setValue('tertiary_category', null, { shouldDirty: true });
+      setValue('quaternary_category', null, { shouldDirty: true });
+      hierarchyResolved.current = false;
+      lastResolvedLeafId.current = null;
       return;
     }
-    if (level === 'tertiary') {
-      setValue('tertiary_category', null);
-      setValue('quaternary_category', null);
-      return;
-    }
-    setValue('quaternary_category', null);
-  };
 
-  const handleLevelChange = (
-    currentId: number | null,
-    nextValue: unknown,
-    level: 'secondary' | 'tertiary' | 'quaternary',
-  ) => {
-    const nextId =
-      nextValue != null &&
-      typeof nextValue === 'object' &&
-      (nextValue as any).id != null
-        ? Number((nextValue as any).id)
-        : null;
-    if (nextId == null) return;
-    if (currentId != null && currentId === nextId) return;
-    clearFrom(level);
-  };
-
-  useEffect(() => {
-    const list = flatCategories;
-    const hasLevel2Children =
-      primaryId != null && list.some((c) => getParentId(c) === primaryId);
-    const hasLevel3Children =
-      secondaryId != null && list.some((c) => getParentId(c) === secondaryId);
-    const hasLevel4Children =
-      tertiaryId != null && list.some((c) => getParentId(c) === tertiaryId);
-
-    let isComplete = false;
-    if (primaryId != null && !hasLevel2Children) isComplete = true;
-    if (secondaryId != null && !hasLevel3Children) isComplete = true;
-    if (tertiaryId != null && !hasLevel4Children) isComplete = true;
-    if (quaternaryId != null) isComplete = true;
-
-    const leafId = quaternaryId ?? tertiaryId ?? secondaryId ?? primaryId;
     const leaf =
-      quaternaryCategory ||
-      tertiaryCategory ||
-      secondaryCategory ||
-      primaryCategory;
-
-    if (leaf && leafId != null && isComplete) {
-      const current = (getValues('categories') ?? []) as any[];
-      const same = current.length === 1 && Number(current[0]?.id) === leafId;
-      if (!same) {
-        setValue('categories', [{ id: leaf.id, name: leaf.name }]);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [primaryId, secondaryId, tertiaryId, quaternaryId, flatCategories]);
+      flatCategories.find((category) => Number(category.id) === Number(next.id)) ??
+      next;
+    const path = buildCategoryPath(leaf, flatCategories);
+    hierarchyResolved.current = true;
+    lastResolvedLeafId.current = Number(leaf.id);
+    setResolveError(null);
+    setValue('primary_category', path[0] ? pickCategory(path[0]) : null, {
+      shouldDirty: true,
+    });
+    setValue('secondary_category', path[1] ? pickCategory(path[1]) : null, {
+      shouldDirty: true,
+    });
+    setValue('tertiary_category', path[2] ? pickCategory(path[2]) : null, {
+      shouldDirty: true,
+    });
+    setValue('quaternary_category', path[3] ? pickCategory(path[3]) : null, {
+      shouldDirty: true,
+    });
+    setValue(
+      'categories',
+      [{ id: leaf.id, name: leaf.name ?? '' }],
+      { shouldDirty: true, shouldValidate: true },
+    );
+  };
 
   const getOptionLabel = (option: any) =>
     option?.slug ? `${option.name} (${option.slug})` : option?.name;
-
-  const level1Options = flatCategories.filter((c) => getParentId(c) == null);
-  const level2Options =
-    primaryId != null
-      ? flatCategories.filter((c) => getParentId(c) === primaryId)
-      : [];
-  const level3Options =
-    secondaryId != null
-      ? flatCategories.filter((c) => getParentId(c) === secondaryId)
-      : [];
-  const level4Options =
-    tertiaryId != null
-      ? flatCategories.filter((c) => getParentId(c) === tertiaryId)
-      : [];
 
   return (
     <div className="mb-5">
@@ -422,81 +417,22 @@ const ProductCategoryCascader = ({ control, setValue }: Props) => {
             </p>
           ) : null}
 
-          <SelectInput
-            name="primary_category"
-            control={control}
+          {selectedPath.length > 0 ? (
+            <p className="mb-2 text-sm text-heading">
+              {selectedPath.map((item) => item.name).join(' / ')}
+            </p>
+          ) : null}
+
+          <Select
+            value={selectedLeafOption}
+            options={groupedLeafOptions}
             getOptionLabel={getOptionLabel}
             getOptionValue={optionId}
-            // @ts-ignore
-            options={level1Options}
             isLoading={loadingRoot}
-            shouldUnregister={false}
-            placeholder={t('form:text-select-category') || 'Select category'}
-            onChange={(value) => handleLevelChange(primaryId, value, 'secondary')}
+            isClearable
+            placeholder={t('form:text-select-category') || 'Search categories'}
+            onChange={applyLeaf}
           />
-
-          <div
-            className={
-              primaryCategory && level2Options.length > 0 ? 'mt-3' : 'hidden'
-            }
-          >
-            <SelectInput
-              name="secondary_category"
-              control={control}
-              getOptionLabel={getOptionLabel}
-              getOptionValue={optionId}
-              // @ts-ignore
-              options={level2Options}
-              shouldUnregister={false}
-              placeholder={
-                t('form:text-select-sub-category') || 'Select sub-category'
-              }
-              onChange={(value) =>
-                handleLevelChange(secondaryId, value, 'tertiary')
-              }
-            />
-          </div>
-
-          <div
-            className={
-              secondaryCategory && level3Options.length > 0 ? 'mt-3' : 'hidden'
-            }
-          >
-            <SelectInput
-              name="tertiary_category"
-              control={control}
-              getOptionLabel={getOptionLabel}
-              getOptionValue={optionId}
-              // @ts-ignore
-              options={level3Options}
-              shouldUnregister={false}
-              placeholder={
-                t('form:text-select-sub-category') || 'Select sub-category'
-              }
-              onChange={(value) =>
-                handleLevelChange(tertiaryId, value, 'quaternary')
-              }
-            />
-          </div>
-
-          <div
-            className={
-              tertiaryCategory && level4Options.length > 0 ? 'mt-3' : 'hidden'
-            }
-          >
-            <SelectInput
-              name="quaternary_category"
-              control={control}
-              getOptionLabel={getOptionLabel}
-              getOptionValue={optionId}
-              // @ts-ignore
-              options={level4Options}
-              shouldUnregister={false}
-              placeholder={
-                t('form:text-select-sub-category') || 'Select sub-category'
-              }
-            />
-          </div>
         </>
       )}
     </div>

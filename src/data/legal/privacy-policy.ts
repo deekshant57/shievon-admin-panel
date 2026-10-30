@@ -1,6 +1,6 @@
 export const privacyPolicyContent = {
   title: 'Privacy Policy',
-  lastUpdated: 'April 12, 2026',
+  lastUpdated: '7 October 2026',
   content: `
     <p>
       This Privacy Notice for Shievon Ventures Private Limited (doing business
@@ -37,6 +37,7 @@ export const privacyPolicyContent = {
       <li>Do we make updates to this notice?</li>
       <li>How can you contact us about this notice?</li>
       <li>How can you review, update, or delete your data?</li>
+      <li>Shievon Vendor mobile app</li>
     </ol>
 
     <h3>1. What Information Do We Collect?</h3>
@@ -123,8 +124,38 @@ export const privacyPolicyContent = {
 
     <h3>13. Data Access/Update/Delete Requests</h3>
     <p>
-      You may request to review, update, or delete your personal information
-      according to applicable law.
+      You may email
+      <a href="mailto:support@shievon.in">support@shievon.in</a>
+      to ask about your personal information. The Shievon Vendor mobile app
+      does not let you create an account, and it does not include an in-app
+      delete-account control. Shop accounts are issued by Shievon.
+    </p>
+
+    <h3>14. Shievon Vendor mobile app</h3>
+    <p>
+      The Shievon Vendor app is for shop owners who already have an account.
+      You sign in with that email and password. The app does not store your
+      password.
+    </p>
+    <p>
+      The app collects precise location only while you set or update a shop
+      address from Profile → Update address, and only while the app is open.
+      That location is used to place the shop pickup pin and to fill the
+      street, city, state, and country. It is not collected in the background,
+      and the live delivery map does not use this phone's location. You can
+      deny the location prompt and type the pin instead.
+    </p>
+    <p>
+      Looking up the street address may send that pin to Apple on iOS or to
+      Google Play services on Android. The address you save is stored on
+      Shievon servers.
+    </p>
+    <p>
+      The app also uses your name, email, shop assignment, order and customer
+      details needed to fulfill an order, order totals, and — if you turn on
+      order alerts — a Firebase Cloud Messaging token. The push token is
+      removed when you sign out. The app does not collect contacts, camera or
+      microphone data, or SMS and call logs, and it does not show ads.
     </p>
   `,
 } as const;

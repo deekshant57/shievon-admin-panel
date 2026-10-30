@@ -56,9 +56,7 @@ import { useModalAction } from '@/components/ui/modal/modal.context';
 import { useCallback } from 'react';
 import OpenAIButton from '@/components/openAI/openAI.button';
 import { ItemProps } from '@/types';
-import { EyeIcon } from '@/components/icons/category/eyes-icon';
 import { LongArrowPrev } from '@/components/icons/long-arrow-prev';
-import Link from 'next/link';
 import { formatSlug } from '@/utils/use-slug';
 import ProductFlashSaleBox from '@/components/product/product-flash-sale-box';
 import { UpdateIcon } from '@/components/icons/update';
@@ -119,7 +117,7 @@ export default function CreateOrUpdateProductForm({
   initialValues,
 }: ProductFormProps) {
   const router = useRouter();
-  const { query, locale } = router;
+  const { locale } = router;
   const { settings } = useSettingsQuery({
     language: locale!,
   });
@@ -152,8 +150,6 @@ export default function CreateOrUpdateProductForm({
   );
   const shopId = shopData?.id!;
   const isNewTranslation = router?.query?.action === 'translate';
-  const showPreviewButton =
-    router?.query?.action === 'edit' && Boolean(initialValues?.slug);
   const isSlugEditable =
     router?.query?.action === 'edit' &&
     router?.locale === Config.defaultLanguage;
@@ -852,16 +848,6 @@ export default function CreateOrUpdateProductForm({
                 </Button>
               )}
               <div className="flex items-center">
-                {showPreviewButton && (
-                  <Link
-                    href={`${process.env.NEXT_PUBLIC_SHOP_URL}/products/preview/${query.productSlug}`}
-                    target="_blank"
-                    className="inline-flex h-12 flex-shrink-0 items-center justify-center rounded border !border-accent bg-transparent px-5 py-0 text-sm font-semibold leading-none !text-accent outline-none transition duration-300 ease-in-out me-4 hover:border-accent hover:bg-accent hover:!text-white focus:shadow focus:outline-none focus:ring-1 focus:ring-accent-700 md:text-base"
-                  >
-                    <EyeIcon className="w-4 h-4 me-2" />
-                    {t('form:button-label-preview-product-on-shop')}
-                  </Link>
-                )}
                 <Button
                   type="submit"
                   loading={updating || creating}

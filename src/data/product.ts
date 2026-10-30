@@ -67,7 +67,17 @@ export const useUpdateProductMutation = () => {
             (data.id && old?.id === data.id) ||
             (data.slug && old?.slug === data.slug)
           ) {
-            return { ...old, ...data };
+            // Live PUT echoes type id 1 as slug "products" while GET returns
+            // "clothing". Same id + different slug would retarget the category
+            // tree and hide the saved path. Keep the type already loaded.
+            const type =
+              old?.type?.slug &&
+              data?.type?.slug &&
+              Number(old.type.id) === Number(data.type.id) &&
+              old.type.slug !== data.type.slug
+                ? old.type
+                : data?.type ?? old?.type;
+            return { ...old, ...data, type };
           }
           return old;
         });

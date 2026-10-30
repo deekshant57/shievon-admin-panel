@@ -275,7 +275,7 @@ const ProductList = ({
             record={record}
             deleteModalView="DELETE_PRODUCT"
             routes={Routes?.product}
-            enablePreviewMode={true}
+            enablePreviewMode={false}
             isShop={Boolean(shop)}
             shopSlug={(shop as string) ?? ''}
           />
