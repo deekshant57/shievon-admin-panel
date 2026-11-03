@@ -14,6 +14,8 @@ import { STORE_OWNER, SUPER_ADMIN } from '@/utils/constants';
 type ServiceAiImageActionsProps = {
   serviceId: string;
   serviceName: string;
+  /** The offering's type; decides which "only photos of ..." hint is shown. */
+  serviceType?: { name?: string | null; slug?: string | null } | null;
 };
 
 const ACTIVE_PROGRESS_STATES: ServiceAiImageJobStatus[] = ['queued', 'processing'];
@@ -21,6 +23,7 @@ const ACTIVE_PROGRESS_STATES: ServiceAiImageJobStatus[] = ['queued', 'processing
 export default function ServiceAiImageActions({
   serviceId,
   serviceName,
+  serviceType,
 }: ServiceAiImageActionsProps) {
   const { t } = useTranslation('common');
   const { role } = getAuthCredentials();
@@ -36,6 +39,9 @@ export default function ServiceAiImageActions({
       ACTIVE_PROGRESS_STATES.includes(status?.status) ? 3000 : false,
   });
 
+  const typeKey = [serviceType?.slug, serviceType?.name]
+    .map((v) => String(v ?? '').trim().toLowerCase())
+    .find((v) => v === 'cafe' || v === 'salon');
   const canUseAiImageActions = role === SUPER_ADMIN || role === STORE_OWNER;
   const status = statusData?.status ?? 'idle';
   const progress = statusData?.progress_percent ?? 0;
@@ -54,6 +60,11 @@ export default function ServiceAiImageActions({
     }
     return null;
   }, [enqueueError, status, statusData?.error_message, t]);
+
+  // The image agent names the offending photo ("Photo 2 doesn't look like ..."),
+  // so the vendor knows which one to swap. Only then does "replace that photo" apply.
+  const namesAPhoto =
+    status === 'failed' && /^Photo \d+/.test(statusData?.error_message ?? '');
 
   const disableGenerate = useMemo(() => {
     return (
@@ -105,6 +116,11 @@ export default function ServiceAiImageActions({
           </Button>
         )}
       </div>
+      {typeKey && (
+        <span className="max-w-[260px] text-right text-[11px] leading-snug text-muted">
+          {t(`text-ai-service-hint-${typeKey}`)}
+        </span>
+      )}
       {ACTIVE_PROGRESS_STATES.includes(status) && (
         <span className="text-xs text-body">
           {`${t('text-ai-progress')}: ${progress}%`}
@@ -115,9 +131,14 @@ export default function ServiceAiImageActions({
         // shape; the full text stays available on hover.
         <span
           title={message}
-          className="line-clamp-3 max-w-[260px] text-right text-xs leading-snug text-red-500"
+          className="line-clamp-5 max-w-[300px] text-right text-xs leading-snug text-red-500"
         >
           {message}
+        </span>
+      )}
+      {namesAPhoto && (
+        <span className="text-right text-xs font-medium text-heading">
+          {t('text-ai-replace-photo-retry')}
         </span>
       )}
     </div>

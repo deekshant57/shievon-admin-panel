@@ -202,7 +202,11 @@ const ServiceList = ({
           />
           {/* AI image enhancement is only offered for Cafe / Salon items (the API rejects other types). */}
           {isServiceType(record.type) && (
-            <ServiceAiImageActions serviceId={String(id)} serviceName={record.name} />
+            <ServiceAiImageActions
+              serviceId={String(id)}
+              serviceName={record.name}
+              serviceType={record.type}
+            />
           )}
         </div>
       ),
