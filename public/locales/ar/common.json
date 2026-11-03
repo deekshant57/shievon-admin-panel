@@ -53,6 +53,8 @@
   "text-ai-generation-failed": "فشل توليد الذكاء الاصطناعي",
   "text-ai-image-preview": "معاينة صور الذكاء الاصطناعي",
   "text-ai-preview-not-found": "لا توجد معاينة معلقة لهذا المنتج.",
+  "text-ai-attempts-hint-service": "يمكن تحسين كل خدمة مرتين كحد أقصى. النتائج المرفوضة تُحتسب ضمن الحد.",
+  "text-ai-preview-not-found-service": "لا توجد معاينة معلقة لهذه الخدمة.",
   "text-source-images": "الصور المصدرية",
   "text-generated-preview-images": "صور المعاينة المُولَّدة",
   "text-reject-preview": "رفض المعاينة",

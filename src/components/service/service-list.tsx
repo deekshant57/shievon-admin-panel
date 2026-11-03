@@ -16,6 +16,8 @@ import { SortOrder } from '@/types'
 import type { MappedPaginatorInfo, ServiceOffering } from '@/types'
 import ActionButtons from '@/components/common/action-buttons'
 import NotificationActionButton from '@/components/notify-logs/notification-action-button'
+import ServiceAiImageActions from '@/components/service/service-ai-image-actions'
+import { isServiceType } from '@/utils/service-type'
 
 export type ServiceListProps = {
   serviceOfferings: ServiceOffering[] | undefined
@@ -184,7 +186,7 @@ const ServiceList = ({
       dataIndex: 'id',
       key: 'actions',
       align: alignRight,
-      width: 160,
+      width: 240,
       render: (id: string, record: ServiceOffering) => (
         <div className="flex flex-col items-end gap-1.5">
           <NotificationActionButton
@@ -198,6 +200,10 @@ const ServiceList = ({
             deleteModalView="DELETE_SERVICE_OFFERING"
             enablePreviewMode={false}
           />
+          {/* AI image enhancement is only offered for Cafe / Salon items (the API rejects other types). */}
+          {isServiceType(record.type) && (
+            <ServiceAiImageActions serviceId={String(id)} serviceName={record.name} />
+          )}
         </div>
       ),
     },
@@ -219,7 +225,7 @@ const ServiceList = ({
           )}
           data={serviceOfferings}
           rowKey="id"
-          scroll={{ x: 1050 }}
+          scroll={{ x: 1300 }}
         />
 
       {!!paginatorInfo?.total && (

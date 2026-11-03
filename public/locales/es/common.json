@@ -53,6 +53,8 @@
   "text-ai-generation-failed": "La generación con IA falló",
   "text-ai-image-preview": "Vista previa de imágenes IA",
   "text-ai-preview-not-found": "No hay vista previa pendiente para este producto.",
+  "text-ai-attempts-hint-service": "Cada servicio se puede mejorar hasta 2 veces. Los resultados rechazados cuentan para el límite.",
+  "text-ai-preview-not-found-service": "No hay vista previa pendiente para este servicio.",
   "text-source-images": "Imágenes de origen",
   "text-generated-preview-images": "Imágenes generadas (vista previa)",
   "text-reject-preview": "Rechazar vista previa",

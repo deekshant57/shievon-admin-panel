@@ -5,6 +5,13 @@ import type {
   ServiceOfferingPaginator,
   ServiceOfferingQueryOptions,
 } from '@/types'
+import type {
+  ServiceAiImageGenerationApproveResponse,
+  ServiceAiImageGenerationEnqueueResponse,
+  ServiceAiImageGenerationPreviewResponse,
+  ServiceAiImageGenerationRejectResponse,
+  ServiceAiImageGenerationStatus,
+} from '@/types/service-ai'
 import { API_ENDPOINTS } from './api-endpoints'
 import { crudFactory } from './curd-factory'
 import { HttpClient } from './http-client'
@@ -46,5 +53,32 @@ export const serviceOfferingClient = {
   getById: ({ id }: { id: string }) => {
     return HttpClient.get<ServiceOffering>(`${API_ENDPOINTS.SERVICE_OFFERINGS}/${id}`)
   },
+  enqueueAiImageGeneration(id: string | number) {
+    return HttpClient.post<ServiceAiImageGenerationEnqueueResponse>(
+      `${API_ENDPOINTS.SERVICE_OFFERINGS}/${id}/${API_ENDPOINTS.SERVICE_AI_IMAGE_GENERATION}`,
+      {},
+    )
+  },
+  getAiImageGenerationStatus(id: string | number) {
+    return HttpClient.get<ServiceAiImageGenerationStatus>(
+      `${API_ENDPOINTS.SERVICE_OFFERINGS}/${id}/${API_ENDPOINTS.SERVICE_AI_IMAGE_GENERATION}/status`,
+    )
+  },
+  getAiImageGenerationPreview(id: string | number) {
+    return HttpClient.get<ServiceAiImageGenerationPreviewResponse>(
+      `${API_ENDPOINTS.SERVICE_OFFERINGS}/${id}/${API_ENDPOINTS.SERVICE_AI_IMAGE_GENERATION}/preview`,
+    )
+  },
+  approveAiImageGenerationPreview(id: string | number) {
+    return HttpClient.post<ServiceAiImageGenerationApproveResponse>(
+      `${API_ENDPOINTS.SERVICE_OFFERINGS}/${id}/${API_ENDPOINTS.SERVICE_AI_IMAGE_GENERATION}/approve`,
+      {},
+    )
+  },
+  rejectAiImageGenerationPreview(id: string | number) {
+    return HttpClient.post<ServiceAiImageGenerationRejectResponse>(
+      `${API_ENDPOINTS.SERVICE_OFFERINGS}/${id}/${API_ENDPOINTS.SERVICE_AI_IMAGE_GENERATION}/reject`,
+      {},
+    )
+  },
 }
-

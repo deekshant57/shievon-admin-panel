@@ -80,6 +80,8 @@
   "text-ai-generation-failed": "AI generation failed",
   "text-ai-image-preview": "AI image preview",
   "text-ai-preview-not-found": "No pending AI preview was found for this product.",
+  "text-ai-attempts-hint-service": "Each service can be enhanced up to 2 times. Rejected results count towards the limit.",
+  "text-ai-preview-not-found-service": "No pending AI preview was found for this service.",
   "text-source-images": "Source images",
   "text-generated-preview-images": "Generated preview images",
   "text-ai-preview-zoom-hint": "Click any image to view it full size.",

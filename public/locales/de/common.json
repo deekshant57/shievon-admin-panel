@@ -53,6 +53,8 @@
   "text-ai-generation-failed": "KI-Generierung fehlgeschlagen",
   "text-ai-image-preview": "KI-Bildvorschau",
   "text-ai-preview-not-found": "Kein ausstehender KI-Vorschau für dieses Produkt.",
+  "text-ai-attempts-hint-service": "Jeder Service kann bis zu 2 Mal verbessert werden. Abgelehnte Ergebnisse zählen zum Limit.",
+  "text-ai-preview-not-found-service": "Kein ausstehender KI-Vorschau für diesen Service.",
   "text-source-images": "Quellbilder",
   "text-generated-preview-images": "Generierte Vorschaubilder",
   "text-reject-preview": "Vorschau ablehnen",

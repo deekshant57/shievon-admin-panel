@@ -108,6 +108,10 @@ export const API_ENDPOINTS = {
   PRODUCT_AI_IMAGE_GENERATION: 'ai-image-generation',
   PRODUCT_AI_IMAGE_GENERATION_STATUS: 'ai-image-generation-status',
   PRODUCT_AI_IMAGE_GENERATION_PREVIEW: 'ai-image-generation-preview',
+  // Cafe / Salon service offerings: POST/GET service-offerings/:id/ai-image-generation[/status|preview|approve|reject]
+  SERVICE_AI_IMAGE_GENERATION: 'ai-image-generation',
+  SERVICE_AI_IMAGE_GENERATION_STATUS: 'service-ai-image-generation-status',
+  SERVICE_AI_IMAGE_GENERATION_PREVIEW: 'service-ai-image-generation-preview',
   CATEGORY_WISE_PRODUCTS: 'category-wise-product',
   CATEGORY_WISE_PRODUCTS_SALE: 'category-wise-product-sale',
   VENDORS_LIST: '/vendors/list',

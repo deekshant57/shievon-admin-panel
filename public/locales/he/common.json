@@ -53,6 +53,8 @@
   "text-ai-generation-failed": "יצירת AI נכשלה",
   "text-ai-image-preview": "תצוגה מקדימה של תמונות AI",
   "text-ai-preview-not-found": "אין תצוגה מקדימה ממתינה למוצר זה.",
+  "text-ai-attempts-hint-service": "ניתן לשפר כל שירות עד פעמיים. תוצאות שנדחו נספרות במכסה.",
+  "text-ai-preview-not-found-service": "אין תצוגה מקדימה ממתינה לשירות זה.",
   "text-source-images": "תמונות מקור",
   "text-generated-preview-images": "תמונות תצוגה מקדימה שנוצרו",
   "text-reject-preview": "דחיית תצוגה מקדימה",

@@ -10,9 +10,17 @@ import type {
   ServiceOfferingPaginator,
   ServiceOfferingQueryOptions,
 } from '@/types'
+import type {
+  ServiceAiImageGenerationApproveResponse,
+  ServiceAiImageGenerationEnqueueResponse,
+  ServiceAiImageGenerationPreviewResponse,
+  ServiceAiImageGenerationRejectResponse,
+  ServiceAiImageGenerationStatus,
+} from '@/types/service-ai'
 import { mapPaginatorData } from '@/utils/data-mappers'
 import { Routes } from '@/config/routes'
 import { Config } from '@/config'
+import { getApiErrorMessage } from '@/data/client/http-client'
 
 export const useCreateServiceOfferingMutation = () => {
   const queryClient = useQueryClient()
@@ -170,3 +178,107 @@ function normalizeServicePaginatorData(
   return data
 }
 
+
+// ---- AI image enhancement for Cafe / Salon offerings (separate from products) ----
+
+export const useEnqueueServiceAiImageGenerationMutation = () => {
+  const queryClient = useQueryClient()
+  const { t } = useTranslation('common')
+
+  return useMutation<
+    ServiceAiImageGenerationEnqueueResponse,
+    unknown,
+    string | number
+  >((id) => serviceOfferingClient.enqueueAiImageGeneration(id), {
+    onSuccess: (_data, id) => {
+      toast.success(t('text-ai-image-job-queued'))
+      queryClient.invalidateQueries([
+        API_ENDPOINTS.SERVICE_AI_IMAGE_GENERATION_STATUS,
+        id,
+      ])
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error))
+    },
+  })
+}
+
+export const useServiceAiImageGenerationStatusQuery = (
+  id?: string | number,
+  options: any = {},
+) => {
+  const enabled = Boolean(id) && (options?.enabled ?? true)
+
+  return useQuery<ServiceAiImageGenerationStatus, Error>(
+    [API_ENDPOINTS.SERVICE_AI_IMAGE_GENERATION_STATUS, id],
+    () => serviceOfferingClient.getAiImageGenerationStatus(id as string | number),
+    { enabled, ...options },
+  )
+}
+
+export const useServiceAiImageGenerationPreviewQuery = (
+  id?: string | number,
+  options: any = {},
+) => {
+  const enabled = Boolean(id) && (options?.enabled ?? true)
+
+  return useQuery<ServiceAiImageGenerationPreviewResponse, Error>(
+    [API_ENDPOINTS.SERVICE_AI_IMAGE_GENERATION_PREVIEW, id],
+    () => serviceOfferingClient.getAiImageGenerationPreview(id as string | number),
+    { enabled, ...options },
+  )
+}
+
+export const useApproveServiceAiImageGenerationMutation = () => {
+  const queryClient = useQueryClient()
+  const { t } = useTranslation('common')
+
+  return useMutation<
+    ServiceAiImageGenerationApproveResponse,
+    unknown,
+    string | number
+  >((id) => serviceOfferingClient.approveAiImageGenerationPreview(id), {
+    onSuccess: (_data, id) => {
+      toast.success(t('text-ai-image-preview-approved'))
+      // Approve replaces the offering's images, so refresh the list too.
+      queryClient.invalidateQueries(API_ENDPOINTS.SERVICE_OFFERINGS)
+      queryClient.invalidateQueries([
+        API_ENDPOINTS.SERVICE_AI_IMAGE_GENERATION_STATUS,
+        id,
+      ])
+      queryClient.invalidateQueries([
+        API_ENDPOINTS.SERVICE_AI_IMAGE_GENERATION_PREVIEW,
+        id,
+      ])
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error))
+    },
+  })
+}
+
+export const useRejectServiceAiImageGenerationMutation = () => {
+  const queryClient = useQueryClient()
+  const { t } = useTranslation('common')
+
+  return useMutation<
+    ServiceAiImageGenerationRejectResponse,
+    unknown,
+    string | number
+  >((id) => serviceOfferingClient.rejectAiImageGenerationPreview(id), {
+    onSuccess: (_data, id) => {
+      toast.success(t('text-ai-image-preview-rejected'))
+      queryClient.invalidateQueries([
+        API_ENDPOINTS.SERVICE_AI_IMAGE_GENERATION_STATUS,
+        id,
+      ])
+      queryClient.invalidateQueries([
+        API_ENDPOINTS.SERVICE_AI_IMAGE_GENERATION_PREVIEW,
+        id,
+      ])
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error))
+    },
+  })
+}
