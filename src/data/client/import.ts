@@ -2,17 +2,34 @@ import { HttpClient } from './http-client';
 import { API_ENDPOINTS } from '@/data/client/api-endpoints';
 import {
   ClothingImportCommitInput,
+  CosmeticsImportCommitInput,
+  CosmeticsImportJob,
+  CosmeticsImportJobsInput,
+  CosmeticsImportPreviewInput,
+  CosmeticsImportTemplateInput,
   ClothingImportJob,
   ClothingImportJobsInput,
   ClothingImportJobsResponse,
   ClothingImportPreviewInput,
   ClothingImportTemplateInput,
+  EyewearImportCommitInput,
+  EyewearImportJob,
+  EyewearImportJobsInput,
+  EyewearImportJobsResponse,
+  EyewearImportPreviewInput,
+  EyewearImportTemplateInput,
   FootwearImportCommitInput,
   FootwearImportJob,
   FootwearImportJobsInput,
   FootwearImportJobsResponse,
   FootwearImportPreviewInput,
   FootwearImportTemplateInput,
+  JewelleryImportCommitInput,
+  JewelleryImportJob,
+  JewelleryImportJobsInput,
+  JewelleryImportJobsResponse,
+  JewelleryImportPreviewInput,
+  JewelleryImportTemplateInput,
 } from '@/types';
 
 export const importClient = {
@@ -88,6 +105,56 @@ export const importClient = {
       `${API_ENDPOINTS.CLOTHING_IMPORT_JOBS}/${jobId}/report`
     );
   },
+  downloadCosmeticsTemplate: async (input: CosmeticsImportTemplateInput) => {
+    return HttpClient.getBlob(API_ENDPOINTS.COSMETICS_IMPORT_TEMPLATE, {
+      shopId: input.shopId,
+      shop_id: input.shopId,
+    });
+  },
+  previewCosmeticsImport: async (input: CosmeticsImportPreviewInput) => {
+    const formData = new FormData();
+    formData.append('xlsx', input.xlsx);
+    if (input.zip) {
+      formData.append('zip', input.zip);
+    }
+    formData.append('shopId', String(input.shopId));
+
+    return HttpClient.post<CosmeticsImportJob>(
+      API_ENDPOINTS.COSMETICS_IMPORT_PREVIEW,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+  },
+  getCosmeticsImportJob: async (jobId: string | number) => {
+    return HttpClient.get<CosmeticsImportJob>(
+      `${API_ENDPOINTS.COSMETICS_IMPORT_JOBS}/${jobId}`
+    );
+  },
+  getCosmeticsImportJobs: async (input: CosmeticsImportJobsInput) => {
+    return HttpClient.get<CosmeticsImportJob[]>(
+      API_ENDPOINTS.COSMETICS_IMPORT_JOBS,
+      input
+    );
+  },
+  commitCosmeticsImport: async ({
+    jobId,
+    idempotencyKey,
+    confirmedNearDuplicates,
+  }: CosmeticsImportCommitInput) => {
+    return HttpClient.post<CosmeticsImportJob>(
+      `${API_ENDPOINTS.COSMETICS_IMPORT_JOBS}/${jobId}/commit`,
+      { idempotencyKey, confirmedNearDuplicates }
+    );
+  },
+  downloadCosmeticsImportReport: async (jobId: string | number) => {
+    return HttpClient.getBlob(
+      `${API_ENDPOINTS.COSMETICS_IMPORT_JOBS}/${jobId}/report`
+    );
+  },
   downloadFootwearTemplate: async (input: FootwearImportTemplateInput) => {
     return HttpClient.getBlob(API_ENDPOINTS.FOOTWEAR_IMPORT_TEMPLATE, {
       shopId: input.shopId,
@@ -133,6 +200,100 @@ export const importClient = {
   downloadFootwearImportReport: async (jobId: string | number) => {
     return HttpClient.getBlob(
       `${API_ENDPOINTS.FOOTWEAR_IMPORT_JOBS}/${jobId}/report`
+    );
+  },
+  downloadEyewearTemplate: async (input: EyewearImportTemplateInput) => {
+    return HttpClient.getBlob(API_ENDPOINTS.EYEWEAR_IMPORT_TEMPLATE, {
+      shopId: input.shopId,
+      shop_id: input.shopId,
+    });
+  },
+  previewEyewearImport: async (input: EyewearImportPreviewInput) => {
+    const formData = new FormData();
+    formData.append('xlsx', input.xlsx);
+    formData.append('zip', input.zip);
+    formData.append('shopId', String(input.shopId));
+
+    return HttpClient.post<EyewearImportJob>(
+      API_ENDPOINTS.EYEWEAR_IMPORT_PREVIEW,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+  },
+  getEyewearImportJob: async (jobId: string | number) => {
+    return HttpClient.get<EyewearImportJob>(
+      `${API_ENDPOINTS.EYEWEAR_IMPORT_JOBS}/${jobId}`
+    );
+  },
+  getEyewearImportJobs: async (input: EyewearImportJobsInput) => {
+    return HttpClient.get<EyewearImportJobsResponse>(
+      API_ENDPOINTS.EYEWEAR_IMPORT_JOBS,
+      input
+    );
+  },
+  commitEyewearImport: async ({
+    jobId,
+    idempotencyKey,
+  }: EyewearImportCommitInput) => {
+    return HttpClient.post<EyewearImportJob>(
+      `${API_ENDPOINTS.EYEWEAR_IMPORT_JOBS}/${jobId}/commit`,
+      { idempotencyKey }
+    );
+  },
+  downloadEyewearImportReport: async (jobId: string | number) => {
+    return HttpClient.getBlob(
+      `${API_ENDPOINTS.EYEWEAR_IMPORT_JOBS}/${jobId}/report`
+    );
+  },
+  downloadJewelleryTemplate: async (input: JewelleryImportTemplateInput) => {
+    return HttpClient.getBlob(API_ENDPOINTS.JEWELLERY_IMPORT_TEMPLATE, {
+      shopId: input.shopId,
+      shop_id: input.shopId,
+    });
+  },
+  previewJewelleryImport: async (input: JewelleryImportPreviewInput) => {
+    const formData = new FormData();
+    formData.append('xlsx', input.xlsx);
+    formData.append('zip', input.zip);
+    formData.append('shopId', String(input.shopId));
+
+    return HttpClient.post<JewelleryImportJob>(
+      API_ENDPOINTS.JEWELLERY_IMPORT_PREVIEW,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+  },
+  getJewelleryImportJob: async (jobId: string | number) => {
+    return HttpClient.get<JewelleryImportJob>(
+      `${API_ENDPOINTS.JEWELLERY_IMPORT_JOBS}/${jobId}`
+    );
+  },
+  getJewelleryImportJobs: async (input: JewelleryImportJobsInput) => {
+    return HttpClient.get<JewelleryImportJobsResponse>(
+      API_ENDPOINTS.JEWELLERY_IMPORT_JOBS,
+      input
+    );
+  },
+  commitJewelleryImport: async ({
+    jobId,
+    idempotencyKey,
+  }: JewelleryImportCommitInput) => {
+    return HttpClient.post<JewelleryImportJob>(
+      `${API_ENDPOINTS.JEWELLERY_IMPORT_JOBS}/${jobId}/commit`,
+      { idempotencyKey }
+    );
+  },
+  downloadJewelleryImportReport: async (jobId: string | number) => {
+    return HttpClient.getBlob(
+      `${API_ENDPOINTS.JEWELLERY_IMPORT_JOBS}/${jobId}/report`
     );
   },
 };

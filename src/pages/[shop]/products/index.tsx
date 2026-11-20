@@ -2,7 +2,6 @@ import DataPanel from '@/components/page/data-panel';
 import Search from '@/components/common/search';
 import { ArrowDown } from '@/components/icons/arrow-down';
 import { ArrowUp } from '@/components/icons/arrow-up';
-import { MoreIcon } from '@/components/icons/more-icon';
 import ShopLayout from '@/components/layouts/shop';
 import CategoryTypeFilter from '@/components/filters/category-type-filter';
 import ProductList from '@/components/product/product-list';
@@ -11,7 +10,6 @@ import ErrorMessage from '@/components/ui/error-message';
 import LinkActionButton from '@/components/ui/link-action-button';
 import ActionButton from '@/components/ui/action-button';
 import Loader from '@/components/ui/loader/loader';
-import { useModalAction } from '@/components/ui/modal/modal.context';
 import { Config } from '@/config';
 import { Routes } from '@/config/routes';
 import ProductBulkImportMenu from '@/components/product/product-bulk-import-menu';
@@ -62,7 +60,6 @@ export default function ProductsPage() {
   const [orderBy, setOrder] = useState('created_at');
   const [sortedBy, setColumn] = useState<SortOrder>(SortOrder.Desc);
   const [visible, setVisible] = useState(true);
-  const { openModal } = useModalAction();
   const hasRedirectedRef = useRef(false);
   const isShopOwner = me?.shops?.some((s) => s.id === shopId) ?? false;
   const canImportClothing =
@@ -96,10 +93,6 @@ export default function ProductsPage() {
   const filteredProducts = (products ?? []).filter(
     (p: any) => !isServiceType(p?.type),
   );
-
-  function handleImportModal() {
-    openModal('EXPORT_IMPORT_PRODUCT', shopId);
-  }
 
   useEffect(() => {
     if (hasRedirectedRef.current) {
@@ -214,25 +207,6 @@ export default function ProductsPage() {
                 ) : (
                   <ArrowDown className="ms-1 h-3.5 w-3.5" />
                 )}
-              </ActionButton>
-              <ActionButton
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={handleImportModal}
-                className="col-span-2 w-full justify-center sm:hidden"
-              >
-                {t('common:text-export-import')}
-              </ActionButton>
-              <ActionButton
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={handleImportModal}
-                className="hidden w-auto justify-center sm:inline-flex"
-                aria-label={t('common:text-export-import')}
-              >
-                <MoreIcon className="h-3.5 w-3.5" />
               </ActionButton>
             </div>
           </div>

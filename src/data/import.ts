@@ -6,17 +6,34 @@ import { getApiErrorMessage } from '@/data/client/http-client';
 import { importClient } from '@/data/client/import';
 import {
   ClothingImportCommitInput,
+  CosmeticsImportCommitInput,
+  CosmeticsImportJob,
+  CosmeticsImportJobsInput,
+  CosmeticsImportPreviewInput,
+  CosmeticsImportTemplateInput,
   ClothingImportJob,
   ClothingImportJobsInput,
   ClothingImportJobsResponse,
   ClothingImportPreviewInput,
   ClothingImportTemplateInput,
+  EyewearImportCommitInput,
+  EyewearImportJob,
+  EyewearImportJobsInput,
+  EyewearImportJobsResponse,
+  EyewearImportPreviewInput,
+  EyewearImportTemplateInput,
   FootwearImportCommitInput,
   FootwearImportJob,
   FootwearImportJobsInput,
   FootwearImportJobsResponse,
   FootwearImportPreviewInput,
   FootwearImportTemplateInput,
+  JewelleryImportCommitInput,
+  JewelleryImportJob,
+  JewelleryImportJobsInput,
+  JewelleryImportJobsResponse,
+  JewelleryImportPreviewInput,
+  JewelleryImportTemplateInput,
 } from '@/types';
 
 type Input = {
@@ -382,6 +399,403 @@ export const useDownloadFootwearImportReportMutation = () => {
         toast.error(
           error?.response?.data?.message ??
             t('common:footwear-import-report-download-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useDownloadCosmeticsTemplateMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: CosmeticsImportTemplateInput) =>
+      importClient.downloadCosmeticsTemplate(input),
+    {
+      onSuccess: (blob) => {
+        downloadBlob(blob, 'cosmetics-import-template.xlsx');
+      },
+      onError: (error: unknown) => {
+        toast.error(
+          getApiErrorMessage(
+            error,
+            t('common:cosmetics-import-template-download-failed')
+          )
+        );
+      },
+    }
+  );
+};
+
+export const usePreviewCosmeticsImportMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: CosmeticsImportPreviewInput) =>
+      importClient.previewCosmeticsImport(input),
+    {
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:cosmetics-import-preview-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useCosmeticsImportJobQuery = (
+  jobId?: string | number,
+  options: { enabled?: boolean; refetchInterval?: number | false } = {}
+) => {
+  const { data, error, isLoading, refetch } = useQuery<
+    CosmeticsImportJob,
+    Error
+  >(
+    [API_ENDPOINTS.COSMETICS_IMPORT_JOBS, jobId],
+    () => importClient.getCosmeticsImportJob(jobId as string | number),
+    {
+      enabled: Boolean(jobId) && (options.enabled ?? true),
+      refetchInterval: options.refetchInterval,
+    }
+  );
+
+  return {
+    job: data,
+    error,
+    loading: isLoading,
+    refetch,
+  };
+};
+
+export const useCosmeticsImportJobsQuery = (
+  input?: CosmeticsImportJobsInput,
+  options: { enabled?: boolean } = {}
+) => {
+  const { data, error, isLoading, refetch } = useQuery<
+    CosmeticsImportJob[],
+    Error
+  >(
+    [API_ENDPOINTS.COSMETICS_IMPORT_JOBS, input],
+    () => importClient.getCosmeticsImportJobs(input as CosmeticsImportJobsInput),
+    {
+      enabled: Boolean(input?.shopId) && (options.enabled ?? true),
+      retry: false,
+    }
+  );
+
+  return {
+    jobs: Array.isArray(data) ? data : [],
+    error,
+    loading: isLoading,
+    refetch,
+  };
+};
+
+export const useCommitCosmeticsImportMutation = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: CosmeticsImportCommitInput) =>
+      importClient.commitCosmeticsImport(input),
+    {
+      onSuccess: () => {
+        toast.success(t('common:cosmetics-import-commit-started'));
+        queryClient.invalidateQueries(API_ENDPOINTS.PRODUCTS);
+        queryClient.invalidateQueries(API_ENDPOINTS.COSMETICS_IMPORT_JOBS);
+      },
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:cosmetics-import-commit-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useDownloadCosmeticsImportReportMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (jobId: string | number) =>
+      importClient.downloadCosmeticsImportReport(jobId),
+    {
+      onSuccess: (blob, jobId) => {
+        downloadBlob(blob, `cosmetics-import-report-${jobId}.xlsx`);
+      },
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:cosmetics-import-report-download-failed')
+        );
+      },
+    }
+  );
+};
+
+function normalizeEyewearImportJobs(response?: EyewearImportJobsResponse) {
+  if (Array.isArray(response)) return response;
+  return response?.data ?? response?.jobs ?? [];
+}
+
+function normalizeJewelleryImportJobs(response?: JewelleryImportJobsResponse) {
+  if (Array.isArray(response)) return response;
+  return response?.data ?? response?.jobs ?? [];
+}
+
+export const useDownloadEyewearTemplateMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: EyewearImportTemplateInput) =>
+      importClient.downloadEyewearTemplate(input),
+    {
+      onSuccess: (blob) => {
+        downloadBlob(blob, 'eyewear-import-template.xlsx');
+      },
+      onError: (error: unknown) => {
+        toast.error(
+          getApiErrorMessage(
+            error,
+            t('common:eyewear-import-template-download-failed')
+          )
+        );
+      },
+    }
+  );
+};
+
+export const usePreviewEyewearImportMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: EyewearImportPreviewInput) =>
+      importClient.previewEyewearImport(input),
+    {
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:eyewear-import-preview-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useEyewearImportJobQuery = (
+  jobId?: string | number,
+  options: { enabled?: boolean; refetchInterval?: number | false } = {}
+) => {
+  const { data, error, isLoading, refetch } = useQuery<EyewearImportJob, Error>(
+    [API_ENDPOINTS.EYEWEAR_IMPORT_JOBS, jobId],
+    () => importClient.getEyewearImportJob(jobId as string | number),
+    {
+      enabled: Boolean(jobId) && (options.enabled ?? true),
+      refetchInterval: options.refetchInterval,
+    }
+  );
+
+  return {
+    job: data,
+    error,
+    loading: isLoading,
+    refetch,
+  };
+};
+
+export const useEyewearImportJobsQuery = (
+  input?: EyewearImportJobsInput,
+  options: { enabled?: boolean } = {}
+) => {
+  const { data, error, isLoading, refetch } = useQuery<
+    EyewearImportJobsResponse,
+    Error
+  >(
+    [API_ENDPOINTS.EYEWEAR_IMPORT_JOBS, input],
+    () => importClient.getEyewearImportJobs(input as EyewearImportJobsInput),
+    {
+      enabled: Boolean(input?.shopId) && (options.enabled ?? true),
+      retry: false,
+    }
+  );
+
+  return {
+    jobs: normalizeEyewearImportJobs(data),
+    error,
+    loading: isLoading,
+    refetch,
+  };
+};
+
+export const useCommitEyewearImportMutation = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: EyewearImportCommitInput) =>
+      importClient.commitEyewearImport(input),
+    {
+      onSuccess: () => {
+        toast.success(t('common:eyewear-import-commit-started'));
+        queryClient.invalidateQueries(API_ENDPOINTS.PRODUCTS);
+        queryClient.invalidateQueries(API_ENDPOINTS.EYEWEAR_IMPORT_JOBS);
+      },
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:eyewear-import-commit-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useDownloadEyewearImportReportMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (jobId: string | number) => importClient.downloadEyewearImportReport(jobId),
+    {
+      onSuccess: (blob, jobId) => {
+        downloadBlob(blob, `eyewear-import-report-${jobId}.xlsx`);
+      },
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:eyewear-import-report-download-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useDownloadJewelleryTemplateMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: JewelleryImportTemplateInput) =>
+      importClient.downloadJewelleryTemplate(input),
+    {
+      onSuccess: (blob) => {
+        downloadBlob(blob, 'jewellery-import-template.xlsx');
+      },
+      onError: (error: unknown) => {
+        toast.error(
+          getApiErrorMessage(
+            error,
+            t('common:jewellery-import-template-download-failed')
+          )
+        );
+      },
+    }
+  );
+};
+
+export const usePreviewJewelleryImportMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: JewelleryImportPreviewInput) =>
+      importClient.previewJewelleryImport(input),
+    {
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:jewellery-import-preview-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useJewelleryImportJobQuery = (
+  jobId?: string | number,
+  options: { enabled?: boolean; refetchInterval?: number | false } = {}
+) => {
+  const { data, error, isLoading, refetch } = useQuery<
+    JewelleryImportJob,
+    Error
+  >(
+    [API_ENDPOINTS.JEWELLERY_IMPORT_JOBS, jobId],
+    () => importClient.getJewelleryImportJob(jobId as string | number),
+    {
+      enabled: Boolean(jobId) && (options.enabled ?? true),
+      refetchInterval: options.refetchInterval,
+    }
+  );
+
+  return {
+    job: data,
+    error,
+    loading: isLoading,
+    refetch,
+  };
+};
+
+export const useJewelleryImportJobsQuery = (
+  input?: JewelleryImportJobsInput,
+  options: { enabled?: boolean } = {}
+) => {
+  const { data, error, isLoading, refetch } = useQuery<
+    JewelleryImportJobsResponse,
+    Error
+  >(
+    [API_ENDPOINTS.JEWELLERY_IMPORT_JOBS, input],
+    () =>
+      importClient.getJewelleryImportJobs(input as JewelleryImportJobsInput),
+    {
+      enabled: Boolean(input?.shopId) && (options.enabled ?? true),
+      retry: false,
+    }
+  );
+
+  return {
+    jobs: normalizeJewelleryImportJobs(data),
+    error,
+    loading: isLoading,
+    refetch,
+  };
+};
+
+export const useCommitJewelleryImportMutation = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (input: JewelleryImportCommitInput) =>
+      importClient.commitJewelleryImport(input),
+    {
+      onSuccess: () => {
+        toast.success(t('common:jewellery-import-commit-started'));
+        queryClient.invalidateQueries(API_ENDPOINTS.PRODUCTS);
+        queryClient.invalidateQueries(API_ENDPOINTS.JEWELLERY_IMPORT_JOBS);
+      },
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:jewellery-import-commit-failed')
+        );
+      },
+    }
+  );
+};
+
+export const useDownloadJewelleryImportReportMutation = () => {
+  const { t } = useTranslation('common');
+
+  return useMutation(
+    (jobId: string | number) =>
+      importClient.downloadJewelleryImportReport(jobId),
+    {
+      onSuccess: (blob, jobId) => {
+        downloadBlob(blob, `jewellery-import-report-${jobId}.xlsx`);
+      },
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message ??
+            t('common:jewellery-import-report-download-failed')
         );
       },
     }

@@ -17,4 +17,19 @@ export const PRODUCT_IMPORTS: ProductImportType[] = [
     labelKey: 'footwear-import-title',
     href: Routes.product.footwearImport,
   },
+  {
+    key: 'cosmetics',
+    labelKey: 'cosmetics-import-title',
+    href: Routes.product.cosmeticsImport,
+  },
+  {
+    key: 'eyewear',
+    labelKey: 'eyewear-import-title',
+    href: Routes.product.eyewearImport,
+  },
+  {
+    key: 'jewellery',
+    labelKey: 'jewellery-import-title',
+    href: Routes.product.jewelleryImport,
+  },
 ];
