@@ -13,6 +13,7 @@ import Radio from '@/components/ui/radio/radio';
 import { useRouter } from 'next/router';
 import { yupResolver } from '@hookform/resolvers/yup';
 import FileInput from '@/components/ui/file-input';
+import ProductImageViewTags from '@/components/product/product-image-view-tags';
 import { productValidationSchema } from '@/components/product/product-validation-schema';
 import ProductVariableForm from '@/components/product/product-variable-form';
 import ProductVariableEavForm from '@/components/product/product-variable-eav-form';
@@ -541,14 +542,26 @@ export default function CreateOrUpdateProductForm({
             title={t('form:featured-image-title')}
             details={featuredImageInformation}
           >
-            <FileInput name="image" control={control} multiple={false} />
+            {/*
+              skipDeleteOnRemove: product update replaces image rows; calling
+              DELETE /attachments while the file is still linked returns "in use"
+              and used to block the Uploader UI from removing the thumb.
+            */}
+            <FileInput
+              name="image"
+              control={control}
+              multiple={false}
+              skipDeleteOnRemove
+            />
           </ProductFormSection>
 
           <ProductFormSection
             title={t('form:gallery-title')}
             details={galleryImageInformation}
           >
-            <FileInput name="gallery" control={control} />
+            <FileInput name="gallery" control={control} skipDeleteOnRemove />
+            {/* Apparel side tags (front/back) for AI enrichment — additive, optional. */}
+            <ProductImageViewTags />
           </ProductFormSection>
 
           <ProductFormSection

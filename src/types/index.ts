@@ -565,10 +565,21 @@ export interface VariationOptionInput {
   value?: string;
 }
 
+export type ProductImageViewType =
+  | 'front'
+  | 'back'
+  | 'left'
+  | 'right'
+  | 'detail'
+  | 'other'
+  | 'unknown';
+
 export interface Attachment {
   thumbnail: string;
   original: string;
   id?: string;
+  /** Optional garment/camera side for AI enrichment. */
+  view_type?: ProductImageViewType | string;
 }
 
 export interface AttachmentInput {
@@ -576,6 +587,7 @@ export interface AttachmentInput {
   original: string;
   id?: string;
   file_name?: string;
+  view_type?: ProductImageViewType | string;
 }
 
 export interface ConnectTypeBelongsTo {
@@ -1265,6 +1277,11 @@ export interface ProductAiImageGenerationEnqueueResponse {
   progress_percent: number;
 }
 
+export interface ProductAiImageViewItem {
+  url: string;
+  view_type: string | null;
+}
+
 export interface ProductAiImageGenerationPreviewResponse {
   job_id: string;
   status: Extract<ProductAiImageJobStatus, 'preview_pending'>;
@@ -1272,6 +1289,10 @@ export interface ProductAiImageGenerationPreviewResponse {
   expires_at: string | null;
   source_images: string[];
   preview_images: string[];
+  /** Additive labeled items for apparel front/back preview UI. */
+  source_image_items?: ProductAiImageViewItem[];
+  preview_image_items?: ProductAiImageViewItem[];
+  warnings?: string[];
 }
 
 export interface ProductAiImageGenerationApproveResponse {

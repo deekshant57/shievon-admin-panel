@@ -86,6 +86,7 @@
   "text-ai-image-job-queued": "AI image enrichment job queued",
   "text-ai-image-preview-approved": "AI image preview approved",
   "text-ai-image-preview-rejected": "AI image preview rejected",
+  "text-ai-warning-missing-back": "These photos may both be front views. Add a tagged Back photo for better clothing results.",
   "sidebar-nav-item-dashboard": "Dashboard",
   "sidebar-nav-item-products": "Products",
   "sidebar-nav-item-services": "Services",

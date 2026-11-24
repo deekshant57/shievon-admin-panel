@@ -20,6 +20,10 @@ import isEmpty from 'lodash/isEmpty';
 import omit from 'lodash/omit';
 import { omitTypename } from '@/utils/omit-typename';
 import { cartesian } from '@/utils/cartesian';
+import {
+  isApparelProductContext,
+  suggestedViewType,
+} from '@/components/product/product-image-view-tags';
 
 export type ProductFormValues = Omit<
   CreateProduct,
@@ -359,27 +363,44 @@ export function processFileWithName(file_input: any) {
 }
 
 // Helper function to format image - remove id, only keep thumbnail and original
-function formatImage(image: any): { thumbnail: string; original: string } | undefined {
+function formatImage(
+  image: any,
+  options?: { applyApparelDefaults?: boolean },
+): { thumbnail: string; original: string; view_type?: string } | undefined {
   if (!image || !image.thumbnail || !image.original) {
     return undefined;
   }
+  const view_type = options?.applyApparelDefaults
+    ? suggestedViewType('featured', 0, image.view_type)
+    : image.view_type;
   return {
     thumbnail: image.thumbnail,
     original: image.original,
+    // Round-trip optional apparel side label for AI enrichment.
+    ...(view_type ? { view_type } : {}),
   };
 }
 
 // Helper function to format gallery - remove id from each item, filter invalid items
-function formatGallery(gallery: any[]): Array<{ thumbnail: string; original: string }> {
+function formatGallery(
+  gallery: any[],
+  options?: { applyApparelDefaults?: boolean },
+): Array<{ thumbnail: string; original: string; view_type?: string }> {
   if (!gallery || !Array.isArray(gallery)) {
     return [];
   }
   return gallery
     .filter((item) => item && item.thumbnail && item.original)
-    .map((item) => ({
-      thumbnail: item.thumbnail,
-      original: item.original,
-    }));
+    .map((item, index) => {
+      const view_type = options?.applyApparelDefaults
+        ? suggestedViewType('gallery', index, item.view_type)
+        : item.view_type;
+      return {
+        thumbnail: item.thumbnail,
+        original: item.original,
+        ...(view_type ? { view_type } : {}),
+      };
+    });
 }
 
 // Helper function to format digital file - only send id
@@ -450,11 +471,20 @@ export function getProductInputValues(
     quaternary_category?: unknown;
   };
   
+  // Apparel defaults (featured→front, first gallery→back) applied only at submit
+  // so Uploader remove is never raced by a view_type useEffect rewrite.
+  const applyApparelDefaults = isApparelProductContext(
+    values.type,
+    values.categories,
+  );
+
   // Format image - only include if valid (has thumbnail and original)
-  const formattedImage = formatImage(image);
+  const formattedImage = formatImage(image, { applyApparelDefaults });
   
   // Format gallery - filter out invalid items
-  const formattedGallery = formatGallery(values.gallery ?? []);
+  const formattedGallery = formatGallery(values.gallery ?? [], {
+    applyApparelDefaults,
+  });
   
   // Format digital file - only send id when is_digital is true
   const formattedDigitalFile = is_digital ? formatDigitalFile(digital_file_input) : undefined;

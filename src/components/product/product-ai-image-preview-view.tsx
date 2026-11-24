@@ -9,20 +9,47 @@ import { API_ENDPOINTS } from '@/data/client/api-endpoints';
 import { useModalAction, useModalState } from '@/components/ui/modal/modal.context';
 import { useQueryClient } from 'react-query';
 import { useTranslation } from 'next-i18next';
+import { ProductAiImageViewItem } from '@/types';
 
 type ProductAiImagePreviewModalPayload = {
   productId: string;
   productName?: string;
 };
 
+const viewLabel = (view: string | null | undefined, t: (k: string) => string) => {
+  switch ((view || '').toLowerCase()) {
+    case 'front':
+      return t('form:view-type-front');
+    case 'back':
+      return t('form:view-type-back');
+    case 'left':
+    case 'right':
+      return t('form:view-type-side');
+    case 'detail':
+      return t('form:view-type-detail');
+    case 'other':
+      return t('form:view-type-other');
+    default:
+      return t('form:view-type-unknown');
+  }
+};
+
 const PreviewImageGrid = ({
   title,
-  images,
+  urls,
+  items,
 }: {
   title: string;
-  images: string[];
+  urls: string[];
+  items?: ProductAiImageViewItem[];
 }) => {
-  if (!images.length) {
+  const { t } = useTranslation();
+  const labeled =
+    items && items.length > 0
+      ? items
+      : urls.map((url) => ({ url, view_type: null as string | null }));
+
+  if (!labeled.length) {
     return null;
   }
 
@@ -30,13 +57,17 @@ const PreviewImageGrid = ({
     <div>
       <h3 className="mb-2 text-sm font-semibold text-heading">{title}</h3>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {images.map((imageUrl, index) => (
-          <div key={`${imageUrl}-${index}`} className="overflow-hidden rounded border">
+        {labeled.map((item, index) => (
+          <div key={`${item.url}-${index}`} className="overflow-hidden rounded border">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={imageUrl}
+              src={item.url}
               alt={`${title} ${index + 1}`}
               className="h-28 w-full object-cover"
             />
+            <p className="border-t bg-gray-50 px-2 py-1 text-center text-xs font-medium text-heading">
+              {viewLabel(item.view_type, t)}
+            </p>
           </div>
         ))}
       </div>
@@ -75,6 +106,8 @@ export default function ProductAiImagePreviewView() {
     closeModal();
   };
 
+  const warnings = previewData?.warnings ?? [];
+
   return (
     <div className="flex h-full min-h-screen w-screen flex-col bg-light p-4 md:h-auto md:min-h-0 md:max-w-[920px] md:rounded-xl md:p-6">
       <div className="mb-4 border-b pb-3">
@@ -101,13 +134,27 @@ export default function ProductAiImagePreviewView() {
 
       {!isLoading && previewData && (
         <div className="space-y-5">
+          {warnings.length > 0 && (
+            <Alert
+              variant="warningOutline"
+              message={warnings
+                .map((w) =>
+                  w === 'possible_missing_back'
+                    ? t('text-ai-warning-missing-back')
+                    : w,
+                )
+                .join(' · ')}
+            />
+          )}
           <PreviewImageGrid
             title={t('text-source-images')}
-            images={previewData.source_images ?? []}
+            urls={previewData.source_images ?? []}
+            items={previewData.source_image_items}
           />
           <PreviewImageGrid
             title={t('text-generated-preview-images')}
-            images={previewData.preview_images ?? []}
+            urls={previewData.preview_images ?? []}
+            items={previewData.preview_image_items}
           />
           <div className="flex items-center justify-end gap-2 border-t pt-4">
             <Button variant="outline" onClick={closeModal} disabled={isSubmitting}>

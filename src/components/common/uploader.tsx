@@ -166,9 +166,13 @@ export default function Uploader({
           const isInUse =
             err?.response?.status === 400 &&
             String(msg).toLowerCase().includes('in use');
-          setError(
-            isInUse ? t('form:error-attachment-in-use') : msg || t('error-something-went-wrong')
-          );
+          // Still remove from the form UI. "In use" means another resource
+          // (often this same product) still references the file; the product
+          // save replaces gallery/image rows and drops the link.
+          updateUI();
+          if (!isInUse) {
+            setError(msg || t('error-something-went-wrong'));
+          }
         },
       });
     } else {
